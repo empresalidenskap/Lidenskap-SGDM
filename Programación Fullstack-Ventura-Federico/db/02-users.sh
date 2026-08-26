@@ -24,14 +24,19 @@ mysql -u root -p"${MYSQL_ROOT_PASSWORD}" <<-EOSQL
 
     -- Usuario de consulta publica: solo lectura de lo que se publica
     CREATE USER '${DB_CONSULTA_USER}'@'%' IDENTIFIED BY '${DB_CONSULTA_PASSWORD}';
-    GRANT SELECT ON ${MYSQL_DATABASE}.torneo           TO '${DB_CONSULTA_USER}'@'%';
-    GRANT SELECT ON ${MYSQL_DATABASE}.tipo_torneo       TO '${DB_CONSULTA_USER}'@'%';
-    GRANT SELECT ON ${MYSQL_DATABASE}.ronda             TO '${DB_CONSULTA_USER}'@'%';
-    GRANT SELECT ON ${MYSQL_DATABASE}.enfrentamiento    TO '${DB_CONSULTA_USER}'@'%';
-    GRANT SELECT ON ${MYSQL_DATABASE}.resultado         TO '${DB_CONSULTA_USER}'@'%';
-    GRANT SELECT ON ${MYSQL_DATABASE}.tabla_posiciones  TO '${DB_CONSULTA_USER}'@'%';
-    GRANT SELECT ON ${MYSQL_DATABASE}.participante      TO '${DB_CONSULTA_USER}'@'%';
-    GRANT SELECT ON ${MYSQL_DATABASE}.equipo            TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.torneo             TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.tipo_torneo        TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.modulo_competencia TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.torneo_modulo      TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.ronda              TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.inscripcion        TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.enfrentamiento     TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.resultado          TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.tabla_posiciones   TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.competidor         TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.participante       TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.equipo             TO '${DB_CONSULTA_USER}'@'%';
+    GRANT SELECT ON ${MYSQL_DATABASE}.equipo_participante TO '${DB_CONSULTA_USER}'@'%';
 
     FLUSH PRIVILEGES;
 EOSQL

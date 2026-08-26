@@ -1,8 +1,10 @@
 -- Modelo relacional del SGDM (Segunda Entrega — Programación Fullstack)
 -- Basado en MER_SGDM_Proyecto.graphml, con el agregado de COMPETIDOR como
--- supertipo de PARTICIPANTE/EQUIPO: una inscripción o un enfrentamiento
--- pueden ser individuales (ajedrez) o de equipo (fútbol) sin columnas
--- nulas ni relaciones ambiguas.
+-- supertipo de PARTICIPANTE/EQUIPO: una inscripción puede ser individual
+-- (ajedrez) o de equipo (fútbol) sin columnas nulas ni relaciones ambiguas.
+-- ENFRENTAMIENTO y TABLA_POSICIONES referencian INSCRIPCION (no COMPETIDOR
+-- directo), y EQUIPO_PARTICIPANTE / TORNEO_MODULO son las tablas
+-- intermedias de las relaciones N:N "Integra" y "Configura" del MER.
 
 USE sgdm;
 
@@ -70,6 +72,18 @@ CREATE TABLE equipo (
     CONSTRAINT fk_equipo_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
 );
 
+-- EQUIPO_PARTICIPANTE (plantilla: relación "Integra" N:N del MER) --------
+CREATE TABLE equipo_participante (
+    id_equipo        INT NOT NULL,
+    id_participante  INT NOT NULL,
+    fecha_ingreso    DATE NOT NULL DEFAULT (CURRENT_DATE),
+    PRIMARY KEY (id_equipo, id_participante),
+    CONSTRAINT fk_ep_equipo FOREIGN KEY (id_equipo) REFERENCES equipo(id_equipo)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_ep_participante FOREIGN KEY (id_participante) REFERENCES participante(id_participante)
+        ON DELETE CASCADE
+);
+
 -- TIPO_TORNEO (formato: liga, eliminación directa, sistema suizo) --------
 CREATE TABLE tipo_torneo (
     id_tipo_torneo  INT AUTO_INCREMENT PRIMARY KEY,
@@ -88,15 +102,25 @@ CREATE TABLE modulo_competencia (
 CREATE TABLE torneo (
     id_torneo             INT AUTO_INCREMENT PRIMARY KEY,
     id_tipo_torneo        INT NOT NULL,
-    id_modulo             INT NOT NULL,
     id_usuario_organizador INT NOT NULL,
     nombre_torneo         VARCHAR(150) NOT NULL,
     fecha_inicio          DATE,
     fecha_fin             DATE,
     estado                ENUM('planificado', 'en_curso', 'finalizado', 'cancelado') NOT NULL DEFAULT 'planificado',
     CONSTRAINT fk_torneo_tipo FOREIGN KEY (id_tipo_torneo) REFERENCES tipo_torneo(id_tipo_torneo),
-    CONSTRAINT fk_torneo_modulo FOREIGN KEY (id_modulo) REFERENCES modulo_competencia(id_modulo),
     CONSTRAINT fk_torneo_organizador FOREIGN KEY (id_usuario_organizador) REFERENCES usuario(id_usuario)
+);
+
+-- TORNEO_MODULO (relación "Configura" N:N del MER, con atributos propios) -
+CREATE TABLE torneo_modulo (
+    id_torneo           INT NOT NULL,
+    id_modulo           INT NOT NULL,
+    reglas_especificas  TEXT,
+    habilitado          BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (id_torneo, id_modulo),
+    CONSTRAINT fk_tm_torneo FOREIGN KEY (id_torneo) REFERENCES torneo(id_torneo)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_tm_modulo FOREIGN KEY (id_modulo) REFERENCES modulo_competencia(id_modulo)
 );
 
 -- RONDA ----------------------------------------------------------------
@@ -127,19 +151,22 @@ CREATE TABLE inscripcion (
     CONSTRAINT uq_inscripcion_torneo_competidor UNIQUE (id_torneo, id_competidor)
 );
 
--- ENFRENTAMIENTO -------------------------------------------------------
+-- ENFRENTAMIENTO ---------------------------------------------------------
+-- Local y visitante apuntan a INSCRIPCION (no directo a COMPETIDOR): para
+-- jugar un partido de un torneo hay que estar inscripto en ESE torneo
+-- (relaciones "Juega_Local"/"Juega_Visitante" del MER).
 CREATE TABLE enfrentamiento (
     id_enfrentamiento        INT AUTO_INCREMENT PRIMARY KEY,
     id_ronda                 INT NOT NULL,
-    id_competidor_local      INT NOT NULL,
-    id_competidor_visitante  INT NOT NULL,
+    id_inscripcion_local      INT NOT NULL,
+    id_inscripcion_visitante  INT NOT NULL,
     fecha_hora               DATETIME,
     estado_partido           ENUM('programado', 'en_curso', 'finalizado', 'suspendido') NOT NULL DEFAULT 'programado',
     CONSTRAINT fk_enfrentamiento_ronda FOREIGN KEY (id_ronda) REFERENCES ronda(id_ronda)
         ON DELETE CASCADE,
-    CONSTRAINT fk_enfrentamiento_local FOREIGN KEY (id_competidor_local) REFERENCES competidor(id_competidor),
-    CONSTRAINT fk_enfrentamiento_visitante FOREIGN KEY (id_competidor_visitante) REFERENCES competidor(id_competidor),
-    CONSTRAINT chk_enfrentamiento_rivales CHECK (id_competidor_local <> id_competidor_visitante)
+    CONSTRAINT fk_enfrentamiento_local FOREIGN KEY (id_inscripcion_local) REFERENCES inscripcion(id_inscripcion),
+    CONSTRAINT fk_enfrentamiento_visitante FOREIGN KEY (id_inscripcion_visitante) REFERENCES inscripcion(id_inscripcion),
+    CONSTRAINT chk_enfrentamiento_rivales CHECK (id_inscripcion_local <> id_inscripcion_visitante)
 );
 
 -- RESULTADO --------------------------------------------------------------
@@ -156,19 +183,18 @@ CREATE TABLE resultado (
 );
 
 -- TABLA_POSICIONES --------------------------------------------------------
+-- 1:1 con INSCRIPCION (relación "Acumula" del MER): la inscripción ya
+-- identifica torneo + competidor, no hace falta repetirlos acá.
 CREATE TABLE tabla_posiciones (
     id_posicion         INT AUTO_INCREMENT PRIMARY KEY,
-    id_torneo           INT NOT NULL,
-    id_competidor       INT NOT NULL,
+    id_inscripcion      INT NOT NULL UNIQUE,
     partidos_jugados    INT NOT NULL DEFAULT 0,
     victorias           INT NOT NULL DEFAULT 0,
     empates             INT NOT NULL DEFAULT 0,
     derrotas            INT NOT NULL DEFAULT 0,
     puntos_acumulados   INT NOT NULL DEFAULT 0,
-    CONSTRAINT fk_posiciones_torneo FOREIGN KEY (id_torneo) REFERENCES torneo(id_torneo)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_posiciones_competidor FOREIGN KEY (id_competidor) REFERENCES competidor(id_competidor),
-    CONSTRAINT uq_posiciones_torneo_competidor UNIQUE (id_torneo, id_competidor)
+    CONSTRAINT fk_posiciones_inscripcion FOREIGN KEY (id_inscripcion) REFERENCES inscripcion(id_inscripcion)
+        ON DELETE CASCADE
 );
 
 -- Roles base ---------------------------------------------------------------
