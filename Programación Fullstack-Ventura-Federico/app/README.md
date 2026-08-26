@@ -14,7 +14,20 @@ app/
     └── icons/              Iconografía de disciplinas (SVG)
 ```
 
-## Ejecución local
+## Ejecución con Docker (recomendada)
+
+Desde la carpeta de la materia (`Programación Fullstack-Ventura-Federico/`):
+
+```bash
+docker compose up -d
+```
+
+Abrir <http://localhost>. Levanta Apache+PHP sirviendo `app/` y una base
+MySQL (`db/init.sql` queda como punto de entrada para el esquema y los
+datos de prueba, todavía pendientes de diseño). Para bajarlo: `docker
+compose down`.
+
+## Ejecución local (sin Docker)
 
 ```bash
 python3 -m http.server 8080

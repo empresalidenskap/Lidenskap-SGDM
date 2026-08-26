@@ -12,6 +12,7 @@ desktop.ini
 # Entorno y credenciales — nunca subir al repositorio
 .env
 .env.*
+!.env.example
 config/database.php
 *.pem
 *.key
