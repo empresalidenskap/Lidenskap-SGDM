@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil – Lidenskap</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260723-8">
+</head>
+<body data-page="profile">
+  <div id="star-container"></div>
+  
+  <nav>
+    <a href="index.html" class="nav-logo"><img id="logoImg" src="img/logodark.png" alt="Lidenskap" class="nav-logo-img">LIDEN<span>SKAP</span></a>
+    <ul class="nav-links" id="primaryNavigation"></ul>
+    <div class="nav-right">
+      <!-- DROPDOWN DE PERFIL -->
+      <div class="profile-dropdown" id="profileDropdownWrap">
+        <button type="button" class="btn-outline profile-dropdown-btn" id="profileDropdownBtn" aria-expanded="false" aria-haspopup="true">
+          <span class="user-avatar">👤</span>
+          <span class="btn-text">Mi Perfil</span>
+        </button>
+        <div class="profile-menu" id="profileMenu" hidden>
+          <div class="profile-menu-header">
+            <span class="user-email" id="dropdownUserEmail">usuario@ejemplo.com</span>
+          </div>
+          <ul class="profile-menu-links">
+            <li><a href="perfil.html">👤 Mi Perfil</a></li>
+            <li><a href="crear-competencia.html">🏆 Crear Competencia</a></li>
+          </ul>
+          <div class="profile-menu-footer">
+            <button type="button" class="btn-logout" id="logoutBtn">🚪 Cerrar Sesión</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="theme-toggle" id="themeBtn" type="button" aria-label="Cambiar tema">☀️</button>
+      <button type="button" class="nav-menu-toggle" id="menuToggleBtn" aria-label="Abrir menú" aria-expanded="false" aria-controls="primaryNavigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="page-shell">
+    <div id="profileContent" hidden>
+      <header class="profile-header surface-card">
+        <div id="profileInitials" class="avatar" aria-hidden="true">--</div>
+        <div>
+          <span id="profileRole" class="role-label">Usuario</span>
+          <h1 id="profileHeading">PERFIL DE USUARIO</h1>
+          <p id="profileSubtitle">Cuenta de Lidenskap</p>
+        </div>
+        <button class="btn-secondary" type="button" id="editProfile">Editar perfil</button>
+      </header>
+
+      <section class="stat-grid profile-stats">
+        <article><span id="statLabel1">Dato</span><strong id="statValue1">-</strong></article>
+        <article><span id="statLabel2">Dato</span><strong id="statValue2">-</strong></article>
+        <article><span id="statLabel3">Dato</span><strong id="statValue3">-</strong></article>
+        <article><span id="statLabel4">Dato</span><strong id="statValue4">-</strong></article>
+      </section>
+
+      <div class="profile-layout">
+        <section class="surface-card">
+          <div class="section-header compact-header">
+            <div>
+              <p class="section-eyebrow" id="profileActivityEyebrow">Actividad</p>
+              <h2 id="profileActivityTitle">MIS TORNEOS</h2>
+            </div>
+            <a href="torneos.html" class="text-link">Explorar torneos →</a>
+          </div>
+          <div id="profileActivity" class="profile-tournaments"></div>
+        </section>
+
+        <aside class="surface-card">
+          <p class="section-eyebrow">Cuenta</p>
+          <h2>INFORMACIÓN</h2>
+          <dl class="summary-list">
+            <div><dt>Correo</dt><dd id="profileEmail">-</dd></div>
+            <div><dt>Rol</dt><dd id="profileRoleDetail">-</dd></div>
+            <div><dt id="profileExtraLabel1">Acceso</dt><dd id="profileExtraValue1">-</dd></div>
+            <div><dt id="profileExtraLabel2">Ámbito</dt><dd id="profileExtraValue2">-</dd></div>
+          </dl>
+          <button id="profileLogout" class="btn-secondary profile-logout" type="button">Cerrar sesión</button>
+        </aside>
+      </div>
+
+      <div id="profileEditor" class="inline-editor surface-card" hidden>
+        <h2>Editar perfil</h2>
+        <form id="profileForm" class="form-grid">
+          <div class="field">
+            <label for="profileName">Nombre completo</label>
+            <input id="profileName" required>
+          </div>
+          <div class="field">
+            <label for="profilePhone">Teléfono</label>
+            <input id="profilePhone" placeholder="+598 ...">
+          </div>
+          <div class="field field-full">
+            <label for="profileBio">Presentación</label>
+            <textarea id="profileBio" rows="4" placeholder="Contanos brevemente sobre vos"></textarea>
+          </div>
+          <div class="form-actions field-full">
+            <button class="btn-primary" type="submit">Guardar cambios</button>
+            <button class="btn-secondary" type="button" id="cancelProfileEdit">Cancelar</button>
+          </div>
+          <p id="profileFeedback" class="form-feedback field-full" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <ul class="footer-links">
+        <li><a href="privacidad.html">Privacidad</a></li>
+        <li><a href="terminos.html">Términos</a></li>
+        <li><a href="Contacto.html">Contacto</a></li>
+      </ul>
+      <div class="footer-copy">© 2026 Lidenskap · ITS Arias Balparda · 3ºMK</div>
+    </div>
+  </footer>
+
+  <script src="main.js?v=20260723-8"></script>
+</body>
+</html>

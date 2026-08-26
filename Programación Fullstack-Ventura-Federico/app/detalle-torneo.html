@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalle del Torneo – Lidenskap</title>
+
+  <!-- Importación de Google Fonts: Bebas Neue e Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+
+  <!-- Script de inicialización temprana del tema (Evita parpadeos al cargar) -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = savedTheme ? savedTheme : (systemPrefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
+  <link rel="stylesheet" href="styles.css?v=20260723-8">
+</head>
+<body data-page="tournament-detail">
+  <div id="star-container"></div>
+
+  <!-- NAVEGACIÓN -->
+  <nav>
+    <a href="index.html" class="nav-logo">
+      <img id="logoImg" src="img/logodark.png" alt="Lidenskap" class="nav-logo-img">
+      LIDEN<span>SKAP</span>
+    </a>
+
+    <ul class="nav-links" id="primaryNavigation">
+      <li><a href="index.html">INICIO</a></li>
+      <li><a href="disciplinas.html">DISCIPLINAS</a></li>
+      <li><a href="torneos.html">BUSCAR TORNEOS</a></li>
+      <li><a href="calendario.html">CALENDARIO</a></li>
+      <li><a href="perfil.html">PERFIL</a></li>
+    </ul>
+
+    <div class="nav-right">
+      <!-- DROPDOWN DE PERFIL -->
+      <div class="profile-dropdown" id="profileDropdownWrap">
+        <button type="button" class="btn-outline profile-dropdown-btn" id="profileDropdownBtn" aria-expanded="false" aria-haspopup="true">
+          <span class="user-avatar">👤</span>
+          <span class="btn-text">Mi Perfil</span>
+        </button>
+        <div class="profile-menu" id="profileMenu" hidden>
+          <div class="profile-menu-header">
+            <span class="user-email" id="dropdownUserEmail">usuario@ejemplo.com</span>
+          </div>
+          <ul class="profile-menu-links">
+            <li><a href="perfil.html">👤 Mi Perfil</a></li>
+            <li><a href="crear-competencia.html">🏆 Crear Competencia</a></li>
+          </ul>
+          <div class="profile-menu-footer">
+            <button type="button" class="btn-logout" id="logoutBtn">🚪 Cerrar Sesión</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="theme-toggle" id="themeBtn" type="button" aria-label="Cambiar tema">☀️</button>
+      <button type="button" class="nav-menu-toggle" id="menuToggleBtn" aria-label="Abrir menú" aria-expanded="false" aria-controls="primaryNavigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="page-shell detail-page">
+    
+    <!-- ENCABEZADO DEL TORNEO -->
+    <header class="page-hero tournament-hero">
+      <div class="hero-header-top">
+        <a href="torneos.html" class="back-link">← Volver a torneos</a>
+        <span class="card-badge badge-open" id="detailStatus">Inscripciones Abiertas</span>
+      </div>
+      
+      <span class="discipline-tag" id="detailDisciplineTag">⚽ Fútbol</span>
+      <h1 id="detailTitle" style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px;">Copa Apertura Lidenskap 2026</h1>
+      <p class="hero-subtitle" id="detailSubtitle">Organizado por: Club Deportivo Central</p>
+    </header>
+
+    <!-- LAYOUT PRINCIPAL -->
+    <div class="detail-layout">
+      
+      <!-- COLUMNA PRINCIPAL (Información y Reglamento) -->
+      <section class="detail-main-content">
+        
+        <!-- Tarjeta de Descripción -->
+        <article class="surface-card detail-card">
+          <h2 style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.5px;">Descripción del Torneo</h2>
+          <p id="detailDescription">
+            Competencia oficial de fútbol sala correspondiente al torneo de apertura. La fase inicial se jugará mediante formato Liga y los mejores clasificados avanzarán a los playoffs de eliminación directa.
+          </p>
+        </article>
+
+        <!-- TARJETA DE REGLAMENTO OFICIAL -->
+        <article class="surface-card detail-card rules-card" id="detailRulesWrap">
+          <div class="rules-header">
+            <div class="rules-icon">📜</div>
+            <div>
+              <h2 style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.5px;">Reglamento Oficial de la Competencia</h2>
+              <p class="helper-text">Consulta las bases, penalizaciones y normativas establecidas por el organizador.</p>
+            </div>
+          </div>
+
+          <div class="rules-download-box">
+            <div class="file-info">
+              <span class="file-icon">📄</span>
+              <div class="file-text">
+                <strong id="rulesFileName">Reglamento_CopaApertura2026.pdf</strong>
+                <span class="file-size">Documento PDF · 2.4 MB</span>
+              </div>
+            </div>
+            <a href="#" id="downloadRulesBtn" class="btn-primary btn-download" download target="_blank">
+              📥 Descargar Reglamento
+            </a>
+          </div>
+        </article>
+
+        <!-- Tarjeta de Equipos Inscriptos -->
+        <article class="surface-card detail-card">
+          <h2 style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.5px;">Equipos Inscriptos (<span id="currentTeamsCount">12</span>/<span id="maxTeamsCount">16</span>)</h2>
+          <ul class="teams-list" id="teamsList">
+            <li><span class="team-bullet">🛡️</span> Los Magos FC</li>
+            <li><span class="team-bullet">🛡️</span> Deportivo Norte</li>
+            <li><span class="team-bullet">🛡️</span> Rayo Vallecano UY</li>
+            <li><span class="team-bullet">🛡️</span> Titanes Futsal</li>
+          </ul>
+        </article>
+      </section>
+
+      <!-- BARRA LATERAL -->
+      <aside class="detail-sidebar">
+        <div class="surface-card summary-card">
+          <h2 style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.5px;">Resumen del Evento</h2>
+          
+          <ul class="summary-list">
+            <li>
+              <span>Formato:</span>
+              <strong id="detailFormat">Liga + Playoffs</strong>
+            </li>
+            <li>
+              <span>Sede / Modalidad:</span>
+              <strong id="detailVenue">Complejo Deportivo Central</strong>
+            </li>
+            <li>
+              <span>Fecha de Inicio:</span>
+              <strong id="detailStartDate">15 de Agosto, 2026</strong>
+            </li>
+            <li>
+              <span>Cupo Máximo:</span>
+              <strong id="detailCapacity">16 Equipos</strong>
+            </li>
+            <li>
+              <span>Cierre de Inscripción:</span>
+              <strong>10 de Agosto, 2026</strong>
+            </li>
+          </ul>
+
+          <div class="sidebar-actions">
+            <button class="btn-primary full-width" id="btnRegisterInDetail">Inscribir mi Equipo</button>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- PIE DE PÁGINA -->
+  <footer>
+    <div class="footer-inner">
+      <ul class="footer-links">
+        <li><a href="privacidad.html">Privacidad</a></li>
+        <li><a href="terminos.html">Términos</a></li>
+        <li><a href="Contacto.html">Contacto</a></li>
+      </ul>
+      <div class="footer-copy">© 2026 Lidenskap · ITS Arias Balparda · 3ºMK</div>
+    </div>
+  </footer>
+
+  <script src="main.js?v=20260723-8"></script>
+</body>
+</html>

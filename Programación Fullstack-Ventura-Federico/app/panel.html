@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de gestión — Lidenskap</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260723-8">
+</head>
+<body data-page="dashboard">
+  <div id="star-container"></div>
+  <nav>
+    <a href="index.html" class="nav-logo"><img id="logoImg" src="img/logodark.png" alt="Lidenskap" class="nav-logo-img">LIDEN<span>SKAP</span></a>
+    <ul class="nav-links"></ul>
+    <div class="nav-right"><a href="perfil.html" class="btn-outline">Mi perfil</a><button class="theme-toggle" id="themeBtn" aria-label="Cambiar tema">☀</button></div>
+  </nav>
+
+  <main class="page-shell">
+    <header class="dashboard-header">
+      <div><p id="dashboardRole" class="section-eyebrow">Gestión</p><h1 id="dashboardTitle">PANEL DE GESTIÓN</h1><p id="dashboardDescription">Resumen del sistema y accesos a los módulos principales.</p></div>
+      <a class="btn-primary" href="crear-competencia.html">+ Nueva competencia</a>
+    </header>
+
+    <div id="dashboardOverview">
+      <section class="stat-grid">
+        <article><span>Torneos activos</span><strong>10</strong></article>
+        <article><span>Participantes</span><strong>246</strong></article>
+        <article><span>Equipos</span><strong>38</strong></article>
+        <article><span>Resultados pendientes</span><strong>6</strong></article>
+      </section>
+
+      <section class="module-grid" aria-label="Módulos del sistema">
+        <a class="module-card" data-admin-only data-panel-target="users" href="#panel-users"><span>01</span><div><h2>Usuarios y roles</h2><p>Administradores, organizadores y participantes.</p></div><b>→</b></a>
+        <a class="module-card" data-panel-target="tournaments" href="#panel-tournaments"><span>02</span><div><h2>Torneos</h2><p>Publicación, formatos, rondas y llaves.</p></div><b>→</b></a>
+        <a class="module-card" data-panel-target="participants" href="#panel-participants"><span>03</span><div><h2>Participantes y equipos</h2><p>Inscripciones, planteles y estados.</p></div><b>→</b></a>
+        <a class="module-card" data-panel-target="results" href="#panel-results"><span>04</span><div><h2>Resultados</h2><p>Carga, corrección y publicación oficial.</p></div><b>→</b></a>
+        <a class="module-card" data-panel-target="rounds" href="#panel-rounds"><span>05</span><div><h2>Rondas y llaves</h2><p>Generación, publicación y cierre de rondas.</p></div><b>→</b></a>
+        <a class="module-card" data-panel-target="reports" href="#panel-reports"><span>06</span><div><h2>Reportes</h2><p>Resumen de participación y competencia.</p></div><b>→</b></a>
+        <a class="module-card" data-admin-only data-panel-target="audit" href="#panel-audit"><span>07</span><div><h2>Auditoría</h2><p>Historial completo de acciones del sistema.</p></div><b>→</b></a>
+        <a class="module-card" data-admin-only data-panel-target="settings" href="#panel-settings"><span>08</span><div><h2>Configuración</h2><p>Módulos habilitados y ajustes generales.</p></div><b>→</b></a>
+      </section>
+
+      <div class="dashboard-layout">
+        <section class="surface-card">
+          <div class="section-header compact-header"><div><p class="section-eyebrow">Gestión</p><h2>PARTICIPANTES RECIENTES</h2></div><button class="btn-secondary" type="button" data-panel-target="participants">Ver todos</button></div>
+          <div class="table-scroll"><table><thead><tr><th>Participante</th><th>Equipo</th><th>Torneo</th><th>Estado</th></tr></thead><tbody><tr><td>Lucía Fernández</td><td>Unión Central</td><td>Copa Apertura</td><td><span class="status-pill status-open">Confirmada</span></td></tr><tr><td>Mateo Rodríguez</td><td>Club del Parque</td><td>Copa Apertura</td><td><span class="status-pill status-progress">Pendiente</span></td></tr><tr><td>Sofía Martínez</td><td>Sin equipo</td><td>Suizo de Invierno</td><td><span class="status-pill status-open">Confirmada</span></td></tr></tbody></table></div>
+        </section>
+        <aside data-admin-only class="surface-card">
+          <div class="section-header compact-header"><div><p class="section-eyebrow">Auditoría</p><h2>ACTIVIDAD RECIENTE</h2></div><button class="btn-secondary" type="button" data-panel-target="audit">Ver todo</button></div>
+          <ol class="activity-list"><li><span>22:14</span><p><strong>Resultado actualizado</strong><small>Copa Apertura · Fecha 3</small></p></li><li><span>20:46</span><p><strong>Participante aprobado</strong><small>Suizo de Invierno</small></p></li><li><span>18:05</span><p><strong>Torneo publicado</strong><small>Open Individual</small></p></li><li><span>Ayer</span><p><strong>Rol modificado</strong><small>Usuario a Organizador</small></p></li></ol>
+        </aside>
+      </div>
+    </div>
+
+    <section id="panel-users" class="panel-module surface-card" data-panel-module="users" data-admin-only hidden>
+      <div class="panel-module-header"><div><p class="section-eyebrow">Administración</p><h2>USUARIOS Y ROLES</h2><p>Las cuatro cuentas habilitadas en esta entrega.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <div class="panel-toolbar"><label class="panel-search">Buscar usuario<input id="usersSearch" type="search" placeholder="Nombre, correo o rol"></label><button class="btn-primary" type="button" data-panel-form="user">+ Crear usuario</button></div>
+      <p id="usersCount" class="panel-count"></p>
+      <div class="table-scroll"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="usersTableBody"></tbody></table></div>
+    </section>
+
+    <section id="panel-tournaments" class="panel-module surface-card" data-panel-module="tournaments" hidden>
+      <div class="panel-module-header"><div><p class="section-eyebrow">Competencias</p><h2>TODOS LOS TORNEOS</h2><p id="tournamentsScope">Listado completo de competencias registradas.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <div class="panel-toolbar"><label class="panel-search">Buscar torneo<input id="panelTournamentSearch" type="search" placeholder="Nombre o disciplina"></label><a class="btn-primary" href="crear-competencia.html">+ Nueva competencia</a></div>
+      <p id="panelTournamentsCount" class="panel-count"></p>
+      <div class="table-scroll"><table><thead><tr><th>Torneo</th><th>Disciplina</th><th>Fecha</th><th>Inscripciones</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="panelTournamentsBody"></tbody></table></div>
+    </section>
+
+    <section id="panel-participants" class="panel-module surface-card" data-panel-module="participants" hidden>
+      <div class="panel-module-header"><div><p class="section-eyebrow">Gestión</p><h2>PARTICIPANTES Y EQUIPOS</h2><p>Consulta todas las inscripciones y los planteles registrados.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <div class="panel-tabs" role="tablist"><button class="active" type="button" data-roster-tab="participants">Participantes <span>246</span></button><button type="button" data-roster-tab="teams">Equipos <span>38</span></button></div>
+      <div id="participantsRoster">
+        <div class="panel-toolbar"><label class="panel-search">Buscar participante<input id="participantsSearch" type="search" placeholder="Nombre, equipo o torneo"></label><button class="btn-primary" type="button" data-panel-form="participant">+ Agregar participante</button></div>
+        <p id="participantsCount" class="panel-count"></p>
+        <div class="table-scroll"><table><thead><tr><th>Participante</th><th>Equipo</th><th>Torneo</th><th>Rol</th><th>Estado</th></tr></thead><tbody id="participantsTableBody"></tbody></table></div>
+        <div class="panel-pagination"><button class="btn-secondary" id="participantsPrev" type="button">← Anterior</button><span id="participantsPage"></span><button class="btn-secondary" id="participantsNext" type="button">Siguiente →</button></div>
+      </div>
+      <div id="teamsRoster" hidden>
+        <div class="panel-toolbar"><label class="panel-search">Buscar equipo<input id="teamsSearch" type="search" placeholder="Equipo, capitán o disciplina"></label><button class="btn-primary" type="button" data-panel-form="team">+ Agregar equipo</button></div>
+        <p id="teamsCount" class="panel-count"></p>
+        <div class="table-scroll"><table><thead><tr><th>Equipo</th><th>Capitán/a</th><th>Disciplina</th><th>Integrantes</th><th>Estado</th></tr></thead><tbody id="teamsTableBody"></tbody></table></div>
+        <div class="panel-pagination"><button class="btn-secondary" id="teamsPrev" type="button">← Anterior</button><span id="teamsPage"></span><button class="btn-secondary" id="teamsNext" type="button">Siguiente →</button></div>
+      </div>
+    </section>
+
+    <section id="panel-results" class="panel-module surface-card" data-panel-module="results" hidden>
+      <div class="panel-module-header"><div><p class="section-eyebrow">Competencia</p><h2>TODOS LOS RESULTADOS</h2><p>Partidos finalizados, próximos encuentros y resultados pendientes.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <div class="panel-toolbar"><label class="panel-search">Buscar resultado<input id="resultsSearch" type="search" placeholder="Torneo, equipo o jugador"></label><select id="resultsStatus" aria-label="Filtrar resultados"><option value="">Todos los estados</option><option value="Oficial">Oficiales</option><option value="Pendiente">Pendientes</option><option value="Próximo">Próximos</option></select></div>
+      <p id="resultsCount" class="panel-count"></p>
+      <div class="table-scroll"><table><thead><tr><th>Torneo</th><th>Ronda / Fecha</th><th>Enfrentamiento</th><th>Resultado</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="resultsTableBody"></tbody></table></div>
+      <div class="panel-pagination"><button class="btn-secondary" id="resultsPrev" type="button">← Anterior</button><span id="resultsPage"></span><button class="btn-secondary" id="resultsNext" type="button">Siguiente →</button></div>
+    </section>
+
+    <section id="panel-rounds" class="panel-module surface-card" data-panel-module="rounds" hidden>
+      <div class="panel-module-header"><div><p class="section-eyebrow">Competencia</p><h2>RONDAS Y LLAVES</h2><p>Genera enfrentamientos, revisa los cruces y controla su publicación.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <div class="panel-toolbar"><label class="panel-search">Torneo<select id="roundTournament"></select></label><button class="btn-primary" id="generateRound" type="button">+ Generar siguiente ronda</button></div>
+      <div class="round-status-grid"><article><span>Formato</span><strong id="roundFormat">—</strong></article><article><span>Ronda actual</span><strong id="roundCurrent">—</strong></article><article><span>Estado</span><strong id="roundStatus">—</strong></article></div>
+      <div class="bracket" id="roundBracket" aria-label="Vista de rondas y llaves"></div>
+      <div class="round-actions"><button class="btn-secondary" id="publishRound" type="button">Publicar ronda</button><button class="btn-secondary" id="closeRound" type="button">Cerrar ronda</button><p id="roundFeedback" class="form-feedback" aria-live="polite"></p></div>
+    </section>
+
+    <section id="panel-reports" class="panel-module surface-card" data-panel-module="reports" hidden>
+      <div class="panel-module-header"><div><p class="section-eyebrow">Análisis</p><h2>REPORTES DE TORNEOS</h2><p>Consulta indicadores de los torneos dentro de tu ámbito de administración.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <div class="panel-toolbar"><label class="panel-search">Torneo<select id="reportTournament"><option value="">Todos los torneos</option></select></label><button class="btn-secondary" id="exportReport" type="button">Descargar CSV</button></div>
+      <section class="report-grid" aria-label="Indicadores del reporte"><article><span>Inscripciones</span><strong id="reportRegistrations">—</strong></article><article><span>Ocupación promedio</span><strong id="reportOccupancy">—</strong></article><article><span>Partidos registrados</span><strong id="reportMatches">—</strong></article><article><span>Resultados oficiales</span><strong id="reportOfficial">—</strong></article></section>
+      <div class="table-scroll"><table><thead><tr><th>Torneo</th><th>Disciplina</th><th>Inscripciones</th><th>Cupo</th><th>Partidos</th><th>Estado</th></tr></thead><tbody id="reportsTableBody"></tbody></table></div>
+    </section>
+
+    <section id="panel-audit" class="panel-module surface-card" data-panel-module="audit" data-admin-only hidden>
+      <div class="panel-module-header"><div><p class="section-eyebrow">Seguridad</p><h2>REGISTRO DE AUDITORÍA</h2><p>Historial completo de accesos y modificaciones del sistema.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <div class="panel-toolbar"><label class="panel-search">Buscar evento<input id="auditSearch" type="search" placeholder="Usuario, acción o módulo"></label><button class="btn-secondary" type="button" id="exportAudit">Exportar registro</button></div>
+      <p id="auditCount" class="panel-count"></p>
+      <div class="table-scroll"><table><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Módulo</th><th>Detalle</th></tr></thead><tbody id="auditTableBody"></tbody></table></div>
+      <div class="panel-pagination"><button class="btn-secondary" id="auditPrev" type="button">← Anterior</button><span id="auditPage"></span><button class="btn-secondary" id="auditNext" type="button">Siguiente →</button></div>
+    </section>
+
+    <section id="panel-settings" class="panel-module surface-card" data-panel-module="settings" data-admin-only hidden>
+      <div class="panel-module-header"><div><p class="section-eyebrow">Sistema</p><h2>CONFIGURACIÓN GENERAL</h2><p>Habilita módulos y define las reglas generales de publicación.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <form id="systemSettingsForm" class="settings-form">
+        <fieldset><legend>Módulos de competencia</legend>
+          <label class="setting-row"><span><strong>Formato Liga</strong><small>Tabla de posiciones, fechas y puntajes.</small></span><input type="checkbox" name="league" checked></label>
+          <label class="setting-row"><span><strong>Eliminación directa</strong><small>Llaves, rondas y finales.</small></span><input type="checkbox" name="elimination" checked></label>
+          <label class="setting-row"><span><strong>Sistema suizo</strong><small>Emparejamientos por rendimiento.</small></span><input type="checkbox" name="swiss" checked></label>
+        </fieldset>
+        <fieldset><legend>Visibilidad y control</legend>
+          <label class="setting-row"><span><strong>Perfiles públicos</strong><small>Permite consultar perfiles habilitados sin iniciar sesión.</small></span><input type="checkbox" name="publicProfiles" checked></label>
+          <label class="setting-row"><span><strong>Auditoría obligatoria</strong><small>Registra las acciones administrativas.</small></span><input type="checkbox" name="audit" checked></label>
+          <label class="setting-row"><span><strong>Publicación automática</strong><small>Publica resultados al confirmarlos.</small></span><input type="checkbox" name="autoPublish"></label>
+        </fieldset>
+        <fieldset><legend>Ajustes generales</legend>
+          <label class="field">Nombre del sistema<input name="systemName" value="Lidenskap SGDM"></label>
+          <label class="field">Correo de soporte<input name="supportEmail" type="email" value="admin@lidenskap.com"></label>
+        </fieldset>
+        <div class="settings-actions"><button class="btn-primary" type="submit">Guardar configuración</button><p id="settingsFeedback" class="form-feedback" aria-live="polite"></p></div>
+      </form>
+    </section>
+  </main>
+
+  <div id="panelFormModal" class="modal-overlay auth-modal panel-form-modal" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="panelFormTitle">
+      <button class="modal-close" id="closePanelForm" type="button" aria-label="Cerrar">&times;</button>
+      <p class="section-eyebrow">Gestión</p><h2 id="panelFormTitle">EDITAR REGISTRO</h2>
+      <p id="panelFormHelp" class="auth-help"></p>
+      <form id="panelRecordForm" class="form-grid"></form>
+    </div>
+  </div>
+  <div id="panelToast" class="panel-toast" role="status" aria-live="polite" hidden></div>
+  <footer><div class="footer-inner"><ul class="footer-links"><li><a href="privacidad.html">Privacidad</a></li><li><a href="terminos.html">Términos</a></li><li><a href="Contacto.html">Contacto</a></li></ul><div class="footer-copy">© 2026 Lidenskap · ITS Arias Balparda · 3ºMK</div></div></footer>
+  <script src="main.js?v=20260723-8"></script>
+</body>
+</html>

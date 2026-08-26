@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SGDM — Lidenskap</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260723-8">
+</head>
+<body>
+
+<!-- STAR BURST CONTAINER -->
+<div id="star-container"></div>
+
+<!-- NAV -->
+<nav>
+<a href="index.html" class="nav-logo">
+    <img id="logoImg" src="img/logo.png" alt="Lidenskap logo" class="nav-logo-img">
+    LIDEN<span>SKAP</span>
+</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="#formatos">Formatos</a></li>
+    <li><a href="#carrusel-section">Galería</a></li>
+    <li><a href="#disciplinas">Disciplinas</a></li>
+    <li><a href="torneos.html">Torneos</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#iniciar-sesion" class="btn-outline">Iniciar sesión</a>
+    <button class="theme-toggle" id="themeBtn" title="Cambiar tema">☀</button>
+  </div>
+</nav>
+
+<main>
+<!-- HERO -->
+<section class="hero">
+  <!--<div class="hero-bg-text" aria-hidden="true">SGDM</div> -->
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Sistema de Gestión Deportiva Modular</div>
+    <h1 class="hero-title">
+      GESTIÓN DE<br>
+      TORNEOS<br>
+      <span class="accent-word">SIN LÍMITES</span>
+      <img id="ilustracion" src="img/ilustracion-dark.png" alt="Lidenskap logo" class="hero-title-img">
+    </h1>
+    <p class="hero-subtitle">
+      Una sola plataforma para organizar competencias deportivas, mentales y electrónicas.
+      Liga, eliminación directa o sistema suizo — todo desde el mismo lugar.
+    </p>
+    <div class="hero-actions">
+      <a href="torneos.html" class="btn-hero">Ver torneos →</a>
+      <a href="#formatos" class="btn-ghost">Ver formatos</a>
+      
+    </div>
+    <div class="hero-stats">
+      <!--<div class="stat">
+        <div class="stat-number">3<span>+</span></div>
+        <div class="stat-label">Formatos de torneo</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-number">4</div>
+        <div class="stat-label">Roles del sistema</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-number">9<span>+</span></div>
+        <div class="stat-label">Módulos funcionales</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <div class="stat-number">∞</div>
+        <div class="stat-label">Disciplinas compatibles</div>
+      </div>
+    </div> -->
+  </div>
+</section>
+
+<!-- SPORTS SELECTOR (estilo kridx) -->
+<div class="sports-section" id="disciplinas">
+
+  <div class="sports-inner">
+
+    <div class="sports-top-row">
+      <div class="sports-label">Disciplinas</div>
+    </div>
+      <div class="sports-track-container">
+
+        <button class="sports-arrow-btn" id="sportsLeft" aria-label="Desplazar izquierda">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+       
+    <!-- Wrapper que enmascara el scroll y muestra los gradientes de borde -->
+    <div class="sports-track-wrapper">
+      <div class="sports-fade sports-fade--left"  aria-hidden="true"></div>
+      <div class="sports-fade sports-fade--right" aria-hidden="true"></div>
+
+      <div class="sports-scroll" id="sportsScroll">
+
+        <button class="sport-chip" id="btnTodasDisciplinas" data-sport="todas">
+  <div class="sport-chip-icon">
+    <img src="icons/todas.svg" alt="Todas">
+  </div>
+  <span>Todas</span>
+</button>
+
+        <button class="sport-chip" data-sport="futbol">
+          <div class="sport-chip-icon">
+            <img src="icons/ball-football.svg" alt="Fútbol">
+          </div>
+          <span>Fútbol</span>
+        </button>
+
+        <button class="sport-chip" data-sport="ajedrez">
+          <div class="sport-chip-icon">
+            <img src="icons/chess.svg" alt="Ajedrez">
+          </div>
+          <span>Ajedrez</span>
+        </button>
+
+        <button class="sport-chip" data-sport="basquet">
+          <div class="sport-chip-icon">
+            <img src="icons/ball-basketball.svg" alt="Básquetbol">
+          </div>
+          <span>Básquetbol</span>
+        </button>
+
+        <button class="sport-chip" data-sport="tenis">
+          <div class="sport-chip-icon">
+            <img src="icons/ball-tennis.svg" alt="Tenis">
+          </div>
+          <span>Tenis</span>
+        </button>
+
+        <button class="sport-chip" data-sport="esports">
+          <div class="sport-chip-icon">
+            <img src="icons/controller.svg" alt="Esports">
+          </div>
+          <span>Esports</span>
+        </button>
+
+        <button class="sport-chip" data-sport="voleibol">
+          <div class="sport-chip-icon">
+            <img src="icons/ball-volleyball.svg" alt="Voleibol">
+          </div>
+          <span>Voleibol</span>
+        </button>
+
+        <button class="sport-chip" data-sport="rugby">
+          <div class="sport-chip-icon">
+            <img src="icons/ball-rugby.svg" alt="Rugby">
+          </div>
+          <span>Rugby</span>
+        </button>
+
+        <button class="sport-chip" data-sport="personalizada">
+          <div class="sport-chip-icon">
+            <img src="icons/personalizada.svg" alt="Personalizada">
+          </div>
+          <span>Custom</span>
+        </button>
+
+        </div><!-- /sports-scroll -->
+    </div><!-- /sports-track-wrapper -->
+ <button class="sports-arrow-btn" id="sportsRight" aria-label="Desplazar derecha">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      
+</div>
+    <!-- Barra de progreso de scroll -->
+    <div class="sports-progress-track" aria-hidden="true">
+      <div class="sports-progress-thumb" id="sportsProgressThumb"></div>
+    </div>
+
+  
+  </div>
+</div>
+
+
+<div class="full-divider"></div>
+ <div class="full-divider"></div>
+ 
+ <div class="disciplina-display-container" id="disciplinaDisplay">
+ </div> 
+ <div class="full-divider"></div>
+<!-- CARRUSEL SECTION -->
+<section class="carrusel-section" id="carrusel-section">
+  <div class="carrusel-label">
+    <div class="section-eyebrow">Competencias en acción</div>
+    <h2 class="section-title">EL DEPORTE, TU PASIÓN</h2>
+  </div>
+  <div class="carrusel">
+    <button class="carrusel-btn" id="atras" aria-label="Anterior">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+
+    <div class="imagenes">
+      <div id="img">
+        <img class="img" src="img/imagen1.jpg" alt="imagen 1" loading="lazy">
+      </div>
+      <div id="texto" class="texto">
+        <h3>Competencias Deportivas</h3>
+        <p>Organizá torneos de fútbol, básquetbol, voleibol y más disciplinas físicas con gestión automática de fixtures y tablas de posiciones.</p>
+      </div>
+    </div>
+
+    <button class="carrusel-btn" id="adelante" aria-label="Siguiente">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+  <div class="puntos" id="puntos"></div>
+</section>
+
+<div class="full-divider"></div>
+
+<!-- FORMATS -->
+<div id="formatos">
+  <div class="section">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">Módulos de competencia</div>
+        <h2 class="section-title">FORMATOS DE TORNEO</h2>
+      </div>
+      <a href="torneos.html" class="section-link">Ver todos →</a>
+    </div>
+    <div class="formats-grid">
+      <a href="torneos.html?formato=liga" class="format-card">
+        <div class="format-icon">L</div>
+        <div class="format-name">LIGA</div>
+        <p class="format-desc">Todos contra todos. El sistema genera automáticamente el calendario de partidos, gestiona la tabla de posiciones, puntos y diferencia de goles según la disciplina.</p>
+        <div class="format-tag">Todos contra todos</div>
+      </a>
+      <a href="torneos.html?formato=eliminacion" class="format-card">
+        <div class="format-icon">E</div>
+        <div class="format-name">ELIMINACIÓN DIRECTA</div>
+        <p class="format-desc">Llaves clásicas de eliminación. El sistema genera y actualiza los cruces automáticamente, avanzando al ganador de cada enfrentamiento hasta la final.</p>
+        <div class="format-tag">Brackets</div>
+      </a>
+      <a href="torneos.html?formato=suizo" class="format-card">
+        <div class="format-icon">S</div>
+        <div class="format-name">SISTEMA SUIZO</div>
+        <p class="format-desc">Emparejamiento inteligente por rendimiento acumulado en cada ronda, evitando rivales repetidos. Ideal para torneos de ajedrez e eSports.</p>
+        <div class="format-tag">Emparejamiento inteligente</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="full-divider"></div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-bg" aria-hidden="true"></div>
+  <div class="cta-inner">
+    <h2 class="cta-title">EMPEZÁ A ORGANIZAR<br>TU TORNEO HOY</h2>
+    <p class="cta-sub">Sin costos ocultos. Sin herramientas separadas. Un solo sistema para todas tus competencias.</p>
+    <a href="#registrarse" id="btnCrearCuentaGratis" class="btn-cta">CREAR CUENTA GRATUITA →</a>
+  </div>
+</div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <ul class="footer-links">
+      <li><a href="privacidad.html">Privacidad</a></li>
+      <li><a href="terminos.html">Términos</a></li>
+      <li><a href="Contacto.html">Contacto</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 Lidenskap</div>
+  </div>
+</footer>
+
+<script src="main.js?v=20260723-8"></script>
+
+ 
+</body>
+</html>
