@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear Competencia – Lidenskap</title>
+
+  <!-- Importación de Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+
+  <!-- Persistencia del tema sin parpadeo -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = savedTheme ? savedTheme : (systemPrefersDark ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
+  <link rel="stylesheet" href="assets/css/styles.css?v=20260723-8">
+</head>
+<body data-page="create-tournament">
+  <div id="star-container"></div>
+
+  <!-- NAVEGACIÓN -->
+  <nav>
+    <a href="index.html" class="nav-logo">
+      <img id="logoImg" src="assets/img/logodark.png" alt="Lidenskap" class="nav-logo-img">
+      LIDEN<span>SKAP</span>
+    </a>
+
+    <ul class="nav-links" id="primaryNavigation"></ul>
+
+    <div class="nav-right">
+      <!-- DROPDOWN DE PERFIL -->
+      <div class="profile-dropdown" id="profileDropdownWrap">
+        <button type="button" class="btn-outline profile-dropdown-btn" id="profileDropdownBtn" aria-expanded="false" aria-haspopup="true">
+          <span class="user-avatar">👤</span>
+          <span class="btn-text">Mi Perfil</span>
+        </button>
+        <div class="profile-menu" id="profileMenu" hidden>
+          <div class="profile-menu-header">
+            <span class="user-email" id="dropdownUserEmail">usuario@ejemplo.com</span>
+          </div>
+          <ul class="profile-menu-links">
+            <li><a href="perfil.html">👤 Mi Perfil</a></li>
+            <li><a href="crear-competencia.html">🏆 Crear Competencia</a></li>
+          </ul>
+          <div class="profile-menu-footer">
+            <button type="button" class="btn-logout" id="logoutBtn">🚪 Cerrar Sesión</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="theme-toggle" id="themeBtn" type="button" aria-label="Cambiar tema">☀️</button>
+      <button type="button" class="nav-menu-toggle" id="menuToggleBtn" aria-label="Abrir menú" aria-expanded="false" aria-controls="primaryNavigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="page-shell">
+    
+    <!-- BLOQUE A: Acceso Denegado (Para no organizadores) -->
+    <div id="unauthorizedBox" class="surface-card empty-state" hidden>
+      <div class="empty-icon">🔒</div>
+      <h2>ACCESO RESTRENGIDO</h2>
+      <p>Solo los usuarios con el rol de <strong>Organizador</strong> tienen permisos para crear y gestionar torneos en Lidenskap.</p>
+      <div class="form-actions" style="margin-top: 1.5rem; justify-content: center;">
+        <a href="perfil.html" class="btn-primary">Ver mi Perfil</a>
+        <a href="index.html" class="btn-secondary">Volver al Inicio</a>
+      </div>
+    </div>
+
+    <!-- BLOQUE B: Formulario Principal de Creación Custom -->
+    <div id="createFormContainer">
+      <header class="page-hero">
+        <p class="section-eyebrow">Panel de Organización</p>
+        <h1>CREAR COMPETENCIA CUSTOM</h1>
+        <p>Configura las reglas, parámetros y sube las bases de tu torneo para publicarlo en la plataforma.</p>
+      </header>
+
+      <form id="createTournamentForm" class="surface-card form-grid" enctype="multipart/form-data">
+        
+        <!-- DATOS GENERALES -->
+        <fieldset class="form-section field-full">
+          <legend>Información General</legend>
+          <div class="form-grid">
+            
+            <div class="field field-full">
+              <label for="tournamentName">Nombre del Torneo *</label>
+              <input type="text" id="tournamentName" name="tournamentName" placeholder="Ej: Copa Apertura Futsal 2026" required>
+            </div>
+
+            <div class="field">
+              <label for="disciplineSelect">Disciplina *</label>
+              <select id="disciplineSelect" name="discipline" required>
+                <option value="" disabled selected>Seleccioná una disciplina</option>
+                <option value="futbol">Fútbol</option>
+                <option value="basquet">Básquetbol</option>
+                <option value="ajedrez">Ajedrez</option>
+                <option value="tenis">Tenis</option>
+                <option value="esports">Esports</option>
+                <option value="voleibol">Voleibol</option>
+                <option value="rugby">Rugby</option>
+                <option value="custom">Personalizada / Custom</option>
+              </select>
+            </div>
+
+            <!-- Campo dinámico si eligen "Custom" -->
+            <div class="field" id="customDisciplineGroup" hidden>
+              <label for="customDisciplineName">Especifique Disciplina Custom *</label>
+              <input type="text" id="customDisciplineName" name="customDisciplineName" placeholder="Ej: Pádel, Kickball, etc.">
+            </div>
+
+            <!-- Campo dinámico si eligen "Esports" -->
+            <div class="field" id="esportsGameGroup" hidden>
+              <label for="esportsGameSelect">Videojuego / Título *</label>
+              <select id="esportsGameSelect" name="esportsGame">
+                <option value="" disabled selected>Seleccioná el juego</option>
+                <option value="lol">League of Legends</option>
+                <option value="cs2">Counter-Strike 2</option>
+                <option value="valorant">VALORANT</option>
+                <option value="tft">Teamfight Tactics</option>
+              </select>
+            </div>
+
+            <div class="field field-full">
+              <label for="tournamentDescription">Descripción / Presentación *</label>
+              <textarea id="tournamentDescription" name="description" rows="4" placeholder="Detalla de qué trata la competencia, premios, formato de disputa, etc." required></textarea>
+            </div>
+
+          </div>
+        </fieldset>
+
+        <!-- FORMATO Y REGLAS -->
+        <fieldset class="form-section field-full">
+          <legend>Formato y Reglas de Juego</legend>
+          <div class="form-grid">
+
+            <div class="field">
+              <label for="formatSelect">Formato del Torneo *</label>
+              <select id="formatSelect" name="format" required>
+                <option value="liga">Liga (Todos contra todos)</option>
+                <option value="eliminacion">Eliminación Directa (Playoffs)</option>
+                <option value="grupos_playoffs">Fase de Grupos + Playoffs</option>
+                <option value="suizo">Sistema Suizo</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="maxTeams">Cupo Máximo de Equipos / Participantes *</label>
+              <input type="number" id="maxTeams" name="maxTeams" min="2" max="128" placeholder="Ej: 16" required>
+            </div>
+
+            <div class="field">
+              <label for="startDate">Fecha de Inicio *</label>
+              <input type="date" id="startDate" name="startDate" required>
+            </div>
+
+            <div class="field">
+              <label for="venueName">Sede / Ubicación *</label>
+              <input type="text" id="venueName" name="venue" placeholder="Ej: Complejo Deportivo Central / Discord / Online" required>
+            </div>
+
+          </div>
+        </fieldset>
+
+        <!-- SUBIR REGLAMENTO (CUSTOM ARCHIVO) -->
+        <fieldset class="form-section field-full">
+          <legend>Reglamento Oficial</legend>
+          <div class="field field-full">
+            <label for="rulesFile">Subir documento de Reglamento (PDF) *</label>
+            <input type="file" id="rulesFile" name="rulesFile" accept=".pdf" required>
+            <small class="helper-text">Formatos permitidos: .pdf (Tamaño máximo: 5MB)</small>
+          </div>
+        </fieldset>
+
+        <!-- ACCIONES -->
+        <div class="form-actions field-full">
+          <button type="submit" class="btn-primary" id="btnSubmitTournament">Publicar Competencia</button>
+          <a href="torneos.html" class="btn-secondary">Cancelar</a>
+        </div>
+
+        <p id="formFeedback" class="form-feedback field-full" aria-live="polite"></p>
+      </form>
+    </div>
+
+  </main>
+
+  <!-- PIE DE PÁGINA -->
+  <footer>
+    <div class="footer-inner">
+      <ul class="footer-links">
+        <li><a href="privacidad.html">Privacidad</a></li>
+        <li><a href="terminos.html">Términos</a></li>
+        <li><a href="contacto.html">Contacto</a></li>
+      </ul>
+      <div class="footer-copy">© 2026 Lidenskap · ITS Arias Balparda · 3ºMK</div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js?v=20260723-8"></script>
+</body>
+</html>

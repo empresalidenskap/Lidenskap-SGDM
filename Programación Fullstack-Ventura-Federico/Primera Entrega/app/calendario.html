@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendario de partidos – Lidenskap</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css?v=20260723-8">
+</head>
+<body data-page="calendar">
+  <div id="star-container"></div>
+  
+  <nav>
+    <a href="index.html" class="nav-logo"><img id="logoImg" src="assets/img/logodark.png" alt="Lidenskap" class="nav-logo-img">LIDEN<span>SKAP</span></a>
+    <ul class="nav-links" id="primaryNavigation"></ul>
+    <div class="nav-right">
+      <!-- DROPDOWN DE PERFIL -->
+      <div class="profile-dropdown" id="profileDropdownWrap">
+        <button type="button" class="btn-outline profile-dropdown-btn" id="profileDropdownBtn" aria-expanded="false" aria-haspopup="true">
+          <span class="user-avatar">👤</span>
+          <span class="btn-text">Mi Perfil</span>
+        </button>
+        <div class="profile-menu" id="profileMenu" hidden>
+          <div class="profile-menu-header">
+            <span class="user-email" id="dropdownUserEmail">usuario@ejemplo.com</span>
+          </div>
+          <ul class="profile-menu-links">
+            <li><a href="perfil.html">👤 Mi Perfil</a></li>
+            <li><a href="crear-competencia.html">🏆 Crear Competencia</a></li>
+          </ul>
+          <div class="profile-menu-footer">
+            <button type="button" class="btn-logout" id="logoutBtn">🚪 Cerrar Sesión</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="theme-toggle" id="themeBtn" type="button" aria-label="Cambiar tema">☀️</button>
+      <button type="button" class="nav-menu-toggle" id="menuToggleBtn" aria-label="Abrir menú" aria-expanded="false" aria-controls="primaryNavigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="page-shell calendar-page">
+    <header class="page-hero calendar-hero">
+      <p class="section-eyebrow">Calendario general</p>
+      <h1>PARTIDOS Y ENFRENTAMIENTOS</h1>
+      <p>Consultá los encuentros de todas las disciplinas y filtrá por deporte, fecha, formato o estado. En esports también podés elegir el videojuego.</p>
+      <div class="calendar-summary"><span><strong id="calendarTotal">0</strong> encuentros</span><span><strong>7</strong> disciplinas</span><span><strong>UTC-3</strong> horario local</span></div>
+    </header>
+
+    <section class="surface-card calendar-controls" aria-label="Filtros del calendario">
+      <div>
+        <p class="filter-label">Disciplina</p>
+        <div class="game-filter-list" role="group" aria-label="Filtrar por disciplina">
+          <button class="sport-chip calendar-discipline-chip active" type="button" data-calendar-discipline=""><span class="sport-chip-icon"><img src="assets/icons/todas.svg" alt=""></span><span>Todas</span></button>
+          <button class="sport-chip calendar-discipline-chip" type="button" data-calendar-discipline="futbol"><span class="sport-chip-icon"><img src="assets/icons/ball-football.svg" alt=""></span><span>Fútbol</span></button>
+          <button class="sport-chip calendar-discipline-chip" type="button" data-calendar-discipline="ajedrez"><span class="sport-chip-icon"><img src="assets/icons/chess.svg" alt=""></span><span>Ajedrez</span></button>
+          <button class="sport-chip calendar-discipline-chip" type="button" data-calendar-discipline="basquet"><span class="sport-chip-icon"><img src="assets/icons/ball-basketball.svg" alt=""></span><span>Básquetbol</span></button>
+          <button class="sport-chip calendar-discipline-chip" type="button" data-calendar-discipline="tenis"><span class="sport-chip-icon"><img src="assets/icons/ball-tennis.svg" alt=""></span><span>Tenis</span></button>
+          <button class="sport-chip calendar-discipline-chip" type="button" data-calendar-discipline="esports"><span class="sport-chip-icon"><img src="assets/icons/controller.svg" alt=""></span><span>Esports</span></button>
+          <button class="sport-chip calendar-discipline-chip" type="button" data-calendar-discipline="voleibol"><span class="sport-chip-icon"><img src="assets/icons/ball-volleyball.svg" alt=""></span><span>Voleibol</span></button>
+          <button class="sport-chip calendar-discipline-chip" type="button" data-calendar-discipline="rugby"><span class="sport-chip-icon"><img src="assets/icons/ball-rugby.svg" alt=""></span><span>Rugby</span></button>
+        </div>
+      </div>
+
+      <div class="calendar-selects">
+        <label class="field">Año<select id="calendarYear"><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option></select></label>
+        <label class="field" id="calendarGameWrap" hidden>Videojuego (esports)<select id="calendarGame"><option value="">Todos los videojuegos</option><option value="lol">League of Legends</option><option value="cs2">Counter-Strike 2</option><option value="valorant">VALORANT</option><option value="tft">Teamfight Tactics</option></select></label>
+        <label class="field">Formato<select id="calendarFormat"><option value="">Todos los formatos</option><option value="liga">Liga</option><option value="eliminacion">Eliminación directa</option><option value="suizo">Sistema suizo</option></select></label>
+        <label class="field">Estado<select id="calendarStatus"><option value="">Todos los estados</option><option value="proximo">Próximos</option><option value="finalizado">Finalizados</option></select></label>
+      </div>
+    </section>
+
+    <section aria-labelledby="calendarMonthsTitle">
+      <div class="calendar-section-heading">
+        <div><p class="section-eyebrow">Temporada completa</p><h2 id="calendarMonthsTitle" class="section-title">SELECCIONÁ UN MES</h2></div>
+        <button id="clearCalendarFilters" class="btn-secondary" type="button">Restablecer</button>
+      </div>
+      <div id="calendarMonths" class="calendar-month-rail" role="group" aria-label="Filtrar por mes"></div>
+    </section>
+
+    <section aria-labelledby="calendarDatesTitle">
+      <div class="calendar-section-heading">
+        <div><p id="calendarPeriodLabel" class="section-eyebrow">Todo 2026</p><h2 id="calendarDatesTitle" class="section-title">SELECCIONÁ UNA FECHA</h2></div>
+      </div>
+      <div id="calendarDates" class="calendar-date-rail" role="group" aria-label="Filtrar por fecha"></div>
+    </section>
+
+    <section class="calendar-results" aria-labelledby="scheduleTitle">
+      <div class="calendar-section-heading">
+        <div><p class="section-eyebrow">Programación</p><h2 id="scheduleTitle" class="section-title">TODOS LOS PARTIDOS</h2></div>
+        <p id="scheduleCount" aria-live="polite"></p>
+      </div>
+      <div id="scheduleGrid" class="schedule-grid"></div>
+      <div id="scheduleEmpty" class="empty-state" hidden>
+        <strong>No hay partidos con esos filtros</strong>
+        <p>Seleccioná otro año, mes, disciplina o formato.</p>
+        <button class="btn-primary" type="button" data-reset-calendar>Ver todo el calendario</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <ul class="footer-links">
+        <li><a href="privacidad.html">Privacidad</a></li>
+        <li><a href="terminos.html">Términos</a></li>
+        <li><a href="contacto.html">Contacto</a></li>
+      </ul>
+      <div class="footer-copy">© 2026 Lidenskap · ITS Arias Balparda · 3ºMK</div>
+    </div>
+  </footer>
+
+  <script src="assets/js/main.js?v=20260723-8"></script>
+</body>
+</html>
