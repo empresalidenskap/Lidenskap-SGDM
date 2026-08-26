@@ -1,8 +1,8 @@
 # Lidenskap — SGDM (Sistema de Gestión Deportiva Modular)
 
-Repositorio del proyecto de egreso del grupo **Lidenskap**, 3.º año de
-**Bachillerato Tecnológico en Tecnologías de la Información** — Instituto
-Tecnológico Superior "Arias-Balparda" (ANEP · UTU), 2026.
+Repositorio del proyecto de egreso del grupo **Lidenskap**, 3roº año de
+**Bachillerato Tecnológico en Tecnologías de la Información** Instituto
+Tecnológico Superior "Arias-Balparda", 2026.
 
 ---
 
