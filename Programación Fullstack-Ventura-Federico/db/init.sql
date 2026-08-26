@@ -1,4 +1,0 @@
--- Esquema y datos de prueba: pendiente de diseño (modelo relacional
--- normalizado, checklist de la Segunda Entrega). Por ahora este archivo
--- solo garantiza que la base "sgdm" exista al levantar el contenedor
--- (la base ya se crea sola vía la variable MYSQL_DATABASE).

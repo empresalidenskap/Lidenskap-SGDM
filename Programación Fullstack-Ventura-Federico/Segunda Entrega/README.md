@@ -4,12 +4,14 @@ Docente: Federico Ventura
 
 Requisitos de la letra de proyecto para esta entrega:
 
-- [ ] Modelo relacional normalizado
-- [ ] DCL implementado
-- [ ] Configuración de usuarios de BD con las restricciones pertinentes
+- [x] Modelo relacional normalizado — `../db/01-schema.sql` (14 tablas, basado
+      en `MER_SGDM_Proyecto.graphml`)
+- [x] DCL implementado — `../db/02-users.sh` (GRANT/REVOKE)
+- [x] Configuración de usuarios de BD con las restricciones pertinentes —
+      usuario `sgdm_app` sin privilegios DDL, solo SELECT/INSERT/UPDATE/DELETE
 - [ ] Implementación de los modelos alineados al modelo relacional
 - [ ] Integración con PHP utilizando POO (mínimo gestión de usuarios funcionando)
-- [ ] Implementación con Apache
+- [x] Implementación con Apache — `../Dockerfile` + `../docker-compose.yml`
 
 ## Correcciones de la primera entrega
 
