@@ -12,8 +12,13 @@ Requisitos de la letra de proyecto para esta entrega:
       niveles: `sgdm_admin` (ALL PRIVILEGES), `sgdm_app` (solo
       SELECT/INSERT/UPDATE/DELETE, sin DDL) y `sgdm_consulta` (SELECT de solo
       lectura, limitado a las tablas de datos públicos)
-- [ ] Implementación de los modelos alineados al modelo relacional
-- [ ] Integración con PHP utilizando POO (mínimo gestión de usuarios funcionando)
+- [x] Implementación de los modelos alineados al modelo relacional —
+      `../app/src/Models/` (una clase por tabla, 16 en total, con una clase
+      base `Model` compartida)
+- [x] Integración con PHP utilizando POO (mínimo gestión de usuarios
+      funcionando) — `../app/api/register.php` y `../app/api/login.php`,
+      contraseñas con `password_hash`/`password_verify`, conectados al
+      modal de login/registro del front-end (antes era 100% simulado)
 - [x] Implementación con Apache — `../Dockerfile` + `../docker-compose.yml`
 
 ## Correcciones de la primera entrega

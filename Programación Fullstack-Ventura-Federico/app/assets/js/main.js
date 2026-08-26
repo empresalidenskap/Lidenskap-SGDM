@@ -619,13 +619,6 @@ if (sportsScrollMenu) {
    LIDENSKAP — SISTEMA DE AUTENTICACIÓN POR ROLES (INGENIERÍA)
    ============================================================ */
 
-const BASE_DATOS_SIMULADA = {
-  'admin@lidenskap.com': { pass: 'admin123', email: 'admin@lidenskap.com', nombre: 'Administrador General', rol: 'ADMIN', rolNombre: 'Administrador general', iniciales: 'AG' },
-  'organizador@lidenskap.com': { pass: 'org123', email: 'organizador@lidenskap.com', nombre: 'Organizador de Torneo', rol: 'ORGANIZADOR', rolNombre: 'Organizador de torneo', iniciales: 'OT' },
-  'atleta@lidenskap.com': { pass: 'user123', email: 'atleta@lidenskap.com', nombre: 'Diego Silva', rol: 'PARTICIPANTE', rolNombre: 'Participante', iniciales: 'DS' },
-  'publico@lidenskap.com': { pass: 'guest123', email: 'publico@lidenskap.com', nombre: 'Usuario Público', rol: 'PUBLICO', rolNombre: 'Usuario público', iniciales: 'UP' }
-};
-
 const SGDM_PERMISSIONS = {
   ADMIN: ['view_public', 'view_profile', 'edit_profile', 'create_tournament', 'manage_tournaments', 'manage_users', 'manage_participants', 'manage_results', 'view_reports', 'view_audit', 'manage_settings'],
   ORGANIZADOR: ['view_public', 'view_profile', 'manage_tournaments', 'manage_participants', 'manage_results', 'view_reports'],
@@ -635,10 +628,8 @@ const SGDM_PERMISSIONS = {
 
 function readSession() {
   try {
-    const stored = sessionStorage.getItem('lidenskap-session');
-    if (!stored) return null;
-    const parsed = JSON.parse(stored);
-    return BASE_DATOS_SIMULADA[parsed.email] ? { ...BASE_DATOS_SIMULADA[parsed.email], pass: undefined } : null;
+    const stored = sessionStorage.getItem('lidenskap-user');
+    return stored ? JSON.parse(stored) : null;
   } catch { return null; }
 }
 
@@ -661,7 +652,7 @@ function createAuthModal() {
         </div>
         <section id="viewLogin">
           <p class="section-eyebrow">Acceso al sistema</p><h2 id="authTitle">INICIAR SESIÓN</h2>
-          <p class="auth-help">Usá una de las cuatro cuentas habilitadas para probar los permisos de cada rol.</p>
+          <p class="auth-help">Ingresá con tu cuenta, o probá una de las cuentas de demostración.</p>
           <form id="loginForm">
             <div class="field"><label for="loginEmail">Correo electrónico</label><input type="email" id="loginEmail" autocomplete="username" required></div>
             <div class="field"><label for="loginPassword">Contraseña</label><input type="password" id="loginPassword" autocomplete="current-password" required></div>
@@ -672,8 +663,16 @@ function createAuthModal() {
         </section>
         <section id="viewRegister" hidden>
           <p class="section-eyebrow">Nueva cuenta</p><h2>REGISTRARSE</h2>
-          <p class="auth-help">Este es el maquetado de registro. En la primera entrega solo están habilitadas las cuatro cuentas de demostración.</p>
-          <form id="registerMockForm"><div class="field"><label for="registerName">Nombre completo</label><input id="registerName" required></div><div class="field"><label for="registerEmail">Correo electrónico</label><input id="registerEmail" type="email" required></div><button class="btn-primary" type="submit">Solicitar registro</button><p id="registerFeedback" class="form-feedback" aria-live="polite"></p></form>
+          <p class="auth-help">Se crea como cuenta de Participante.</p>
+          <form id="registerForm">
+            <div class="field"><label for="registerNombre">Nombre</label><input id="registerNombre" autocomplete="given-name" required></div>
+            <div class="field"><label for="registerApellido">Apellido</label><input id="registerApellido" autocomplete="family-name" required></div>
+            <div class="field"><label for="registerEmail">Correo electrónico</label><input id="registerEmail" type="email" autocomplete="username" required></div>
+            <div class="field"><label for="registerPassword">Contraseña</label><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required></div>
+            <p id="registerError" class="auth-error" hidden></p>
+            <button class="btn-primary" type="submit">Crear cuenta</button>
+            <p id="registerFeedback" class="form-feedback" aria-live="polite"></p>
+          </form>
         </section>
       </div>
     </div>`);
@@ -699,7 +698,7 @@ function openAuthModal(mode = 'login', returnTo = '') {
   const modal = document.getElementById('loginModal');
   modal?.classList.add('active');
   modal?.setAttribute('aria-hidden', 'false');
-  setTimeout(() => document.getElementById(mode === 'register' ? 'registerName' : 'loginEmail')?.focus(), 0);
+  setTimeout(() => document.getElementById(mode === 'register' ? 'registerNombre' : 'loginEmail')?.focus(), 0);
 }
 
 function closeAuthModal() {
@@ -718,24 +717,74 @@ function initializeAuthentication() {
   document.getElementById('tabLogin')?.addEventListener('click', () => setAuthTab('login'));
   document.getElementById('tabRegister')?.addEventListener('click', () => setAuthTab('register'));
 
-  document.getElementById('loginForm')?.addEventListener('submit', event => {
+  document.getElementById('loginForm')?.addEventListener('submit', async event => {
     event.preventDefault();
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const loginError = document.getElementById('loginError');
+    loginError.hidden = true;
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
     const password = document.getElementById('loginPassword').value;
-    const account = BASE_DATOS_SIMULADA[email];
-    if (!account || account.pass !== password) {
-      document.getElementById('loginError').hidden = false;
-      return;
+
+    submitBtn.disabled = true;
+    try {
+      const response = await fetch('api/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+      if (!data.success) {
+        loginError.textContent = data.error || 'Correo o contraseña incorrectos.';
+        loginError.hidden = false;
+        return;
+      }
+      sessionStorage.setItem('lidenskap-user', JSON.stringify(data.user));
+      sesionUsuario = data.user;
+      const destination = authReturnTo || (sesionUsuario.rol === 'ADMIN' || sesionUsuario.rol === 'ORGANIZADOR' ? 'panel.html' : 'perfil.html');
+      window.location.href = destination;
+    } catch {
+      loginError.textContent = 'No se pudo conectar con el servidor. Intentá de nuevo.';
+      loginError.hidden = false;
+    } finally {
+      submitBtn.disabled = false;
     }
-    sessionStorage.setItem('lidenskap-session', JSON.stringify({ email }));
-    sesionUsuario = { ...account, pass: undefined };
-    const destination = authReturnTo || (sesionUsuario.rol === 'ADMIN' || sesionUsuario.rol === 'ORGANIZADOR' ? 'panel.html' : 'perfil.html');
-    window.location.href = destination;
   });
 
-  document.getElementById('registerMockForm')?.addEventListener('submit', event => {
+  document.getElementById('registerForm')?.addEventListener('submit', async event => {
     event.preventDefault();
-    document.getElementById('registerFeedback').textContent = 'Solicitud registrada en el prototipo. Para ingresar, utilizá una cuenta de demostración.';
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    const registerError = document.getElementById('registerError');
+    const registerFeedback = document.getElementById('registerFeedback');
+    registerError.hidden = true;
+    registerFeedback.textContent = '';
+
+    const nombre = document.getElementById('registerNombre').value.trim();
+    const apellido = document.getElementById('registerApellido').value.trim();
+    const email = document.getElementById('registerEmail').value.trim().toLowerCase();
+    const password = document.getElementById('registerPassword').value;
+
+    submitBtn.disabled = true;
+    try {
+      const response = await fetch('api/register.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, apellido, email, password })
+      });
+      const data = await response.json();
+      if (!data.success) {
+        registerError.textContent = data.error || 'No se pudo crear la cuenta.';
+        registerError.hidden = false;
+        return;
+      }
+      sessionStorage.setItem('lidenskap-user', JSON.stringify(data.user));
+      sesionUsuario = data.user;
+      window.location.href = authReturnTo || 'perfil.html';
+    } catch {
+      registerError.textContent = 'No se pudo conectar con el servidor. Intentá de nuevo.';
+      registerError.hidden = false;
+    } finally {
+      submitBtn.disabled = false;
+    }
   });
 
   const accountButton = document.querySelector('nav .btn-outline');
@@ -748,7 +797,7 @@ function initializeAuthentication() {
       logout.type = 'button';
       logout.className = 'nav-logout';
       logout.textContent = 'Salir';
-      logout.addEventListener('click', () => { sessionStorage.removeItem('lidenskap-session'); window.location.href = 'index.html'; });
+      logout.addEventListener('click', () => { sessionStorage.removeItem('lidenskap-user'); window.location.href = 'index.html'; });
       accountButton.parentElement?.insertBefore(logout, accountButton.nextSibling);
     } else {
       accountButton.href = '#iniciar-sesion';
@@ -1437,7 +1486,7 @@ function initializeProfileEditor() {
     document.getElementById('profileHeading').textContent = updated.nombre.toUpperCase();
     document.getElementById('profileFeedback').textContent = 'Cambios guardados en este dispositivo.';
   });
-  document.getElementById('profileLogout')?.addEventListener('click', () => { sessionStorage.removeItem('lidenskap-session'); window.location.href = 'index.html'; });
+  document.getElementById('profileLogout')?.addEventListener('click', () => { sessionStorage.removeItem('lidenskap-user'); window.location.href = 'index.html'; });
 }
 
 function initializeDashboardByRole() {

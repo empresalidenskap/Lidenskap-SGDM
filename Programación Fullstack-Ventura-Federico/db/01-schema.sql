@@ -197,5 +197,7 @@ CREATE TABLE tabla_posiciones (
         ON DELETE CASCADE
 );
 
--- Roles base ---------------------------------------------------------------
-INSERT INTO rol (nombre_rol) VALUES ('administrador'), ('organizador'), ('jugador');
+-- Roles base -----------------------------------------------------------
+-- Los 4 roles que ya usa el front-end (SGDM_PERMISSIONS en main.js): el
+-- código va en mayúsculas porque main.js lo usa tal cual, sin traducir.
+INSERT INTO rol (nombre_rol) VALUES ('ADMIN'), ('ORGANIZADOR'), ('PARTICIPANTE'), ('PUBLICO');

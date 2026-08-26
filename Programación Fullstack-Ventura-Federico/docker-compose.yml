@@ -1,6 +1,7 @@
 services:
   web:                          # Apache + PHP
     build: .
+    env_file: .env
     ports:
       - "80:80"
     volumes:
