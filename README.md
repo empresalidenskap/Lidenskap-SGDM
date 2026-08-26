@@ -1,4 +1,4 @@
-# Lidenskap — SGDM (Sistema de Gestión Deportiva Modular)
+# Lidenskap SGDM (Sistema de Gestión Deportiva Modular)
 
 Repositorio del proyecto de egreso del grupo **Lidenskap**, 3roº año de
 **Bachillerato Tecnológico en Tecnologías de la Información** Instituto
