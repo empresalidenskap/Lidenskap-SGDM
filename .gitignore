@@ -1,0 +1,30 @@
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+*~
+
+# Entorno y credenciales — nunca subir al repositorio
+.env
+.env.*
+config/database.php
+*.pem
+*.key
+
+# Dependencias
+/vendor/
+/node_modules/
+
+# Logs y temporales
+*.log
+/tmp/
+/logs/
+
+# Respaldos de base de datos
+*.sql.gz
+/backups/
