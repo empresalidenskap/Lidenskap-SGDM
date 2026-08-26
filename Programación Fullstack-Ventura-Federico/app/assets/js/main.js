@@ -12,17 +12,17 @@
 /* ---- DATOS DEL CARRUSEL ---- */
 const imagenes = [
   {
-    url: 'img/imagen1.jpg',
+    url: 'assets/img/imagen1.jpg',
     nombre: 'Competencias Deportivas',
     descripcion: 'Organizá torneos de fútbol, básquetbol, voleibol y más disciplinas físicas con gestión automática de fixtures y tablas de posiciones.'
   },
   {
-    url: 'img/imagen2.jpg',
+    url: 'assets/img/imagen2.jpg',
     nombre: 'Torneos de Fútbol',
     descripcion: 'Generación automática de calendarios, llaves y clasificaciones. Gestión completa desde la inscripción hasta el campeón.'
   },
   {
-    url: 'img/imagen3.jpg',
+    url: 'assets/img/imagen3.jpg',
     nombre: 'Deportes de Red',
     descripcion: 'Voleibol, tenis y más. El sistema se adapta a cualquier disciplina con módulos de Liga, Eliminación o Sistema Suizo.'
   }
@@ -115,16 +115,16 @@ renderSlide(actual);
 if (logoImg) {
   logoImg.src =
     document.documentElement.dataset.theme === 'dark'
-      ? 'img/logodark.png'
-      : 'img/logo.png';
+      ? 'assets/img/logodark.png'
+      : 'assets/img/logo.png';
 
 
     }
 if (ilustracion) {
   ilustracion.src =
   document.documentElement.dataset.theme === 'dark'
-  ? 'img/ilustracion-dark.png'
-      : 'img/ilustracion.png';
+  ? 'assets/img/ilustracion-dark.png'
+      : 'assets/img/ilustracion.png';
 }
 
 
@@ -141,15 +141,15 @@ function toggleTheme() {
       themeBtn.textContent = '🌙';
       themeBtn.setAttribute('aria-label', 'Activar modo oscuro');
     }
-    if (logoImg) logoImg.src = 'img/logo.png';
-    if (ilustracion) ilustracion.src = 'img/ilustracion.png';
+    if (logoImg) logoImg.src = 'assets/img/logo.png';
+    if (ilustracion) ilustracion.src = 'assets/img/ilustracion.png';
   } else {
     if (themeBtn) {
       themeBtn.textContent = '☀';
       themeBtn.setAttribute('aria-label', 'Activar modo claro');
     }
-    if (logoImg) logoImg.src = 'img/logodark.png';
-    if (ilustracion) ilustracion.src = 'img/ilustracion-dark.png';
+    if (logoImg) logoImg.src = 'assets/img/logodark.png';
+    if (ilustracion) ilustracion.src = 'assets/img/ilustracion-dark.png';
   }
 
   try { localStorage.setItem('lidenskap-theme', nextTheme); } catch {}
@@ -168,8 +168,8 @@ function initializeTheme() {
     themeBtn.setAttribute('aria-label', initialTheme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro');
     themeBtn.addEventListener('click', toggleTheme);
   }
-  if (logoImg) logoImg.src = initialTheme === 'dark' ? 'img/logodark.png' : 'img/logo.png';
-  if (ilustracion) ilustracion.src = initialTheme === 'dark' ? 'img/ilustracion-dark.png' : 'img/ilustracion.png';
+  if (logoImg) logoImg.src = initialTheme === 'dark' ? 'assets/img/logodark.png' : 'assets/img/logo.png';
+  if (ilustracion) ilustracion.src = initialTheme === 'dark' ? 'assets/img/ilustracion-dark.png' : 'assets/img/ilustracion.png';
 }
 
 initializeTheme();
