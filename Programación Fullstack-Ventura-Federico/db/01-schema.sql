@@ -99,11 +99,18 @@ CREATE TABLE modulo_competencia (
 );
 
 -- TORNEO -------------------------------------------------------------------
+-- descripcion/sede/cupo_maximo no estaban en el MER original: se agregan
+-- porque el formulario real de creación de torneo (crear-competencia.html)
+-- los pide como campos obligatorios. Ver MER_SGDM_Proyecto.graphml, que
+-- se actualizó con estos 3 atributos para no quedar desalineado del SQL.
 CREATE TABLE torneo (
     id_torneo             INT AUTO_INCREMENT PRIMARY KEY,
     id_tipo_torneo        INT NOT NULL,
     id_usuario_organizador INT NOT NULL,
     nombre_torneo         VARCHAR(150) NOT NULL,
+    descripcion           TEXT,
+    sede                  VARCHAR(150),
+    cupo_maximo           INT,
     fecha_inicio          DATE,
     fecha_fin             DATE,
     estado                ENUM('planificado', 'en_curso', 'finalizado', 'cancelado') NOT NULL DEFAULT 'planificado',
@@ -201,3 +208,20 @@ CREATE TABLE tabla_posiciones (
 -- Los 4 roles que ya usa el front-end (SGDM_PERMISSIONS en main.js): el
 -- código va en mayúsculas porque main.js lo usa tal cual, sin traducir.
 INSERT INTO rol (nombre_rol) VALUES ('ADMIN'), ('ORGANIZADOR'), ('PARTICIPANTE'), ('PUBLICO');
+
+-- Catálogo de formatos de torneo -----------------------------------------
+-- Los 3 formatos obligatorios según la letra del proyecto (liga,
+-- eliminación directa, sistema suizo). "Fase de grupos + playoffs" queda
+-- fuera: la letra la lista como formato opcional/fuera de esta etapa.
+INSERT INTO tipo_torneo (nombre_tipo, descripcion) VALUES
+    ('Liga', 'Todos contra todos'),
+    ('Eliminación Directa', 'Llaves de eliminación directa'),
+    ('Sistema Suizo', 'Emparejamiento por rendimiento acumulado');
+
+-- Catálogo de disciplinas --------------------------------------------
+-- Las mismas 7 que ya ofrece el <select> de crear-competencia.html /
+-- torneos.html. "Personalizada/Custom" no se precarga: se crea al vuelo
+-- cuando alguien la escribe en el formulario.
+INSERT INTO modulo_competencia (nombre_modulo) VALUES
+    ('Fútbol'), ('Básquetbol'), ('Ajedrez'), ('Tenis'),
+    ('Esports'), ('Voleibol'), ('Rugby');

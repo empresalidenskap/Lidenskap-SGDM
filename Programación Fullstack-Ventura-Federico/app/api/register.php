@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/autoload.php';
 
+use App\Auth;
 use App\Models\Rol;
 use App\Models\Usuario;
 use App\RoleLabels;
@@ -72,14 +73,18 @@ $idUsuario = Usuario::create([
 
 $iniciales = strtoupper(mb_substr($nombre, 0, 1) . mb_substr($apellido, 0, 1));
 
+$usuarioSesion = [
+    'id_usuario' => $idUsuario,
+    'nombre' => $nombre,
+    'email' => $email,
+    'rol' => 'PUBLICO',
+    'rolNombre' => RoleLabels::forCode('PUBLICO'),
+    'iniciales' => $iniciales,
+];
+
+Auth::login($usuarioSesion);
+
 echo json_encode([
     'success' => true,
-    'user' => [
-        'id_usuario' => $idUsuario,
-        'nombre' => $nombre,
-        'email' => $email,
-        'rol' => 'PUBLICO',
-        'rolNombre' => RoleLabels::forCode('PUBLICO'),
-        'iniciales' => $iniciales,
-    ],
+    'user' => $usuarioSesion,
 ]);

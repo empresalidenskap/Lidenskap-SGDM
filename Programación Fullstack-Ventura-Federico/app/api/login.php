@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/autoload.php';
 
+use App\Auth;
 use App\Models\Rol;
 use App\Models\Usuario;
 use App\RoleLabels;
@@ -41,14 +42,18 @@ $rol = Rol::find((int) $usuario['id_rol']);
 $rolCodigo = $rol['nombre_rol'] ?? 'PUBLICO';
 $iniciales = strtoupper(mb_substr($usuario['nombre'], 0, 1) . mb_substr($usuario['apellido'], 0, 1));
 
+$usuarioSesion = [
+    'id_usuario' => (int) $usuario['id_usuario'],
+    'nombre' => $usuario['nombre'],
+    'email' => $usuario['email'],
+    'rol' => $rolCodigo,
+    'rolNombre' => RoleLabels::forCode($rolCodigo),
+    'iniciales' => $iniciales,
+];
+
+Auth::login($usuarioSesion);
+
 echo json_encode([
     'success' => true,
-    'user' => [
-        'id_usuario' => (int) $usuario['id_usuario'],
-        'nombre' => $usuario['nombre'],
-        'email' => $usuario['email'],
-        'rol' => $rolCodigo,
-        'rolNombre' => RoleLabels::forCode($rolCodigo),
-        'iniciales' => $iniciales,
-    ],
+    'user' => $usuarioSesion,
 ]);

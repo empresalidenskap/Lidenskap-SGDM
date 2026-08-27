@@ -69,7 +69,7 @@
     <div id="unauthorizedBox" class="surface-card empty-state" hidden>
       <div class="empty-icon">🔒</div>
       <h2>ACCESO RESTRENGIDO</h2>
-      <p>Solo los usuarios con el rol de <strong>Organizador</strong> tienen permisos para crear y gestionar torneos en Lidenskap.</p>
+      <p>Solo los usuarios con el rol de <strong>Administrador general</strong> tienen permisos para crear torneos en Lidenskap.</p>
       <div class="form-actions" style="margin-top: 1.5rem; justify-content: center;">
         <a href="perfil.html" class="btn-primary">Ver mi Perfil</a>
         <a href="index.html" class="btn-secondary">Volver al Inicio</a>
@@ -147,7 +147,6 @@
               <select id="formatSelect" name="format" required>
                 <option value="liga">Liga (Todos contra todos)</option>
                 <option value="eliminacion">Eliminación Directa (Playoffs)</option>
-                <option value="grupos_playoffs">Fase de Grupos + Playoffs</option>
                 <option value="suizo">Sistema Suizo</option>
               </select>
             </div>
@@ -174,9 +173,9 @@
         <fieldset class="form-section field-full">
           <legend>Reglamento Oficial</legend>
           <div class="field field-full">
-            <label for="rulesFile">Subir documento de Reglamento (PDF) *</label>
-            <input type="file" id="rulesFile" name="rulesFile" accept=".pdf" required>
-            <small class="helper-text">Formatos permitidos: .pdf (Tamaño máximo: 5MB)</small>
+            <label for="rulesFile">Subir documento de Reglamento (PDF)</label>
+            <input type="file" id="rulesFile" name="rulesFile" accept=".pdf">
+            <small class="helper-text">Formatos permitidos: .pdf (Tamaño máximo: 5MB). El almacenamiento de archivos todavía no está implementado — este campo no se guarda por ahora.</small>
           </div>
         </fieldset>
 

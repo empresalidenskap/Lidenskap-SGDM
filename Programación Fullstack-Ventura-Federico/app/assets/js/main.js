@@ -633,6 +633,12 @@ function readSession() {
   } catch { return null; }
 }
 
+function cerrarSesion() {
+  fetch('api/logout.php', { method: 'POST' }).catch(() => {});
+  sessionStorage.removeItem('lidenskap-user');
+  window.location.href = 'index.html';
+}
+
 let sesionUsuario = readSession();
 let authReturnTo = '';
 
@@ -797,7 +803,7 @@ function initializeAuthentication() {
       logout.type = 'button';
       logout.className = 'nav-logout';
       logout.textContent = 'Salir';
-      logout.addEventListener('click', () => { sessionStorage.removeItem('lidenskap-user'); window.location.href = 'index.html'; });
+      logout.addEventListener('click', cerrarSesion);
       accountButton.parentElement?.insertBefore(logout, accountButton.nextSibling);
     } else {
       accountButton.href = '#iniciar-sesion';
@@ -1084,47 +1090,67 @@ function statusClass(status) {
   return status === 'abierto' ? 'status-open' : status === 'curso' ? 'status-progress' : 'status-closed';
 }
 
+// Mapeo del estado real de torneo (planificado/en_curso/finalizado/
+// cancelado) al vocabulario que ya usa la UI de filtros (abierto/curso/
+// cerrado), para no tener que rehacer el <select> de torneos.html.
+const ESTADO_TORNEO_A_UI = {
+  planificado: 'abierto',
+  en_curso: 'curso',
+  finalizado: 'cerrado',
+  cancelado: 'cerrado',
+};
+const ESTADO_UI_LABEL = { abierto: 'Inscripciones abiertas', curso: 'En curso', cerrado: 'Finalizado' };
+const FORMATO_LABEL = { liga: 'Liga', eliminacion: 'Eliminación Directa', suizo: 'Sistema Suizo' };
+
 function initializeTournamentSearch() {
   const grid = document.getElementById('tournamentGrid');
   if (!grid) return;
   const search = document.getElementById('tournamentSearch');
   const discipline = document.getElementById('disciplineFilter');
-  const game = document.getElementById('gameFilter');
   const format = document.getElementById('formatFilter');
   const status = document.getElementById('statusFilter');
   const count = document.getElementById('resultsCount');
   const empty = document.getElementById('emptyResults');
   const params = new URLSearchParams(window.location.search);
   if (params.get('disciplina')) discipline.value = params.get('disciplina');
-  if (params.get('juego')) game.value = params.get('juego');
   if (params.get('formato')) format.value = params.get('formato');
+
+  let torneos = [];
 
   const render = () => {
     const query = search.value.trim().toLocaleLowerCase('es');
-    const filtered = SGDM_TOURNAMENTS.filter(t =>
-      (!query || `${t.name} ${t.venue} ${t.disciplineLabel} ${t.game || ''}`.toLocaleLowerCase('es').includes(query)) &&
-      (!discipline.value || t.discipline === discipline.value) &&
-      (!game.value || t.gameSlug === game.value) &&
-      (!format.value || t.format === format.value) &&
-      (!status.value || t.status === status.value)
-    );
-    grid.innerHTML = filtered.map(t => `
+    const filtered = torneos.filter(t => {
+      const estadoUi = ESTADO_TORNEO_A_UI[t.estado] || 'cerrado';
+      return (!query || `${t.nombre} ${t.sede || ''} ${t.disciplinaNombre || ''}`.toLocaleLowerCase('es').includes(query)) &&
+        (!discipline.value || t.disciplina === discipline.value) &&
+        (!format.value || t.formato === format.value) &&
+        (!status.value || estadoUi === status.value);
+    });
+    grid.innerHTML = filtered.map(t => {
+      const estadoUi = ESTADO_TORNEO_A_UI[t.estado] || 'cerrado';
+      const cupos = t.cupoMaximo ? `${t.inscriptos} / ${t.cupoMaximo}` : `${t.inscriptos}`;
+      return `
       <article class="tournament-card">
-        <div class="card-top"><span class="status-pill ${statusClass(t.status)}">${t.statusLabel}</span><span class="neutral-pill">${t.formatLabel}</span></div>
-        <div class="card-category-line"><p class="section-eyebrow">${t.disciplineLabel}</p>${t.game ? `<span class="game-badge game-${t.gameSlug}">${t.game}</span>` : ''}</div><h3>${t.name}</h3><p>${t.description}</p>
-        <dl class="card-meta"><div><dt>Inicio</dt><dd>${t.date}</dd></div><div><dt>Cupos</dt><dd>${t.slots}</dd></div><div><dt>Sede</dt><dd>${t.venue}</dd></div></dl>
+        <div class="card-top"><span class="status-pill ${statusClass(estadoUi)}">${ESTADO_UI_LABEL[estadoUi]}</span><span class="neutral-pill">${FORMATO_LABEL[t.formato] || t.formatoNombre}</span></div>
+        <div class="card-category-line"><p class="section-eyebrow">${t.disciplinaNombre || 'Personalizada'}</p></div><h3>${t.nombre}</h3><p>${t.descripcion || ''}</p>
+        <dl class="card-meta"><div><dt>Inicio</dt><dd>${t.fechaInicio || 'A definir'}</dd></div><div><dt>Cupos</dt><dd>${cupos}</dd></div><div><dt>Sede</dt><dd>${t.sede || 'A definir'}</dd></div></dl>
         <a class="btn-primary" href="detalle-torneo.html?id=${t.id}">Ver detalle</a>
-      </article>`).join('');
+      </article>`;
+    }).join('');
     count.textContent = `${filtered.length} ${filtered.length === 1 ? 'torneo encontrado' : 'torneos encontrados'}`;
     empty.hidden = filtered.length !== 0;
     grid.hidden = filtered.length === 0;
   };
 
-  [search, discipline, game, format, status].forEach(control => control.addEventListener(control === search ? 'input' : 'change', render));
-  const clear = () => { search.value = ''; discipline.value = ''; game.value = ''; format.value = ''; status.value = ''; render(); };
+  [search, discipline, format, status].forEach(control => control.addEventListener(control === search ? 'input' : 'change', render));
+  const clear = () => { search.value = ''; discipline.value = ''; format.value = ''; status.value = ''; render(); };
   document.getElementById('clearFilters')?.addEventListener('click', clear);
   document.querySelector('[data-clear-filters]')?.addEventListener('click', clear);
-  render();
+
+  fetch('api/torneos.php')
+    .then(response => response.json())
+    .then(data => { torneos = data.success ? data.torneos : []; render(); })
+    .catch(() => { torneos = []; render(); });
 }
 
 function initializeCalendar() {
@@ -1268,9 +1294,9 @@ function initializeCalendar() {
 function initializeTournamentDetail() {
   if (document.body.dataset.page !== 'tournament-detail') return;
   const id = new URLSearchParams(window.location.search).get('id');
-  const tournament = SGDM_TOURNAMENTS.find(t => t.id === id);
   const detailPage = document.querySelector('.detail-page');
-  if (!tournament || !SGDM_TOURNAMENT_DETAILS[tournament.id]) {
+
+  const showNotFound = () => {
     document.title = 'Torneo no encontrado — Lidenskap';
     if (detailPage) detailPage.innerHTML = `
       <a class="back-link" href="torneos.html">← Volver a torneos</a>
@@ -1281,114 +1307,57 @@ function initializeTournamentDetail() {
         <p>La competencia solicitada no existe o todavía no fue publicada.</p>
         <div class="card-actions"><a class="btn-primary" href="torneos.html">Buscar torneos</a><a class="btn-secondary" href="index.html">Volver al inicio</a></div>
       </section>`;
-    return;
-  }
-  const detail = SGDM_TOURNAMENT_DETAILS[tournament.id];
-  const [registered, capacity] = tournament.slots.split('/').map(value => Number(value.trim()));
-  const available = Math.max(capacity - registered, 0);
-  const availabilityText = tournament.status === 'cerrado' ? 'TORNEO FINALIZADO' : tournament.status === 'curso' ? 'INSCRIPCIONES CERRADAS' : available === 0 ? 'CUPO COMPLETO' : `${available} ${available === 1 ? 'CUPO DISPONIBLE' : 'CUPOS DISPONIBLES'}`;
-  const values = {
-    detailName: tournament.name, detailDiscipline: tournament.disciplineLabel, detailFormat: tournament.formatLabel, detailStatus: tournament.statusLabel,
-    detailDescription: tournament.description, detailDate: tournament.date.toUpperCase(), detailVenue: tournament.venue.toUpperCase(), detailSlots: tournament.slots,
-    detailOrganizer: detail.organizer, detailMode: detail.mode, detailScoring: detail.scoring, detailDuration: detail.duration, detailTiebreak: detail.tiebreak,
-    detailAvailability: availabilityText, detailParticipantsTitle: detail.participantLabel,
-    detailMatchesTitle: tournament.status === 'abierto' ? 'PRÓXIMOS PARTIDOS' : 'PARTIDOS Y RESULTADOS'
   };
-  Object.entries(values).forEach(([elementId, value]) => { const element = document.getElementById(elementId); if (element) element.textContent = value; });
-  const statusElement = document.getElementById('detailStatus');
-  if (statusElement) statusElement.className = `status-pill ${statusClass(tournament.status)}`;
-  const bracketSection = document.getElementById('detailBracket');
-  if (bracketSection) bracketSection.hidden = tournament.format !== 'eliminacion';
-  const gameElement = document.getElementById('detailGame');
-  const calendarLink = document.getElementById('detailCalendar');
-  if (gameElement) {
-    gameElement.hidden = !tournament.game;
-    gameElement.textContent = tournament.game || '';
-    gameElement.className = `game-badge ${tournament.gameSlug ? `game-${tournament.gameSlug}` : ''}`;
-  }
-  if (calendarLink) {
-    calendarLink.hidden = false;
-    calendarLink.href = `calendario.html?disciplina=${tournament.discipline}${tournament.gameSlug ? `&juego=${tournament.gameSlug}` : ''}`;
-  }
 
-  const matchesContainer = document.getElementById('detailMatches');
-  if (matchesContainer) matchesContainer.innerHTML = detail.matches.map(([date, home, away, score, meta]) => `
-    <article class="${score ? 'match-finished' : 'match-upcoming'}">
-      <time>${date}</time><div class="match-teams"><strong>${home}</strong><span class="match-score">${score || 'VS.'}</span><strong>${away}</strong></div><small>${meta}</small>
-    </article>`).join('');
+  if (!id) { showNotFound(); return; }
 
-  const standingsHead = document.getElementById('detailStandingsHead');
-  if (standingsHead) standingsHead.innerHTML = `<th>Pos.</th><th>${detail.standingLabel}</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>Pts.</th>`;
-  const standingsBody = document.getElementById('detailStandingsBody');
-  if (standingsBody) standingsBody.innerHTML = detail.standings.map((row, index) => `<tr><td>${index + 1}</td><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td><td><strong>${row[5]}</strong></td></tr>`).join('');
+  const ESTADOS = { planificado: 'Inscripciones Abiertas', en_curso: 'En Curso', finalizado: 'Finalizado', cancelado: 'Cancelado' };
+  const FORMATOS = { liga: 'Liga', eliminacion: 'Eliminación Directa', suizo: 'Sistema Suizo' };
+  const set = (elementId, value) => { const el = document.getElementById(elementId); if (el) el.textContent = value; };
 
-  const participantsContainer = document.getElementById('detailParticipants');
-  if (participantsContainer) participantsContainer.innerHTML = detail.participants.map(([name, meta], index) => `<article><span>${String(index + 1).padStart(2, '0')}</span><div><strong>${name}</strong><small>${meta}</small></div></article>`).join('');
+  fetch(`api/torneo.php?id=${encodeURIComponent(id)}`)
+    .then(response => response.json())
+    .then(data => {
+      if (!data.success) { showNotFound(); return; }
+      const t = data.torneo;
 
-  const joinButton = document.getElementById('joinTournament');
-  const joinShortcut = document.getElementById('detailJoinShortcut');
-  const joinExplanation = document.getElementById('joinExplanation');
-  const joinFeedback = document.getElementById('joinFeedback');
-  if (tournament.status !== 'abierto' || available === 0) {
-    if (joinButton) joinButton.hidden = true;
-    if (joinShortcut) joinShortcut.hidden = true;
-    if (joinExplanation) joinExplanation.textContent = tournament.status === 'cerrado' ? 'La competencia finalizó. Consultá arriba sus resultados y participantes.' : tournament.status === 'curso' ? 'La competencia ya comenzó y no admite nuevas inscripciones.' : 'Se alcanzó el cupo máximo de participantes.';
-  } else if (!sesionUsuario) {
-    if (joinButton) joinButton.textContent = 'Iniciar sesión para inscribirme';
-    if (joinExplanation) joinExplanation.textContent = 'Necesitás una cuenta de Participante para solicitar un lugar.';
-    joinButton?.addEventListener('click', () => openAuthModal('login', `detalle-torneo.html?id=${tournament.id}`));
-  } else if (sesionUsuario.rol === 'PARTICIPANTE') {
-    if (joinExplanation) joinExplanation.textContent = 'El organizador revisará tu solicitud antes de confirmar la participación.';
-    joinButton?.addEventListener('click', () => { joinFeedback.textContent = 'Solicitud enviada. El organizador deberá confirmarla.'; joinButton.disabled = true; });
-  } else {
-    if (joinButton) joinButton.hidden = true;
-    if (joinShortcut) joinShortcut.hidden = true;
-    if (joinExplanation) joinExplanation.textContent = sesionUsuario.rol === 'PUBLICO' ? 'Tu cuenta es de consulta pública y no puede realizar inscripciones.' : 'Gestioná las inscripciones de participantes desde el panel correspondiente.';
-  }
-  document.getElementById('shareTournament')?.addEventListener('click', async () => {
-    const feedback = document.getElementById('joinFeedback');
-    try { await navigator.clipboard.writeText(window.location.href); if (feedback) feedback.textContent = 'Enlace del torneo copiado.'; }
-    catch { if (feedback) feedback.textContent = 'Copiá la dirección del navegador para compartir el torneo.'; }
-  });
+      document.title = `${t.nombre} – Lidenskap`;
+      set('detailStatus', ESTADOS[t.estado] || t.estado);
+      set('detailDisciplineTag', t.disciplinaNombre || 'Personalizada');
+      set('detailTitle', t.nombre);
+      set('detailSubtitle', `Organizado por: ${t.organizador}`);
+      set('detailDescription', t.descripcion || 'Sin descripción.');
+      set('detailFormat', FORMATOS[t.formato] || t.formatoNombre);
+      set('detailVenue', t.sede || 'A definir');
+      set('detailStartDate', t.fechaInicio
+        ? new Date(`${t.fechaInicio}T12:00:00`).toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })
+        : 'A definir');
+      set('detailCapacity', t.cupoMaximo ? `${t.cupoMaximo} Equipos/Participantes` : 'Sin límite');
+
+      const confirmados = t.inscriptos.filter(i => i.estado === 'confirmada');
+      set('currentTeamsCount', String(confirmados.length));
+      set('maxTeamsCount', t.cupoMaximo !== null ? String(t.cupoMaximo) : '—');
+
+      const teamsList = document.getElementById('teamsList');
+      if (teamsList) {
+        teamsList.innerHTML = confirmados.length
+          ? confirmados.map(i => `<li><span class="team-bullet">🛡️</span> ${i.nombre}</li>`).join('')
+          : '<li>Todavía no hay inscriptos confirmados.</li>';
+      }
+
+      const registerBtn = document.getElementById('btnRegisterInDetail');
+      if (registerBtn) {
+        if (!sesionUsuario) {
+          registerBtn.textContent = 'Iniciar sesión para inscribirme';
+          registerBtn.addEventListener('click', () => openAuthModal('login', `detalle-torneo.html?id=${t.id}`));
+        } else {
+          registerBtn.addEventListener('click', () => alert('La inscripción de equipos se habilita en la próxima etapa.'));
+        }
+      }
+    })
+    .catch(showNotFound);
 }
 
-function initializeCreateTournament() {
-  const form = document.getElementById('createTournamentForm');
-  if (!form || !hasPermission('create_tournament')) return;
-  const fields = {
-    name: document.getElementById('competitionName'), discipline: document.getElementById('competitionDiscipline'), format: document.getElementById('competitionFormat'), game: document.getElementById('competitionGame'), start: document.getElementById('competitionStart'), capacity: document.getElementById('competitionCapacity'), venue: document.getElementById('competitionVenue')
-  };
-  const gameWrap = document.getElementById('competitionGameWrap');
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('disciplina')) fields.discipline.value = params.get('disciplina');
-  const labelFor = (select) => select.options[select.selectedIndex]?.text || 'Sin definir';
-  const updatePreview = () => {
-    document.getElementById('previewName').textContent = fields.name.value || 'Nombre del torneo';
-    document.getElementById('previewInitial').textContent = (fields.name.value.trim()[0] || '?').toUpperCase();
-    const gameLabel = fields.discipline.value === 'esports' && fields.game.value ? ` · ${fields.game.value}` : '';
-    document.getElementById('previewMeta').textContent = `${labelFor(fields.discipline)}${gameLabel} · ${labelFor(fields.format)}`;
-    document.getElementById('previewDate').textContent = fields.start.value ? new Date(`${fields.start.value}T12:00:00`).toLocaleDateString('es-UY') : 'Sin definir';
-    document.getElementById('previewCapacity').textContent = fields.capacity.value || 'Sin definir';
-    document.getElementById('previewVenue').textContent = fields.venue.value || 'Sin definir';
-  };
-  const updateEsportsFields = () => {
-    const isEsports = fields.discipline.value === 'esports';
-    gameWrap.hidden = !isEsports;
-    fields.game.required = isEsports;
-    if (!isEsports) fields.game.value = '';
-    updatePreview();
-  };
-  Object.values(fields).forEach(field => field.addEventListener(field.tagName === 'SELECT' ? 'change' : 'input', field === fields.discipline ? updateEsportsFields : updatePreview));
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    if (!form.reportValidity()) return;
-    const drafts = JSON.parse(localStorage.getItem('lidenskap-drafts') || '[]');
-    drafts.push(Object.fromEntries(new FormData(form).entries()));
-    localStorage.setItem('lidenskap-drafts', JSON.stringify(drafts));
-    document.getElementById('createFeedback').innerHTML = 'Borrador guardado correctamente. <a href="torneos.html">Volver a los torneos</a>.';
-  });
-  updateEsportsFields();
-}
 
 function initializeContactPrototype() {
   const form = document.getElementById('contactPrototypeForm');
@@ -1486,7 +1455,7 @@ function initializeProfileEditor() {
     document.getElementById('profileHeading').textContent = updated.nombre.toUpperCase();
     document.getElementById('profileFeedback').textContent = 'Cambios guardados en este dispositivo.';
   });
-  document.getElementById('profileLogout')?.addEventListener('click', () => { sessionStorage.removeItem('lidenskap-user'); window.location.href = 'index.html'; });
+  document.getElementById('profileLogout')?.addEventListener('click', cerrarSesion);
 }
 
 function initializeDashboardByRole() {
@@ -1591,47 +1560,69 @@ function initializeDashboardByRole() {
     render();
   };
 
+  const ROL_LABEL = { ADMIN: 'Administrador general', ORGANIZADOR: 'Organizador', PARTICIPANTE: 'Participante', PUBLICO: 'Usuario público' };
+  const ROL_LABEL_A_CODIGO = Object.fromEntries(Object.entries(ROL_LABEL).map(([code, label]) => [label, code]));
+
   if (isAdmin) {
-    const users = [
-      { name: 'Administración General', email: 'admin@lidenskap.com', role: 'Administrador general', status: 'Activo' },
-      { name: 'Organización Lidenskap', email: 'organizador@lidenskap.com', role: 'Organizador', status: 'Activo' },
-      { name: 'Diego Silva', email: 'atleta@lidenskap.com', role: 'Participante', status: 'Activo' },
-      { name: 'Usuario Público', email: 'publico@lidenskap.com', role: 'Usuario público', status: 'Activo' }
-    ];
+    let users = [];
+
     const renderUsers = () => {
       const query = normalize(document.getElementById('usersSearch').value);
       const visible = users.filter(user => !query || normalize(Object.values(user).join(' ')).includes(query));
       document.getElementById('usersCount').textContent = `${visible.length} de ${users.length} usuarios`;
-      document.getElementById('usersTableBody').innerHTML = visible.map(user => `<tr><td><strong>${user.name}</strong></td><td>${user.email}</td><td>${user.role}</td><td><span class="status-pill status-open">${user.status}</span></td><td><div class="table-actions"><button class="table-action" type="button" data-user-edit="${user.email}">Editar</button>${user.email === 'admin@lidenskap.com' ? '' : `<button class="table-action danger-action" type="button" data-user-delete="${user.email}">Eliminar</button>`}</div></td></tr>`).join('');
+      document.getElementById('usersTableBody').innerHTML = visible.map(user => `<tr><td><strong>${user.nombre} ${user.apellido}</strong></td><td>${user.email}</td><td>${ROL_LABEL[user.rol] || user.rol}</td><td><span class="status-pill ${user.estado === 'activo' ? 'status-open' : 'status-closed'}">${user.estado}</span></td><td><div class="table-actions"><button class="table-action" type="button" data-user-edit="${user.id}">Editar</button>${user.id === sesionUsuario.id_usuario || user.estado !== 'activo' ? '' : `<button class="table-action danger-action" type="button" data-user-delete="${user.id}">Desactivar</button>`}</div></td></tr>`).join('');
     };
+
+    const cargarUsuarios = () => fetch('api/usuarios.php')
+      .then(response => response.json())
+      .then(data => { users = data.success ? data.usuarios : []; renderUsers(); });
+
     document.getElementById('usersSearch').addEventListener('input', renderUsers);
     document.getElementById('usersTableBody').addEventListener('click', event => {
       const editButton = event.target.closest('[data-user-edit]');
       const deleteButton = event.target.closest('[data-user-delete]');
       if (editButton) {
-        const user = users.find(item => item.email === editButton.dataset.userEdit);
+        const user = users.find(item => item.id === Number(editButton.dataset.userEdit));
         openPanelForm({
           title: 'EDITAR USUARIO', help: 'Actualiza los datos básicos y el rol asignado.',
-          fields: [{ name: 'name', label: 'Nombre completo' }, { name: 'email', label: 'Correo', type: 'email' }, { name: 'role', label: 'Rol', type: 'select', options: ['Administrador general', 'Organizador', 'Participante', 'Usuario público'], full: true }],
-          values: user,
-          onSubmit: data => { Object.assign(user, data); renderUsers(); showToast('Usuario actualizado en el prototipo.'); }
+          fields: [{ name: 'nombre', label: 'Nombre' }, { name: 'apellido', label: 'Apellido' }, { name: 'email', label: 'Correo', type: 'email' }, { name: 'rol', label: 'Rol', type: 'select', options: Object.values(ROL_LABEL), full: true }],
+          values: { ...user, rol: ROL_LABEL[user.rol] || user.rol },
+          onSubmit: data => {
+            fetch(`api/usuario.php?id=${user.id}`, {
+              method: 'PUT', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ nombre: data.nombre, apellido: data.apellido, email: data.email, rol: ROL_LABEL_A_CODIGO[data.rol] || data.rol }),
+            })
+              .then(response => response.json())
+              .then(result => { showToast(result.success ? 'Usuario actualizado.' : result.error); if (result.success) cargarUsuarios(); });
+          }
         });
       }
       if (deleteButton) {
-        const index = users.findIndex(item => item.email === deleteButton.dataset.userDelete);
-        if (index >= 0 && window.confirm(`¿Eliminar la cuenta ${users[index].email} del prototipo?`)) {
-          users.splice(index, 1);
-          renderUsers();
-          showToast('Usuario eliminado del listado de demostración.');
+        const user = users.find(item => item.id === Number(deleteButton.dataset.userDelete));
+        if (user && window.confirm(`¿Desactivar la cuenta ${user.email}?`)) {
+          fetch(`api/usuario.php?id=${user.id}`, { method: 'DELETE' })
+            .then(response => response.json())
+            .then(result => { showToast(result.success ? 'Usuario desactivado.' : result.error); if (result.success) cargarUsuarios(); });
         }
       }
     });
     document.querySelector('[data-panel-form="user"]')?.addEventListener('click', () => openPanelForm({
-      title: 'CREAR USUARIO ADMINISTRATIVO', help: 'Define la cuenta y su nivel de acceso.',
-      fields: [{ name: 'name', label: 'Nombre completo' }, { name: 'email', label: 'Correo', type: 'email' }, { name: 'role', label: 'Rol', type: 'select', options: ['Administrador general', 'Organizador'], full: true }],
-      onSubmit: data => { users.push({ ...data, status: 'Activo' }); renderUsers(); showToast('Usuario agregado al prototipo.'); }
+      title: 'CREAR USUARIO ADMINISTRATIVO', help: 'Define la cuenta y su nivel de acceso. La contraseña inicial se la comunicás vos a la persona.',
+      fields: [
+        { name: 'nombre', label: 'Nombre' }, { name: 'apellido', label: 'Apellido' },
+        { name: 'email', label: 'Correo', type: 'email' }, { name: 'password', label: 'Contraseña inicial', type: 'password' },
+        { name: 'rol', label: 'Rol', type: 'select', options: ['Administrador general', 'Organizador'], full: true },
+      ],
+      onSubmit: data => {
+        fetch('api/usuarios.php', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...data, rol: ROL_LABEL_A_CODIGO[data.rol] || data.rol }),
+        })
+          .then(response => response.json())
+          .then(result => { showToast(result.success ? 'Usuario creado.' : result.error); if (result.success) cargarUsuarios(); });
+      }
     }));
-    renderUsers();
+    cargarUsuarios();
   }
 
   const assignedIds = ['copa-apertura', 'liga-juvenil', 'open-tenis'];
@@ -1885,113 +1876,61 @@ function initializeCreateTournament() {
   const form = document.getElementById('createTournamentForm');
   if (!form) return;
 
-  const disciplineSelect = document.getElementById('competitionDiscipline');
-  const customDisciplineWrap = document.getElementById('customDisciplineWrap');
+  const disciplineSelect = document.getElementById('disciplineSelect');
+  const customDisciplineGroup = document.getElementById('customDisciplineGroup');
   const customDisciplineInput = document.getElementById('customDisciplineName');
-  const customRulesWrap = document.getElementById('customRulesWrap');
-  const esportsWrap = document.getElementById('competitionGameWrap');
-  
-  // Elementos de la vista previa
-  const previewName = document.getElementById('previewName');
-  const previewMeta = document.getElementById('previewMeta');
-  const nameInput = document.getElementById('competitionName');
-  const formatSelect = document.getElementById('competitionFormat');
+  const esportsGameGroup = document.getElementById('esportsGameGroup');
+  const formatSelect = document.getElementById('formatSelect');
+  const feedback = document.getElementById('formFeedback');
+  const submitBtn = document.getElementById('btnSubmitTournament');
 
-  // Manejar cambio de disciplina
   disciplineSelect.addEventListener('change', (e) => {
     const val = e.target.value;
+    const isCustom = val === 'custom';
+    customDisciplineGroup.hidden = !isCustom;
+    customDisciplineInput.required = isCustom;
+    if (!isCustom) customDisciplineInput.value = '';
 
-    // Mostrar/ocultar campos para "Personalizada"
-    if (val === 'personalizada') {
-      customDisciplineWrap.hidden = false;
-      customRulesWrap.hidden = false;
-      customDisciplineInput.required = true;
-    } else {
-      customDisciplineWrap.hidden = true;
-      customRulesWrap.hidden = true;
-      customDisciplineInput.required = false;
-      customDisciplineInput.value = '';
-    }
-
-    // Mostrar/ocultar campos para "Esports"
-    if (val === 'esports') {
-      if (esportsWrap) esportsWrap.hidden = false;
-    } else {
-      if (esportsWrap) esportsWrap.hidden = true;
-    }
-
-    updatePreview();
+    const isEsports = val === 'esports';
+    if (esportsGameGroup) esportsGameGroup.hidden = !isEsports;
   });
 
-  // Escuchar cambios para la vista previa en tiempo real
-  if (nameInput) nameInput.addEventListener('input', updatePreview);
-  if (formatSelect) formatSelect.addEventListener('change', updatePreview);
-  if (customDisciplineInput) customDisciplineInput.addEventListener('input', updatePreview);
-
-  function updatePreview() {
-    const nameVal = nameInput?.value.trim() || 'Nombre del torneo';
-    let disciplineText = disciplineSelect.options[disciplineSelect.selectedIndex]?.text || 'Disciplina';
-
-    if (disciplineSelect.value === 'personalizada' && customDisciplineInput.value.trim() !== '') {
-      disciplineText = customDisciplineInput.value.trim();
-    }
-
-    const formatText = formatSelect.options[formatSelect.selectedIndex]?.text || 'Formato';
-
-    if (previewName) previewName.textContent = nameVal;
-    if (previewMeta) previewMeta.textContent = `${disciplineText} · ${formatText}`;
-  }
-
-  // Procesar guardado del borrador
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData(form);
-    const tournamentData = Object.fromEntries(formData.entries());
+    if (!form.reportValidity()) return;
+    feedback.textContent = '';
 
-    // Si hay un archivo subido, guardamos su nombre para la demo
-    const fileInput = document.getElementById('competitionRulesFile');
-    if (fileInput && fileInput.files.length > 0) {
-      tournamentData.rulesFileName = fileInput.files[0].name;
-    }
+    const payload = {
+      nombre: document.getElementById('tournamentName').value.trim(),
+      descripcion: document.getElementById('tournamentDescription').value.trim(),
+      disciplina: disciplineSelect.value,
+      disciplinaCustom: customDisciplineInput.value.trim(),
+      formato: formatSelect.value,
+      cupoMaximo: document.getElementById('maxTeams').value,
+      fechaInicio: document.getElementById('startDate').value,
+      sede: document.getElementById('venueName').value.trim(),
+    };
 
-    // Guardar en localStorage para persistencia
-    const savedTournaments = JSON.parse(localStorage.getItem('customTournaments') || '[]');
-    savedTournaments.push({ ...tournamentData, id: Date.now() });
-    localStorage.setItem('customTournaments', JSON.stringify(savedTournaments));
-
-    const feedback = document.getElementById('createFeedback');
-    if (feedback) {
-      feedback.textContent = '¡Competencia guardada con éxito como borrador!';
-      feedback.style.color = 'var(--success, #4caf50)';
-    }
-  });
-}
-function initializeCalendarFilters() {
-  const disciplineChips = document.querySelectorAll('.calendar-discipline-chip');
-  const gameWrap = document.getElementById('calendarGameWrap');
-  const gameSelect = document.getElementById('calendarGame');
-
-  disciplineChips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      // Quitar clase activa de otros chips y ponerla en el clickeado
-      disciplineChips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-
-      const selectedDiscipline = chip.getAttribute('data-calendar-discipline');
-
-      // Mostrar selector de videojuegos SOLO si la disciplina es esports
-      if (selectedDiscipline === 'esports') {
-        if (gameWrap) gameWrap.hidden = false;
-      } else {
-        if (gameWrap) gameWrap.hidden = true;
-        if (gameSelect) gameSelect.value = ''; // Resetea la selección
+    submitBtn.disabled = true;
+    try {
+      const response = await fetch('api/torneos.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!data.success) {
+        feedback.textContent = data.error || 'No se pudo crear el torneo.';
+        feedback.style.color = 'var(--danger, #e05252)';
+        return;
       }
-
-      // Ejecutar la función que filtra la lista de partidos
-      if (typeof renderSchedule === 'function') {
-        renderSchedule();
-      }
-    });
+      window.location.href = `detalle-torneo.html?id=${data.id}`;
+    } catch {
+      feedback.textContent = 'No se pudo conectar con el servidor. Intentá de nuevo.';
+      feedback.style.color = 'var(--danger, #e05252)';
+    } finally {
+      submitBtn.disabled = false;
+    }
   });
 }
 function initializeProfileDropdown() {
@@ -2002,10 +1941,9 @@ function initializeProfileDropdown() {
 
   if (!btn || !menu) return;
 
-  // Cargar e-mail guardado o usar valor por defecto
-  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{"email": "usuario@lidenskap.com"}');
+  // Email de la sesión real (la misma que usa el resto del sitio).
   if (userEmailSpan) {
-    userEmailSpan.textContent = currentUser.email;
+    userEmailSpan.textContent = sesionUsuario?.email || 'usuario@lidenskap.com';
   }
 
   // Alternar apertura/cierre del menú
@@ -2031,34 +1969,11 @@ function initializeProfileDropdown() {
 
   // Evento de Cerrar Sesión
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('currentUser');
-      alert('Sesión cerrada correctamente.');
-      window.location.href = 'index.html';
-    });
+    logoutBtn.addEventListener('click', cerrarSesion);
   }
 }
 
 // Asegurarse de ejecutar la función al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
   initializeProfileDropdown();
-});
-document.addEventListener('DOMContentLoaded', () => {
-  if (document.body.dataset.page === 'create-tournament') {
-    // Ejemplo de verificación de rol desde localStorage o sesión activa
-    const currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-    
-    const formContainer = document.getElementById('createFormContainer');
-    const unauthorizedBox = document.getElementById('unauthorizedBox');
-
-    if (!currentUser || currentUser.role !== 'organizer') {
-      // Si no es organizador, mostramos el mensaje de acceso denegado
-      if (formContainer) formContainer.hidden = true;
-      if (unauthorizedBox) unauthorizedBox.hidden = false;
-    } else {
-      // Si es organizador, mostramos el formulario
-      if (formContainer) formContainer.hidden = false;
-      if (unauthorizedBox) unauthorizedBox.hidden = true;
-    }
-  }
 });
