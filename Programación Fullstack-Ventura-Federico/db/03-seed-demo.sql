@@ -2,6 +2,7 @@
 -- el modal de login del front-end (assets/js/main.js). Los hashes fueron
 -- generados con password_hash() de PHP — nunca se guarda la contraseña
 -- en texto plano, ni siquiera acá.
+SET NAMES utf8mb4;
 USE sgdm;
 
 INSERT INTO usuario (id_rol, nombre, apellido, email, password) VALUES

@@ -27,6 +27,7 @@ function handleList(): void
 {
     $sql = 'SELECT t.id_torneo, t.nombre_torneo, t.descripcion, t.sede,
                    t.cupo_maximo, t.fecha_inicio, t.fecha_fin, t.estado,
+                   t.id_usuario_organizador,
                    tt.nombre_tipo,
                    mc.nombre_modulo,
                    (SELECT COUNT(*) FROM inscripcion i WHERE i.id_torneo = t.id_torneo) AS inscriptos
@@ -79,6 +80,7 @@ function handleList(): void
             'disciplina' => $codigoDisciplina,
             'disciplinaNombre' => $fila['nombre_modulo'],
             'inscriptos' => (int) $fila['inscriptos'],
+            'organizadorId' => (int) $fila['id_usuario_organizador'],
         ];
     }
 

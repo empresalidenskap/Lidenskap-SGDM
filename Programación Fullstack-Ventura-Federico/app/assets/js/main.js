@@ -1627,15 +1627,22 @@ function initializeDashboardByRole() {
 
   const assignedIds = ['copa-apertura', 'liga-juvenil', 'open-tenis'];
   const dashboardTournaments = isAdmin ? SGDM_TOURNAMENTS : SGDM_TOURNAMENTS.filter(tournament => assignedIds.includes(tournament.id));
-  if (!isAdmin) document.getElementById('tournamentsScope').textContent = 'Solo se muestran las competencias asignadas a tu cuenta.';
+  if (!isAdmin) document.getElementById('tournamentsScope').textContent = 'Solo se muestran las competencias que organizás vos.';
+
+  let torneosReales = [];
   const renderTournaments = () => {
     const query = normalize(document.getElementById('panelTournamentSearch').value);
-    const visible = dashboardTournaments.filter(tournament => !query || normalize(`${tournament.name} ${tournament.disciplineLabel}`).includes(query));
+    const propios = isAdmin ? torneosReales : torneosReales.filter(t => t.organizadorId === sesionUsuario.id_usuario);
+    const visible = propios.filter(t => !query || normalize(`${t.nombre} ${t.disciplinaNombre || ''}`).includes(query));
     document.getElementById('panelTournamentsCount').textContent = `${visible.length} torneo${visible.length === 1 ? '' : 's'}`;
-    document.getElementById('panelTournamentsBody').innerHTML = visible.map(tournament => `<tr><td><strong>${tournament.name}</strong></td><td>${tournament.disciplineLabel}</td><td>${tournament.date}</td><td>${tournament.slots}</td><td><span class="status-pill ${statusClass(tournament.status)}">${tournament.statusLabel}</span></td><td><a class="table-action" href="detalle-torneo.html?id=${tournament.id}">Gestionar</a></td></tr>`).join('');
+    document.getElementById('panelTournamentsBody').innerHTML = visible.map(t => {
+      const estadoUi = ESTADO_TORNEO_A_UI[t.estado] || 'cerrado';
+      const cupos = t.cupoMaximo ? `${t.inscriptos} / ${t.cupoMaximo}` : `${t.inscriptos}`;
+      return `<tr><td><strong>${t.nombre}</strong></td><td>${t.disciplinaNombre || 'Personalizada'}</td><td>${t.fechaInicio || 'A definir'}</td><td>${cupos}</td><td><span class="status-pill ${statusClass(estadoUi)}">${ESTADO_UI_LABEL[estadoUi]}</span></td><td><a class="table-action" href="detalle-torneo.html?id=${t.id}">Gestionar</a></td></tr>`;
+    }).join('');
   };
   document.getElementById('panelTournamentSearch').addEventListener('input', renderTournaments);
-  renderTournaments();
+  fetch('api/torneos.php').then(response => response.json()).then(data => { torneosReales = data.success ? data.torneos : []; renderTournaments(); });
 
   const firstNames = ['Lucía', 'Mateo', 'Sofía', 'Diego', 'Valentina', 'Joaquín', 'Camila', 'Nicolás', 'Martina', 'Santiago', 'Agustina', 'Bruno', 'Florencia', 'Emiliano', 'Paula', 'Facundo', 'Martín', 'Ana'];
   const lastNames = ['Fernández', 'Rodríguez', 'Martínez', 'Silva', 'Pérez', 'Sosa', 'Torres', 'Méndez', 'López', 'Costa', 'Ramos', 'Cabrera', 'Núñez', 'Díaz'];

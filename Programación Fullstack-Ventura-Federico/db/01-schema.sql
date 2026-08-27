@@ -6,6 +6,12 @@
 -- directo), y EQUIPO_PARTICIPANTE / TORNEO_MODULO son las tablas
 -- intermedias de las relaciones N:N "Integra" y "Configura" del MER.
 
+-- El cliente mysql que corre este script (docker-entrypoint-initdb.d) usa
+-- latin1 por defecto, no utf8mb4 — sin este SET NAMES, cualquier tilde
+-- literal en un INSERT (Eliminación, Fútbol, etc.) queda guardada con
+-- doble codificación UTF-8 (mojibake) y las búsquedas exactas fallan.
+SET NAMES utf8mb4;
+
 USE sgdm;
 
 -- ROL ------------------------------------------------------------------
