@@ -49,15 +49,21 @@ if (Usuario::findBy('email', $email) !== null) {
     exit;
 }
 
-$rolParticipante = Rol::findBy('nombre_rol', 'PARTICIPANTE');
-if ($rolParticipante === null) {
+// El autorregistro crea una cuenta de Usuario público (ROL-04). Convertirse
+// en Participante (ROL-03) no es una opción del formulario: según la letra
+// del proyecto (Ing. de Software, Bloque B), un Participante es "un atleta
+// INSCRIPTO en uno o más torneos", y es el Organizador quien "inscribe y
+// administra participantes" — o sea, valida y da de alta esa condición,
+// no el propio usuario al crear su cuenta.
+$rolPublico = Rol::findBy('nombre_rol', 'PUBLICO');
+if ($rolPublico === null) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'No se encontró el rol por defecto.']);
     exit;
 }
 
 $idUsuario = Usuario::create([
-    'id_rol' => $rolParticipante['id_rol'],
+    'id_rol' => $rolPublico['id_rol'],
     'nombre' => $nombre,
     'apellido' => $apellido,
     'email' => $email,
@@ -72,8 +78,8 @@ echo json_encode([
         'id_usuario' => $idUsuario,
         'nombre' => $nombre,
         'email' => $email,
-        'rol' => 'PARTICIPANTE',
-        'rolNombre' => RoleLabels::forCode('PARTICIPANTE'),
+        'rol' => 'PUBLICO',
+        'rolNombre' => RoleLabels::forCode('PUBLICO'),
         'iniciales' => $iniciales,
     ],
 ]);

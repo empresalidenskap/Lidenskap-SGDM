@@ -663,7 +663,7 @@ function createAuthModal() {
         </section>
         <section id="viewRegister" hidden>
           <p class="section-eyebrow">Nueva cuenta</p><h2>REGISTRARSE</h2>
-          <p class="auth-help">Se crea como cuenta de Participante.</p>
+          <p class="auth-help">Se crea como cuenta de Usuario público. Para competir en un torneo, un Organizador debe inscribirte y validarte como Participante.</p>
           <form id="registerForm">
             <div class="field"><label for="registerNombre">Nombre</label><input id="registerNombre" autocomplete="given-name" required></div>
             <div class="field"><label for="registerApellido">Apellido</label><input id="registerApellido" autocomplete="family-name" required></div>
