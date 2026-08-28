@@ -54,50 +54,60 @@ materia se separa por entrega:
 │   └── Segunda Entrega/
 ├── Programación Fullstack-Ventura-Federico/
 │   ├── Primera Entrega/
-│   ├── Segunda Entrega/
-│   └── app/                    ← implementación del sistema
+│   └── Segunda Entrega/
+├── SGDM App/                    ← la aplicación en sí (ver más abajo)
 └── Tutoría de Proyecto UTULAB-Flores-Pablo/
     ├── Primera Entrega/
     └── Segunda Entrega/
 ```
 
+`SGDM App/` vive aparte de las carpetas por materia porque es un único
+código que corre para todo el proyecto — no un entregable exclusivo de una
+unidad curricular en particular, aunque su desarrollo se documenta y
+evalúa dentro de Programación Fullstack.
+
 ## La aplicación
 
-El código del sistema vive en
-[`Programación Fullstack-Ventura-Federico/app/`](./Programación%20Fullstack-Ventura-Federico/app/).
+El código del sistema vive en [`SGDM App/`](./SGDM%20App/).
 
 ```
-app/
-├── index.html              Portada
-├── torneos.html            Listado de torneos con filtros
-├── detalle-torneo.html     Ficha de torneo: fixture, resultados, posiciones
-├── crear-competencia.html  Alta y configuración de competencias
-├── calendario.html         Calendario de enfrentamientos
-├── disciplinas.html        Catálogo de disciplinas
-├── panel.html              Panel de administración
-├── perfil.html             Perfil del participante
-├── contacto.html
-├── privacidad.html
-├── terminos.html
-└── assets/
-    ├── css/styles.css
-    ├── js/main.js
-    ├── img/
-    └── icons/
+SGDM App/
+├── app/
+│   ├── index.html              Portada
+│   ├── torneos.html            Listado de torneos con filtros
+│   ├── detalle-torneo.html     Ficha de torneo: fixture, resultados, posiciones
+│   ├── crear-competencia.html  Alta y configuración de competencias
+│   ├── calendario.html         Calendario de enfrentamientos
+│   ├── disciplinas.html        Catálogo de disciplinas
+│   ├── panel.html              Panel de administración
+│   ├── perfil.html             Perfil del participante
+│   ├── contacto.html / privacidad.html / terminos.html
+│   ├── api/                    Endpoints PHP (login, torneos, usuarios...)
+│   ├── src/                    Modelos y clases PHP (POO)
+│   └── assets/
+│       ├── css/styles.css
+│       ├── js/main.js
+│       ├── img/
+│       └── icons/
+├── db/                          Esquema SQL, DCL y datos de prueba
+├── Dockerfile
+└── docker-compose.yml
 ```
 
 ### Cómo levantarlo
 
-Al ser por ahora un frontend estático, alcanza con servir la carpeta `app/`:
+Requiere [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+instalado y corriendo. Desde `SGDM App/`:
 
 ```bash
-cd "Programación Fullstack-Ventura-Federico/app"
-python3 -m http.server 8080
+cd "SGDM App"
+docker compose up -d
 ```
 
-Y abrir <http://localhost:8080>. También puede abrirse `index.html` directo en
-el navegador, aunque se recomienda el servidor local para que las rutas
-relativas se comporten igual que en producción.
+Esperar unos 15-20 segundos a que MySQL inicialice, y abrir
+<http://localhost>. Para bajarlo, `docker compose down`. Detalle completo
+(cuentas de demostración, variables de entorno) en
+[`SGDM App/README.md`](./SGDM%20App/README.md).
 
 ## Estado
 
