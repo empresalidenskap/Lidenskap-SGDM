@@ -3,21 +3,38 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/autoload.php';
 
+use App\Auth;
 use App\Catalogos;
 use App\Database;
+use App\Models\Torneo;
 
 header('Content-Type: application/json; charset=utf-8');
-
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'error' => 'Método no permitido.']);
-    exit;
-}
 
 $id = (int) ($_GET['id'] ?? 0);
 if ($id <= 0) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Falta el id del torneo.']);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    Auth::requireRole('ADMIN');
+    if (Torneo::find($id) === null) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => 'Torneo no encontrado.']);
+        exit;
+    }
+    // Las FK de torneo_modulo/ronda/inscripcion (y en cascada enfrentamiento/
+    // resultado/tabla_posiciones) tienen ON DELETE CASCADE: borrar el torneo
+    // se lleva puesto todo lo que dependía de él, no queda nada huérfano.
+    Torneo::delete($id);
+    echo json_encode(['success' => true]);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Método no permitido.']);
     exit;
 }
 

@@ -1354,6 +1354,24 @@ function initializeTournamentDetail() {
           registerBtn.addEventListener('click', () => alert('La inscripción de equipos se habilita en la próxima etapa.'));
         }
       }
+
+      const deleteBtn = document.getElementById('btnDeleteTournament');
+      if (deleteBtn && sesionUsuario?.rol === 'ADMIN') {
+        deleteBtn.hidden = false;
+        deleteBtn.addEventListener('click', async () => {
+          if (!window.confirm(`¿Eliminar "${t.nombre}"? Esta acción no se puede deshacer.`)) return;
+          deleteBtn.disabled = true;
+          try {
+            const response = await fetch(`api/torneo.php?id=${t.id}`, { method: 'DELETE' });
+            const data = await response.json();
+            if (!data.success) { alert(data.error || 'No se pudo eliminar el torneo.'); deleteBtn.disabled = false; return; }
+            window.location.href = 'torneos.html';
+          } catch {
+            alert('No se pudo conectar con el servidor. Intentá de nuevo.');
+            deleteBtn.disabled = false;
+          }
+        });
+      }
     })
     .catch(showNotFound);
 }
