@@ -1,11 +1,10 @@
-/* ============================================================
-   LIDENSKAP — SGDM  |  styles.css
+/*
+   LIDENSKAP SGDM  |  styles.css
    Paleta: Dark Ruby #70000E · Armor #030303 · Pearl #F5F4F2
            Catacomb Walls #DCD7D4 · Creme White #C3B79D · Meteorite #2C2929
-   Gold accent (logo): #D4A017
-   ============================================================ */
+   Gold accent (logo): #D4A017 */
 
-/* ---------- TOKENS ---------- */
+/*TOKENS*/
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 4rem; 
@@ -62,7 +61,7 @@ html {
   --carrusel-btn-bg: rgba(3,3,3,0.06);
 }
 
-/* ---------- RESET ---------- */
+/* RESET */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
 
@@ -78,7 +77,7 @@ body {
 
 [hidden] { display: none !important; }
 
-/* ---------- STAR BURST ---------- */
+/* STAR BURST */
 #star-container {
   position: fixed;
   inset: 0;
@@ -112,7 +111,7 @@ body {
   }
 }
 
-/* ---------- GOLD ACTIVE EFFECT ---------- */
+/* GOLD ACTIVE EFFECT */
 .gold-active {
   background: var(--gold) !important;
   border-color: var(--gold) !important;
@@ -122,7 +121,7 @@ body {
 
 .gold-active svg { stroke: #030303 !important; }
 
-/* ---------- NAVIGATION ---------- */
+/* NAVIGATION */
 nav {
   position: fixed; top:0; left:0; right:0; z-index:100;
   backdrop-filter: blur(18px);
@@ -199,7 +198,7 @@ nav {
 
 .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
-/* ---------- HERO ---------- */
+/* HERO */
 .hero {
   min-height: 100vh; padding-top: 64px;
   display: flex; flex-direction: column;
@@ -308,9 +307,9 @@ position: relative;
 
 .stat-divider { display: none; width:1px; background: var(--border); align-self:stretch; }
 
-/* ============================================================
+/*
    SPORTS SELECTOR — mobile first
-   ============================================================ */
+   */
 
 /* Sección contenedora */
 .sports-section {
@@ -518,7 +517,7 @@ position: relative;
   transition: width 0.15s ease, transform 0.15s ease;
 }
 
-/* ---------- CARRUSEL SECTION ---------- */
+/* CARRUSEL SECTION */
 .carrusel-section {
   padding: 3rem 2rem 2rem;
   max-width: 1200px; margin: 0 auto;
@@ -650,7 +649,7 @@ position: relative;
   background: var(--gold); width: 24px; border-radius: 4px;
 }
 
-/* ---------- SECTION SHARED ---------- */
+/* SECTION SHARED */
 .section {
   padding: 5rem 2rem; max-width: 1200px; margin: 0 auto;
 }
@@ -679,7 +678,7 @@ position: relative;
 
 .section-link:hover { gap: 0.7rem; }
 
-/* ---------- FORMAT CARDS ---------- */
+/* FORMAT CARDS */
 .formats-grid {
   display: grid; grid-template-columns: 1fr;
   gap: 1px; background: var(--border);
@@ -721,7 +720,7 @@ position: relative;
 
 .format-card:hover .format-tag { border-color: var(--accent); color: var(--accent); }
 
-/* ---------- CTA ---------- */
+/* CTA */
 
 .cta-section {
   padding: 6rem 2rem; background: var(--accent);
@@ -760,7 +759,7 @@ position: relative;
 
 .btn-cta:hover { background: #F5F4F2; color: var(--accent); }
 
-/* ---------- FOOTER ---------- */
+/* FOOTER */
 footer {
   padding: 2.5rem 1rem; background: var(--bg-primary);
   border-top: 1px solid var(--border);
@@ -794,12 +793,12 @@ footer {
 
 .footer-links a:hover { color: var(--accent); }
 
-/* ---------- MISC ---------- */
+/* MISC */
 .full-divider { height: 1px; background: var(--border); }
 
-/* ============================================================
+/*
    RESPONSIVE — mobile first, escala hacia arriba
-   ============================================================ */
+   */
 
 /* --- tablet 600px+ --- */
 @media (min-width: 600px) {
@@ -878,9 +877,9 @@ footer {
   }
 }
 
-/* ============================================================
+/*
    PRIMERA ENTREGA — SISTEMA DE PÁGINAS MOBILE FIRST
-   ============================================================ */
+   */
 
 nav {
   height: 64px;
@@ -1276,7 +1275,7 @@ fieldset legend { margin-bottom: 0.75rem; }
   }
 }
 
-/* ---------- COLUMNA IZQUIERDA (INFORMACIÓN) ---------- */
+/* COLUMNA IZQUIERDA (INFORMACIÓN) */
 .disciplina-info-left {
   display: flex;
   flex-direction: column;
@@ -1342,7 +1341,7 @@ fieldset legend { margin-bottom: 0.75rem; }
   margin-top: 2px;
 }
 
-/* ---------- COLUMNA DERECHA (MÓDULO CONFIGURACIÓN) ---------- */
+/* COLUMNA DERECHA (MÓDULO CONFIGURACIÓN) */
 .disciplina-preview-panel {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
@@ -1407,7 +1406,7 @@ fieldset legend { margin-bottom: 0.75rem; }
     border-radius: 2px;
     transition: 0.3s ease;
 }
-/* ---------- MODAL DE AUTENTICACIÓN INTERACTIVO ---------- */
+/* MODAL DE AUTENTICACIÓN INTERACTIVO */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1561,7 +1560,7 @@ body.light #btnCrearCuentaGratis {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
-/* ---------- MODAL DE TODAS LAS DISCIPLINAS ---------- */
+/* MODAL DE TODAS LAS DISCIPLINAS */
 #modalTodasDisciplinas .modal-content {
   background-color: var(--bg-primary, #121212);
   border: 1px solid var(--border, #2a2a2a);
@@ -1635,9 +1634,9 @@ body.light #btnCrearCuentaGratis {
   transform: translateY(-2px);
 }
 
-/* ============================================================
+/*
    CARRUSEL DE TORNEOS POR DISCIPLINA
-   ============================================================ */
+   */
 
 .torneos-disciplina-section {
   max-width: 1100px;
@@ -1876,9 +1875,9 @@ body.light #btnCrearCuentaGratis {
   .report-grid { grid-template-columns: repeat(4, 1fr); }
   .bracket { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-/* ============================================================
+/*
    AJUSTES NAVEGACIÓN Y BOTONES - ESTILOS SÓLIDOS Y MOBILE-FIRST
-   ============================================================ */
+   */
 
 /* 1. Fondo sólido/definido en la barra de navegación para evitar transparencias al hacer scroll */
 nav {
@@ -1950,9 +1949,9 @@ nav .btn-outline:hover {
     font-size: 0.85rem;
   }
 }
-/* ============================================================
+/*
    MENÚ DESPLEGABLE DE PERFIL (PROFILE DROPDOWN)
-   ============================================================ */
+   */
 
 .profile-dropdown {
   position: relative;
@@ -2044,9 +2043,9 @@ nav .btn-outline:hover {
 .btn-logout:hover {
   background-color: rgba(255, 77, 77, 0.15);
 }
-/* ============================================================
+/*
    ESTILOS DE VISTA DETALLE Y REGLAMENTO (PASO 6 - MOBILE-FIRST)
-   ============================================================ */
+   */
 
 .detail-layout {
   display: flex;
@@ -2132,9 +2131,9 @@ nav .btn-outline:hover {
     align-items: start;
   }
 }
-/* ============================================================
+/*
    LAYOUT MOBILE-FIRST (1 Columna por defecto en móviles)
-   ============================================================ */
+   */
 
 /* Panel de Filtros */
 .search-panel {
@@ -2150,9 +2149,9 @@ nav .btn-outline:hover {
   gap: 1.25rem;
 }
 
-/* ============================================================
+/*
    RESPONSIVE DESIGN (Media Queries Progresivas)
-   ============================================================ */
+   */
 
 /* Tablets / Pantallas medianas */
 @media (min-width: 640px) {

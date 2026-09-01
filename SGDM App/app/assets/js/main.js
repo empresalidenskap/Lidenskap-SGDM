@@ -1,15 +1,15 @@
-/* ============================================================
+/* 
    LIDENSKAP — SGDM  |  main.js
    Funciones:
    - Tema claro / oscuro
    - Carrusel de imágenes con puntos
    - Sport chips con color dorado + estrella burst
    - Carrusel de torneos por disciplina
-   ============================================================ */
+    */
 
 'use strict';
 
-/* ---- DATOS DEL CARRUSEL ---- */
+/*  DATOS DEL CARRUSEL  */
 const imagenes = [
   {
     url: 'assets/img/imagen1.jpg',
@@ -30,7 +30,7 @@ const imagenes = [
 
 let actual = 0;
 
-/* ---- REFERENCIAS DOM ---- */
+/*  REFERENCIAS DOM  */
 const btnAtras   = document.getElementById('atras');
 const btnAdelante= document.getElementById('adelante');
 const imgWrap    = document.getElementById('img');
@@ -41,9 +41,9 @@ const starContainer = document.getElementById('star-container');
 const logoImg = document.getElementById('logoImg');
 const ilustracion = document.getElementById('ilustracion');
 
-/* ============================================================
+/* 
    CARRUSEL
-   ============================================================ */
+    */
 function renderSlide(idx, direction = 'right') {
   if (!imgWrap || !textoWrap) return; // esta página no tiene el carrusel de imágenes de la home
 
@@ -128,9 +128,9 @@ if (ilustracion) {
 }
 
 
-/* ============================================================
+/* 
    TEMA CLARO / OSCURO
-   ============================================================ */
+    */
 function toggleTheme() {
   const html = document.documentElement;
   const nextTheme = html.dataset.theme === 'dark' ? 'light' : 'dark';
@@ -174,9 +174,9 @@ function initializeTheme() {
 
 initializeTheme();
 
-/* ============================================================
+/* 
    SPORT CHIPS — color dorado + estrella burst al hacer clic
-   ============================================================ */
+    */
 const STAR_CHARS = [ '✦', '✧'];
 
 function spawnStar(x, y) {
@@ -204,9 +204,9 @@ function burstStars(x, y, count = 4) {
   }
 }
 
-/* ============================================================
+/* 
    SPORTS SELECTOR — flechas, barra de progreso y fades
-   ============================================================ */
+    */
 
 const sportsScroll      = document.getElementById('sportsScroll');
 const sportsLeft        = document.getElementById('sportsLeft');
@@ -224,7 +224,7 @@ function updateSportsUI() {
   const { scrollLeft, scrollWidth, clientWidth } = sportsScroll;
   const maxScroll = scrollWidth - clientWidth;
 
-  /* ---- Barra de progreso ---- */
+  /*  Barra de progreso  */
   if (progressThumb && maxScroll > 0) {
     const ratio      = scrollLeft / maxScroll;           // 0 → 1
     const thumbW     = clientWidth / scrollWidth * 100;  // % del track
@@ -234,11 +234,11 @@ function updateSportsUI() {
     progressThumb.style.transform = `translateX(${(thumbLeft / thumbW) * 100}%)`;
   }
 
-  /* ---- Fades laterales ---- */
+  /*  Fades laterales  */
   if (fadeLeft)  fadeLeft.classList.toggle('hidden',  scrollLeft <= 2);
   if (fadeRight) fadeRight.classList.toggle('hidden', scrollLeft >= maxScroll - 2);
 
-  /* ---- Estado disabled de flechas ---- */
+  /*  Estado disabled de flechas  */
   if (sportsLeft)  sportsLeft.disabled  = scrollLeft <= 2;
   if (sportsRight) sportsRight.disabled = scrollLeft >= maxScroll - 2;
 }
@@ -295,9 +295,9 @@ document.querySelectorAll('.btn-hero, .btn-ghost, .btn-accent, .btn-outline, .fo
   });
 });
 
-/* ============================================================
+/* 
    FRONTEND DINÁMICO DE DISCIPLINAS
-   ============================================================ */
+    */
 
 // Base de datos de cada deporte (¡Ahora con Rugby y Voleibol!)
 const infoDisciplinas = {
@@ -473,9 +473,9 @@ function actualizarVistaDisciplina(key) {
   applyNavigationPermissions();
 }
 
-/* ============================================================
+/* 
    CARRUSEL DE TORNEOS POR DISCIPLINA
-   ============================================================ */
+    */
 
 // Vista derivada de SGDM_TOURNAMENTS. Se completa después de declarar
 // la colección principal para evitar mantener dos listas diferentes.
@@ -615,9 +615,9 @@ if (sportsScrollMenu) {
     if (torneosPorDisciplina[deporte]) cambiarDisciplinaTorneos(deporte);
   });
 }
-/* ============================================================
+/* 
    LIDENSKAP — SISTEMA DE AUTENTICACIÓN POR ROLES (INGENIERÍA)
-   ============================================================ */
+    */
 
 const SGDM_PERMISSIONS = {
   ADMIN: ['view_public', 'view_profile', 'edit_profile', 'create_tournament', 'manage_tournaments', 'manage_users', 'manage_participants', 'manage_results', 'view_reports', 'view_audit', 'manage_settings'],
@@ -815,9 +815,9 @@ function initializeAuthentication() {
   document.getElementById('btnCrearCuentaGratis')?.addEventListener('click', event => { event.preventDefault(); openAuthModal('register'); });
   applyNavigationPermissions();
 }
-/* ============================================================
+/* 
    LIDENSKAP — REDIRECCIÓN A LA PÁGINA DE TODAS LAS DISCIPLINAS
-   ============================================================ */
+    */
 document.addEventListener('click', function (e) {
   const btnTodas = e.target.closest('#btnTodasDisciplinas') || e.target.closest('[data-sport="todas"]');
   
@@ -828,9 +828,9 @@ document.addEventListener('click', function (e) {
   }
 });
 
-/* ============================================================
+/* 
    NAVEGACIÓN COMPARTIDA Y PÁGINAS DE LA PRIMERA ENTREGA
-   ============================================================ */
+    */
 
 const SGDM_NAV_ITEMS = [
   ['index.html', 'Inicio'],

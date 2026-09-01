@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de gestión — Lidenskap</title>
+  <title>Panel de gestión Lidenskap</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/styles.css?v=20260723-8">
 </head>
@@ -94,7 +94,7 @@
     <section id="panel-rounds" class="panel-module surface-card" data-panel-module="rounds" hidden>
       <div class="panel-module-header"><div><p class="section-eyebrow">Competencia</p><h2>RONDAS Y LLAVES</h2><p>Genera enfrentamientos, revisa los cruces y controla su publicación.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
       <div class="panel-toolbar"><label class="panel-search">Torneo<select id="roundTournament"></select></label><button class="btn-primary" id="generateRound" type="button">+ Generar siguiente ronda</button></div>
-      <div class="round-status-grid"><article><span>Formato</span><strong id="roundFormat">—</strong></article><article><span>Ronda actual</span><strong id="roundCurrent">—</strong></article><article><span>Estado</span><strong id="roundStatus">—</strong></article></div>
+      <div class="round-status-grid"><article><span>Formato</span><strong id="roundFormat">-</strong></article><article><span>Ronda actual</span><strong id="roundCurrent">-</strong></article><article><span>Estado</span><strong id="roundStatus">-</strong></article></div>
       <div class="bracket" id="roundBracket" aria-label="Vista de rondas y llaves"></div>
       <div class="round-actions"><button class="btn-secondary" id="publishRound" type="button">Publicar ronda</button><button class="btn-secondary" id="closeRound" type="button">Cerrar ronda</button><p id="roundFeedback" class="form-feedback" aria-live="polite"></p></div>
     </section>
@@ -102,7 +102,7 @@
     <section id="panel-reports" class="panel-module surface-card" data-panel-module="reports" hidden>
       <div class="panel-module-header"><div><p class="section-eyebrow">Análisis</p><h2>REPORTES DE TORNEOS</h2><p>Consulta indicadores de los torneos dentro de tu ámbito de administración.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
       <div class="panel-toolbar"><label class="panel-search">Torneo<select id="reportTournament"><option value="">Todos los torneos</option></select></label><button class="btn-secondary" id="exportReport" type="button">Descargar CSV</button></div>
-      <section class="report-grid" aria-label="Indicadores del reporte"><article><span>Inscripciones</span><strong id="reportRegistrations">—</strong></article><article><span>Ocupación promedio</span><strong id="reportOccupancy">—</strong></article><article><span>Partidos registrados</span><strong id="reportMatches">—</strong></article><article><span>Resultados oficiales</span><strong id="reportOfficial">—</strong></article></section>
+      <section class="report-grid" aria-label="Indicadores del reporte"><article><span>Inscripciones</span><strong id="reportRegistrations">-</strong></article><article><span>Ocupación promedio</span><strong id="reportOccupancy">-</strong></article><article><span>Partidos registrados</span><strong id="reportMatches">-</strong></article><article><span>Resultados oficiales</span><strong id="reportOfficial">-</strong></article></section>
       <div class="table-scroll"><table><thead><tr><th>Torneo</th><th>Disciplina</th><th>Inscripciones</th><th>Cupo</th><th>Partidos</th><th>Estado</th></tr></thead><tbody id="reportsTableBody"></tbody></table></div>
     </section>
 
