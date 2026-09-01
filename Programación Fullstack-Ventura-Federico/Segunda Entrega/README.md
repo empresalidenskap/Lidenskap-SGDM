@@ -5,8 +5,9 @@ Docente: Federico Ventura
 Requisitos de la letra de proyecto para esta entrega:
 
 - [x] Modelo relacional normalizado — `MER_SGDM_Proyecto.graphml` (diagrama,
-      con COMPETIDOR como supertipo de PARTICIPANTE/EQUIPO) y
-      [`db/01-schema.sql`](../../SGDM%20App/db/01-schema.sql) (16 tablas)
+      con COMPETIDOR como supertipo de PARTICIPANTE/EQUIPO),
+      [`db/01-schema.sql`](../../SGDM%20App/db/01-schema.sql) (16 tablas) y
+      `Normalizacion_SGDM_3FN.pdf` (justificación hasta 3FN)
 - [x] DCL implementado — [`db/02-users.sh`](../../SGDM%20App/db/02-users.sh) (GRANT/REVOKE)
 - [x] Configuración de usuarios de BD con las restricciones pertinentes — tres
       niveles: `sgdm_admin` (ALL PRIVILEGES), `sgdm_app` (solo
