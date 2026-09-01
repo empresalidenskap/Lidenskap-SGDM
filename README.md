@@ -49,6 +49,8 @@ materia se separa por entrega:
 ├── Ciberseguridad-Padula-Vladimir/
 │   ├── Primera Entrega/
 │   └── Segunda Entrega/
+├── Filosofia-Cabrera-Gabriela/
+│   └── Tercera Entrega/
 ├── Ingeniería de Software-Flores-Pablo/
 │   ├── Primera Entrega/
 │   └── Segunda Entrega/
