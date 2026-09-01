@@ -14,12 +14,13 @@ servidor con el sistema funcionando.
       (diagrama, con COMPETIDOR como supertipo de PARTICIPANTE/EQUIPO)
 - [ ] Modelo relacional normalizado hasta 3FN, con justificaciones de
       normalización: el modelo está en
-      [`db/01-schema.sql`](../../SGDM%20App/db/01-schema.sql) (16 tablas),
-      falta redactar las justificaciones de normalización
-- [x] Scripts DDL y DCL: DDL en
-      [`db/01-schema.sql`](../../SGDM%20App/db/01-schema.sql), DCL en
-      [`db/02-users.sh`](../../SGDM%20App/db/02-users.sh) (GRANT/REVOKE,
-      tres niveles de usuario: `sgdm_admin`, `sgdm_app`, `sgdm_consulta`)
+      [`01-schema.sql`](./01-schema.sql) (16 tablas), falta redactar las
+      justificaciones de normalización
+- [x] Scripts DDL y DCL: DDL en [`01-schema.sql`](./01-schema.sql), DCL en
+      [`02-users.sh`](./02-users.sh) (GRANT/REVOKE, tres niveles de usuario:
+      `sgdm_admin`, `sgdm_app`, `sgdm_consulta`). Son copia de los que usa
+      la aplicación en [`SGDM App/db/`](../../SGDM%20App/db/), que es de
+      donde Docker los toma para inicializar la base
 
 ## Servidor / entorno
 
