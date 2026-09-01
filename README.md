@@ -28,7 +28,7 @@ independiente, de modo que la plataforma no queda atada a un deporte ni a un
 
 ## Integrantes
 
-| Integrante | |
+| Integrantes | |
 |---|---|
 | Sofía Prieto | |
 | Federico Rodríguez | |
