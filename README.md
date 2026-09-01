@@ -62,8 +62,8 @@ materia se separa por entrega:
 ```
 
 `SGDM App/` vive aparte de las carpetas por materia porque es un único
-código que corre para todo el proyecto — no un entregable exclusivo de una
-unidad curricular en particular, aunque su desarrollo se documenta y
+código que corre para todo el proyecto. No es un entregable exclusivo de
+una unidad curricular en particular, aunque su desarrollo se documenta y
 evalúa dentro de Programación Fullstack.
 
 ## La aplicación

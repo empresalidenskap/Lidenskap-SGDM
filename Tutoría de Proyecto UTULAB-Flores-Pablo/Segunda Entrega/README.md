@@ -1,4 +1,4 @@
-# Tutoría de Proyecto UTULAB — Segunda entrega
+# Tutoría de Proyecto UTULAB: Segunda entrega
 
 Docente: Pablo Flores
 
