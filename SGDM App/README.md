@@ -3,7 +3,7 @@
 Esta carpeta es **la aplicación en sí**: el sistema completo (frontend +
 backend PHP + base de datos MySQL) del Sistema de Gestión Deportiva
 Modular, ejecutable con un solo comando de Docker. Vive aparte de las
-carpetas de cada materia porque es el mismo código para todas — no
+carpetas de cada materia porque es el mismo código para todas. No
 pertenece a ninguna entrega en particular, aunque su desarrollo se
 documenta y evalúa dentro de **Programación Fullstack**
 (`../Programación Fullstack-Ventura-Federico/`).
@@ -64,7 +64,7 @@ SGDM App/
 ## Variables de entorno
 
 `.env` no se versiona (contiene contraseñas). Al clonar el repo, copiá
-`.env.example` a `.env` — ya viene con valores de desarrollo razonables,
+`.env.example` a `.env`: ya viene con valores de desarrollo razonables,
 solo hace falta cambiarlos para un despliegue real:
 
 | Variable | Uso |

@@ -1,4 +1,4 @@
-# SGDM — Aplicación
+# Aplicación SGDM
 
 Implementación del Sistema de Gestión Deportiva Modular: frontend
 (HTML/CSS/JS) y backend PHP, servidos por Apache y conectados a MySQL.

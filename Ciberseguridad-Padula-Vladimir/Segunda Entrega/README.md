@@ -1,4 +1,4 @@
-# Ciberseguridad — Segunda entrega
+# Ciberseguridad: Segunda entrega
 
 Docente: Vladimir Padula
 

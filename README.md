@@ -28,7 +28,7 @@ independiente, de modo que la plataforma no queda atada a un deporte ni a un
 
 ## Integrantes
 
-| Integrante | |
+| Integrantes | |
 |---|---|
 | Sofía Prieto | |
 | Federico Rodríguez | |
@@ -49,6 +49,8 @@ materia se separa por entrega:
 ├── Ciberseguridad-Padula-Vladimir/
 │   ├── Primera Entrega/
 │   └── Segunda Entrega/
+├── Filosofia-Cabrera-Gabriela/
+│   └── Tercera Entrega/
 ├── Ingeniería de Software-Flores-Pablo/
 │   ├── Primera Entrega/
 │   └── Segunda Entrega/
@@ -62,8 +64,8 @@ materia se separa por entrega:
 ```
 
 `SGDM App/` vive aparte de las carpetas por materia porque es un único
-código que corre para todo el proyecto — no un entregable exclusivo de una
-unidad curricular en particular, aunque su desarrollo se documenta y
+código que corre para todo el proyecto. No es un entregable exclusivo de
+una unidad curricular en particular, aunque su desarrollo se documenta y
 evalúa dentro de Programación Fullstack.
 
 ## La aplicación

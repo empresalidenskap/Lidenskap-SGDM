@@ -1,4 +1,4 @@
-# Ingeniería de Software — Segunda entrega
+# Ingeniería de Software: Segunda entrega
 
 Docente: Pablo Flores
 
