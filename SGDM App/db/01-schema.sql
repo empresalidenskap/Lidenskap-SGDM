@@ -1,4 +1,4 @@
--- Modelo relacional del SGDM (Segunda Entrega — Programación Fullstack)
+-- Creacion de la base de datos y las tablas.
 
 SET NAMES utf8mb4;
 
