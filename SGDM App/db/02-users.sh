@@ -1,12 +1,8 @@
 #!/bin/bash
-# DCL — usuarios de la base de datos y sus permisos.
-# (cambiar las contraseñas antes de usar en el servidor real)
-#
-# Host '%' en vez de 'localhost': en docker-compose la app PHP (contenedor
-# "web") y MySQL (contenedor "db") son hosts distintos en la red interna
-# de Docker, nunca "localhost" entre sí. Si el día de mañana Apache y MySQL
-# pasan a convivir en la misma máquina (por ejemplo, el servidor real),
-# ahí sí correspondería restringir a 'localhost'.
+# DCL, usuarios de la base de datos y sus permisos.
+# ! (cambiar las contraseñas antes de usar en el servidor real)
+# Host '%' en vez de 'localhost': en docker-compose la app PHP (contenedor "web") y MySQL (contenedor "db") son hosts distintos en la red interna
+
 set -e
 
 mysql -u root -p"${MYSQL_ROOT_PASSWORD}" <<-EOSQL
