@@ -1,24 +1,18 @@
 #!/bin/bash
-#############################################################
-# Script: gestionar_servicio.sh
-# Descripción: Permite gestionar servicios del sistema
-#              (systemd) de forma interactiva.
-#############################################################
+#Descripción: Permite gestionar servicios del sistema
+#(systemd) de forma interactiva.
 
-# --- Colores para mensajes ---
 VERDE='\033[0;32m'
 ROJO='\033[0;31m'
 AMARILLO='\033[1;33m'
 SIN_COLOR='\033[0m'
 
-# --- Verificar que se ejecuta con permisos adecuados ---
 if [[ $EUID -ne 0 ]]; then
     echo -e "${AMARILLO}Advertencia:${SIN_COLOR} algunas acciones (start, stop, restart, enable, disable)"
     echo "requieren privilegios de administrador. Ejecuta el script con 'sudo' si es necesario."
     echo ""
 fi
 
-# --- Solicitar el nombre del servicio ---
 if ! read -p "Ingrese el nombre del servicio (ej: ssh, apache2, nginx): " servicio; then
     echo ""
     echo -e "${ROJO}Entrada finalizada (EOF). Saliendo del script.${SIN_COLOR}"
@@ -30,7 +24,6 @@ if [[ -z "$servicio" ]]; then
     exit 1
 fi
 
-# Si el usuario no agrega la extensión .service, se la agregamos
 if [[ "$servicio" != *.service ]]; then
     unidad="${servicio}.service"
 else
@@ -38,7 +31,6 @@ else
     servicio="${servicio%.service}"
 fi
 
-# --- Verificar existencia del servicio ---
 existe=$(systemctl list-unit-files --type=service | awk '{print $1}' | grep -w "$unidad")
 
 if [[ -z "$existe" ]]; then
@@ -49,7 +41,6 @@ fi
 echo -e "${VERDE}El servicio '$servicio' existe.${SIN_COLOR}"
 echo ""
 
-# --- Menú de acciones ---
 echo "Seleccione la acción a realizar:"
 echo "1) Iniciar (start)"
 echo "2) Detener (stop)"
@@ -82,10 +73,8 @@ case $opcion in
         ;;
 esac
 
-# --- Ejecutar la acción ---
 echo ""
 echo "Ejecutando: systemctl $accion $unidad"
-echo "-----------------------------------------"
 
 if [[ "$accion" == "status" ]]; then
     systemctl status "$unidad" --no-pager
