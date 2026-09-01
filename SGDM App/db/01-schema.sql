@@ -1,26 +1,16 @@
 -- Modelo relacional del SGDM (Segunda Entrega — Programación Fullstack)
--- Basado en MER_SGDM_Proyecto.graphml, con el agregado de COMPETIDOR como
--- supertipo de PARTICIPANTE/EQUIPO: una inscripción puede ser individual
--- (ajedrez) o de equipo (fútbol) sin columnas nulas ni relaciones ambiguas.
--- ENFRENTAMIENTO y TABLA_POSICIONES referencian INSCRIPCION (no COMPETIDOR
--- directo), y EQUIPO_PARTICIPANTE / TORNEO_MODULO son las tablas
--- intermedias de las relaciones N:N "Integra" y "Configura" del MER.
 
--- El cliente mysql que corre este script (docker-entrypoint-initdb.d) usa
--- latin1 por defecto, no utf8mb4 — sin este SET NAMES, cualquier tilde
--- literal en un INSERT (Eliminación, Fútbol, etc.) queda guardada con
--- doble codificación UTF-8 (mojibake) y las búsquedas exactas fallan.
 SET NAMES utf8mb4;
 
 USE sgdm;
 
--- ROL ------------------------------------------------------------------
+-- ROL
 CREATE TABLE rol (
     id_rol      INT AUTO_INCREMENT PRIMARY KEY,
     nombre_rol  VARCHAR(50) NOT NULL UNIQUE
 );
 
--- USUARIO ----------------------------------------------------------------
+-- USUARIO
 CREATE TABLE usuario (
     id_usuario  INT AUTO_INCREMENT PRIMARY KEY,
     id_rol      INT NOT NULL,
@@ -33,7 +23,7 @@ CREATE TABLE usuario (
     CONSTRAINT fk_usuario_rol FOREIGN KEY (id_rol) REFERENCES rol(id_rol)
 );
 
--- AUDITORIA_REGISTRO ------------------------------------------------------
+-- AUDITORIA_REGISTRo
 CREATE TABLE auditoria_registro (
     id_auditoria      INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario        INT NULL,
@@ -45,13 +35,13 @@ CREATE TABLE auditoria_registro (
         ON DELETE SET NULL
 );
 
--- COMPETIDOR (supertipo de PARTICIPANTE / EQUIPO) -------------------------
+-- COMPETIDOR
 CREATE TABLE competidor (
     id_competidor    INT AUTO_INCREMENT PRIMARY KEY,
     tipo_competidor  ENUM('participante', 'equipo') NOT NULL
 );
 
--- PARTICIPANTE -------------------------------------------------------------
+-- PARTICIPANTE
 CREATE TABLE participante (
     id_participante      INT AUTO_INCREMENT PRIMARY KEY,
     id_competidor        INT NOT NULL UNIQUE,
@@ -65,7 +55,7 @@ CREATE TABLE participante (
     CONSTRAINT fk_participante_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
 );
 
--- EQUIPO -------------------------------------------------------------------
+-- EQUIPO
 CREATE TABLE equipo (
     id_equipo        INT AUTO_INCREMENT PRIMARY KEY,
     id_competidor    INT NOT NULL UNIQUE,
@@ -78,7 +68,7 @@ CREATE TABLE equipo (
     CONSTRAINT fk_equipo_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
 );
 
--- EQUIPO_PARTICIPANTE (plantilla: relación "Integra" N:N del MER) --------
+-- EQUIPO_PARTICIPANTE
 CREATE TABLE equipo_participante (
     id_equipo        INT NOT NULL,
     id_participante  INT NOT NULL,
@@ -90,25 +80,21 @@ CREATE TABLE equipo_participante (
         ON DELETE CASCADE
 );
 
--- TIPO_TORNEO (formato: liga, eliminación directa, sistema suizo) --------
+-- TIPO_TORNEO (formato: liga, eliminación directa, sistema suizo)
 CREATE TABLE tipo_torneo (
     id_tipo_torneo  INT AUTO_INCREMENT PRIMARY KEY,
     nombre_tipo     VARCHAR(50) NOT NULL UNIQUE,
     descripcion     TEXT
 );
 
--- MODULO_COMPETENCIA (disciplina: fútbol, ajedrez, esports...) -----------
+-- MODULO_COMPETENCIA (disciplina)
 CREATE TABLE modulo_competencia (
     id_modulo      INT AUTO_INCREMENT PRIMARY KEY,
     nombre_modulo  VARCHAR(100) NOT NULL UNIQUE,
     descripcion    TEXT
 );
 
--- TORNEO -------------------------------------------------------------------
--- descripcion/sede/cupo_maximo no estaban en el MER original: se agregan
--- porque el formulario real de creación de torneo (crear-competencia.html)
--- los pide como campos obligatorios. Ver MER_SGDM_Proyecto.graphml, que
--- se actualizó con estos 3 atributos para no quedar desalineado del SQL.
+-- TORNEO
 CREATE TABLE torneo (
     id_torneo             INT AUTO_INCREMENT PRIMARY KEY,
     id_tipo_torneo        INT NOT NULL,
@@ -124,7 +110,7 @@ CREATE TABLE torneo (
     CONSTRAINT fk_torneo_organizador FOREIGN KEY (id_usuario_organizador) REFERENCES usuario(id_usuario)
 );
 
--- TORNEO_MODULO (relación "Configura" N:N del MER, con atributos propios) -
+-- TORNEO_MODULO
 CREATE TABLE torneo_modulo (
     id_torneo           INT NOT NULL,
     id_modulo           INT NOT NULL,
@@ -136,10 +122,7 @@ CREATE TABLE torneo_modulo (
     CONSTRAINT fk_tm_modulo FOREIGN KEY (id_modulo) REFERENCES modulo_competencia(id_modulo)
 );
 
--- RONDA ----------------------------------------------------------------
--- NumeroRonda identifica la ronda dentro de SU torneo (no es único global,
--- por eso se agrega id_ronda como clave sustituta y se resguarda la
--- unicidad real con UNIQUE(id_torneo, numero_ronda)).
+-- RONDA
 CREATE TABLE ronda (
     id_ronda          INT AUTO_INCREMENT PRIMARY KEY,
     id_torneo         INT NOT NULL,
@@ -151,7 +134,7 @@ CREATE TABLE ronda (
     CONSTRAINT uq_ronda_torneo_numero UNIQUE (id_torneo, numero_ronda)
 );
 
--- INSCRIPCION ------------------------------------------------------------
+-- INSCRIPCION
 CREATE TABLE inscripcion (
     id_inscripcion      INT AUTO_INCREMENT PRIMARY KEY,
     id_torneo           INT NOT NULL,
@@ -164,10 +147,7 @@ CREATE TABLE inscripcion (
     CONSTRAINT uq_inscripcion_torneo_competidor UNIQUE (id_torneo, id_competidor)
 );
 
--- ENFRENTAMIENTO ---------------------------------------------------------
--- Local y visitante apuntan a INSCRIPCION (no directo a COMPETIDOR): para
--- jugar un partido de un torneo hay que estar inscripto en ESE torneo
--- (relaciones "Juega_Local"/"Juega_Visitante" del MER).
+-- ENFRENTAMIENTO
 CREATE TABLE enfrentamiento (
     id_enfrentamiento        INT AUTO_INCREMENT PRIMARY KEY,
     id_ronda                 INT NOT NULL,
@@ -182,7 +162,7 @@ CREATE TABLE enfrentamiento (
     CONSTRAINT chk_enfrentamiento_rivales CHECK (id_inscripcion_local <> id_inscripcion_visitante)
 );
 
--- RESULTADO --------------------------------------------------------------
+-- RESULTADO
 CREATE TABLE resultado (
     id_resultado          INT AUTO_INCREMENT PRIMARY KEY,
     id_enfrentamiento     INT NOT NULL UNIQUE,
@@ -195,9 +175,7 @@ CREATE TABLE resultado (
         ON DELETE CASCADE
 );
 
--- TABLA_POSICIONES --------------------------------------------------------
--- 1:1 con INSCRIPCION (relación "Acumula" del MER): la inscripción ya
--- identifica torneo + competidor, no hace falta repetirlos acá.
+-- TABLA_POSICIONES
 CREATE TABLE tabla_posiciones (
     id_posicion         INT AUTO_INCREMENT PRIMARY KEY,
     id_inscripcion      INT NOT NULL UNIQUE,
@@ -210,24 +188,16 @@ CREATE TABLE tabla_posiciones (
         ON DELETE CASCADE
 );
 
--- Roles base -----------------------------------------------------------
--- Los 4 roles que ya usa el front-end (SGDM_PERMISSIONS en main.js): el
--- código va en mayúsculas porque main.js lo usa tal cual, sin traducir.
+-- Roles base
 INSERT INTO rol (nombre_rol) VALUES ('ADMIN'), ('ORGANIZADOR'), ('PARTICIPANTE'), ('PUBLICO');
 
--- Catálogo de formatos de torneo -----------------------------------------
--- Los 3 formatos obligatorios según la letra del proyecto (liga,
--- eliminación directa, sistema suizo). "Fase de grupos + playoffs" queda
--- fuera: la letra la lista como formato opcional/fuera de esta etapa.
+-- Catálogo de formatos de torneo
 INSERT INTO tipo_torneo (nombre_tipo, descripcion) VALUES
     ('Liga', 'Todos contra todos'),
     ('Eliminación Directa', 'Llaves de eliminación directa'),
     ('Sistema Suizo', 'Emparejamiento por rendimiento acumulado');
 
--- Catálogo de disciplinas --------------------------------------------
--- Las mismas 7 que ya ofrece el <select> de crear-competencia.html /
--- torneos.html. "Personalizada/Custom" no se precarga: se crea al vuelo
--- cuando alguien la escribe en el formulario.
+-- Catálogo de disciplinas
 INSERT INTO modulo_competencia (nombre_modulo) VALUES
     ('Fútbol'), ('Básquetbol'), ('Ajedrez'), ('Tenis'),
     ('Esports'), ('Voleibol'), ('Rugby');
