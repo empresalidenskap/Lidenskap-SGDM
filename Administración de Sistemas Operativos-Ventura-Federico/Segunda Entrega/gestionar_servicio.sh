@@ -31,7 +31,7 @@ else
     servicio="${servicio%.service}"
 fi
 
-existe=$(systemctl list-unit-files --type=service | awk '{print $1}' | grep -w "$unidad")
+existe=$(systemctl list-unit-files --type=service | grep -w "$unidad")
 
 if [[ -z "$existe" ]]; then
     echo -e "${ROJO}Error:${SIN_COLOR} el servicio '$servicio' no existe en el sistema."
