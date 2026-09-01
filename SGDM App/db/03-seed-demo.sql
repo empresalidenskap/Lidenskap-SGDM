@@ -1,7 +1,4 @@
--- Cuentas de demostración (una por rol), las mismas que se documentan en
--- el modal de login del front-end (assets/js/main.js). Los hashes fueron
--- generados con password_hash() de PHP — nunca se guarda la contraseña
--- en texto plano, ni siquiera acá.
+-- Cuentas de demostración
 SET NAMES utf8mb4;
 USE sgdm;
 
