@@ -10,12 +10,13 @@ servidor con el sistema funcionando.
 
 - [ ] Primera entrega corregida y esquema de pantallas (ver
       "Correcciones pendientes de la primera entrega" más abajo)
-- [x] Modelo Entidad-Relación (MER): [`MER_SGDM_Proyecto.xml`](./MER_SGDM_Proyecto.xml)
-      (diagrama, con COMPETIDOR como supertipo de PARTICIPANTE/EQUIPO)
-- [x] Modelo relacional normalizado hasta 3FN, con justificaciones de
+- [ ] Modelo Entidad-Relación (MER): [`MER_SGDM_Proyecto.xml`](./MER_SGDM_Proyecto.xml)
+      (diagrama, con COMPETIDOR como supertipo de PARTICIPANTE/EQUIPO) 
+      Agregacion con torneo e inscripcion que se relaciona con acumula, tabla posiciones
+- [ ] Modelo relacional normalizado hasta 3FN, con justificaciones de
       normalización: el modelo está en
       [`01-schema.sql`](./01-schema.sql) (16 tablas) y las justificaciones
-      en [`Normalizacion_SGDM_3FN.pdf`](./Normalizacion_SGDM_3FN.pdf)
+      en [`Normalizacion_SGDM_3FN.pdf`](./Normalizacion_SGDM_3FN.pdf) Corregir la justificación según la corrección del MER
 - [x] Scripts DDL y DCL: DDL en [`01-schema.sql`](./01-schema.sql), DCL en
       [`02-users.sh`](./02-users.sh) (GRANT/REVOKE, tres niveles de usuario:
       `sgdm_admin`, `sgdm_app`, `sgdm_consulta`). Son copia de los que usa
