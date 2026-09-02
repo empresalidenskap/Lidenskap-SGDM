@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App;
 
 /**
- * Base CRUD mínima para las clases de app/src/Models — cada una solo
+ * Base CRUD mínima para las clases de app/src/Models, cada una solo
  * define $table y $primaryKey, alineadas 1 a 1 con db/01-schema.sql.
  */
 abstract class Model

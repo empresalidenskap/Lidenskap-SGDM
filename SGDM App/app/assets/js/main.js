@@ -1,10 +1,5 @@
 /* 
-   LIDENSKAP — SGDM  |  main.js
-   Funciones:
-   - Tema claro / oscuro
-   - Carrusel de imágenes con puntos
-   - Sport chips con color dorado + estrella burst
-   - Carrusel de torneos por disciplina
+   LIDENSKAP SGDM main.js
     */
 
 'use strict';
@@ -793,26 +788,70 @@ function initializeAuthentication() {
     }
   });
 
-  const accountButton = document.querySelector('nav .btn-outline');
-  if (accountButton) {
-    if (sesionUsuario) {
-      accountButton.href = 'perfil.html';
-      accountButton.textContent = 'Mi perfil';
-      accountButton.setAttribute('aria-label', `Abrir perfil de ${sesionUsuario.nombre}`);
-      const logout = document.createElement('button');
-      logout.type = 'button';
-      logout.className = 'nav-logout';
-      logout.textContent = 'Salir';
-      logout.addEventListener('click', cerrarSesion);
-      accountButton.parentElement?.insertBefore(logout, accountButton.nextSibling);
-    } else {
-      accountButton.href = '#iniciar-sesion';
-      accountButton.textContent = 'Iniciar sesión';
-      accountButton.addEventListener('click', event => { event.preventDefault(); openAuthModal('login'); });
-    }
-  }
+  renderAccountNav();
 
   document.getElementById('btnCrearCuentaGratis')?.addEventListener('click', event => { event.preventDefault(); openAuthModal('register'); });
+}
+
+function renderAccountNav() {
+  const slot = document.getElementById('navAccount');
+  if (!slot) return;
+
+  if (!sesionUsuario) {
+    slot.innerHTML = '<a href="#iniciar-sesion" class="btn-outline" id="navAccountBtn">Iniciar sesión</a>';
+    document.getElementById('navAccountBtn')?.addEventListener('click', event => {
+      event.preventDefault();
+      openAuthModal('login');
+    });
+    return;
+  }
+
+  slot.innerHTML = `
+    <div class="profile-dropdown" id="profileDropdownWrap">
+      <button type="button" class="btn-outline profile-dropdown-btn" id="profileDropdownBtn" aria-expanded="false" aria-haspopup="true">
+        Mi Perfil <span class="dropdown-caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="profile-menu" id="profileMenu">
+        <div class="profile-menu-header">
+          <span class="user-email" id="dropdownUserEmail">${sesionUsuario.email || ''}</span>
+        </div>
+        <ul class="profile-menu-links">
+          <li><a href="perfil.html">Mi Perfil</a></li>
+          <li><a href="crear-competencia.html">Crear Competencia</a></li>
+        </ul>
+        <div class="profile-menu-footer">
+          <button type="button" class="btn-logout" id="logoutBtn">Cerrar Sesión</button>
+        </div>
+      </div>
+    </div>`;
+
+  const btn = document.getElementById('profileDropdownBtn');
+  const menu = document.getElementById('profileMenu');
+
+  const closeMenu = () => {
+    menu.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+  };
+
+  btn.addEventListener('click', event => {
+    event.stopPropagation();
+    const isOpen = menu.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  document.addEventListener('click', event => {
+    if (!menu.contains(event.target) && !btn.contains(event.target)) closeMenu();
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && menu.classList.contains('open')) {
+      closeMenu();
+      btn.focus();
+    }
+  });
+
+  document.getElementById('logoutBtn')?.addEventListener('click', cerrarSesion);
+
   applyNavigationPermissions();
 }
 /* 
@@ -1958,47 +1997,3 @@ function initializeCreateTournament() {
     }
   });
 }
-function initializeProfileDropdown() {
-  const btn = document.getElementById('profileDropdownBtn');
-  const menu = document.getElementById('profileMenu');
-  const userEmailSpan = document.getElementById('dropdownUserEmail');
-  const logoutBtn = document.getElementById('logoutBtn');
-
-  if (!btn || !menu) return;
-
-  // Email de la sesión real (la misma que usa el resto del sitio).
-  if (userEmailSpan) {
-    userEmailSpan.textContent = sesionUsuario?.email || 'usuario@lidenskap.com';
-  }
-
-  // Alternar apertura/cierre del menú
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const isHidden = menu.hasAttribute('hidden');
-    if (isHidden) {
-      menu.removeAttribute('hidden');
-      btn.setAttribute('aria-expanded', 'true');
-    } else {
-      menu.setAttribute('hidden', '');
-      btn.setAttribute('aria-expanded', 'false');
-    }
-  });
-
-  // Cerrar al hacer clic fuera del menú
-  document.addEventListener('click', (e) => {
-    if (!menu.contains(e.target) && !btn.contains(e.target)) {
-      menu.setAttribute('hidden', '');
-      btn.setAttribute('aria-expanded', 'false');
-    }
-  });
-
-  // Evento de Cerrar Sesión
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', cerrarSesion);
-  }
-}
-
-// Asegurarse de ejecutar la función al cargar la página
-document.addEventListener('DOMContentLoaded', () => {
-  initializeProfileDropdown();
-});
