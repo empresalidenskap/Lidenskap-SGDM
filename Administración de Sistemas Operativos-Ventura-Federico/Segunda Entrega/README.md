@@ -10,7 +10,8 @@ Requisitos de la letra de proyecto para esta entrega:
 - [ ] Script de respaldos y automatización (cron) implementado en el servidor
 - [ ] Sistema de monitoreo implementado en el servidor (Zabbix, Grafana, etc.) Documentar Instalación
 - [ ] Gestión de servicios (systemd) en `gestionar_servicio.sh` (start, stop,
-      restart, status, enable, disable de forma interactiva) -El menu ya lo tenemos q n sea repetitivo gestionar servicio.sh
+      restart, status, enable, disable de forma interactiva) -El menu ya lo tenemos,
+      que no sea repetitivo gestionar servicio.sh
 
 ## Correcciones pendientes de la primera entrega
 
