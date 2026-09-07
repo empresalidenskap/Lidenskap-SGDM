@@ -10,10 +10,10 @@ servidor con el sistema funcionando.
 
 - [ ] Primera entrega corregida y esquema de pantallas (ver
       "Correcciones pendientes de la primera entrega" más abajo)
-- [ ] Modelo Entidad-Relación (MER): [`MER_SGDM_Proyecto.xml`](./MER_SGDM_Proyecto.xml)
+- [x] Modelo Entidad-Relación (MER): [`MER_SGDM_Proyecto.xml`](./MER_SGDM_Proyecto.xml)
       (diagrama, con COMPETIDOR como supertipo de PARTICIPANTE/EQUIPO) 
       Agregacion con torneo e inscripcion que se relaciona con acumula, tabla posiciones
-- [ ] Modelo relacional normalizado hasta 3FN, con justificaciones de
+- [x] Modelo relacional normalizado hasta 3FN, con justificaciones de
       normalización: el modelo está en
       [`01-schema.sql`](./01-schema.sql) (16 tablas) y las justificaciones
       en [`Normalizacion_SGDM_3FN.pdf`](./Normalizacion_SGDM_3FN.pdf) Corregir la justificación según la corrección del MER
