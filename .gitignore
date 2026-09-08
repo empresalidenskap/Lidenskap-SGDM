@@ -9,6 +9,9 @@ desktop.ini
 *.swp
 *~
 
+# Guía local para Claude Code — no se sube al repo
+CLAUDE.md
+
 # Entorno y credenciales — nunca subir al repositorio
 .env
 .env.*
