@@ -57,12 +57,22 @@ levantarlo en [`SGDM App/README.md`](../../SGDM%20App/README.md).
 - [x] No abusar del `div`: usar más estructuras semánticas (`header`, `nav`,
       `main`, `section`, `article`, `aside`, `footer`). La mayoría de las
       páginas de [`SGDM App/app/`](../../SGDM%20App/app/) ya usaba bastante
-      semántica; se promovieron a `<section>` las regiones de página que
-      seguían siendo `<div>` (Disciplinas, Formatos, CTA y resumen del
-      dashboard en `index.html` y `panel.html`, el formulario en
-      `crear-competencia.html`, y el cuerpo de texto en `privacidad.html` /
-      `terminos.html`). De paso se corrigió un `<div class="hero-inner">`
-      de `index.html` que nunca se cerraba.
+      semántica; se hicieron dos pasadas sobre lo que seguía siendo `<div>`:
+      - Primera pasada: se promovieron a `<section>` regiones de página
+        completas (Disciplinas, Formatos, CTA y resumen del dashboard en
+        `index.html` y `panel.html`, el formulario en
+        `crear-competencia.html`, el cuerpo de texto en `privacidad.html` /
+        `terminos.html`). De paso se corrigió un `<div class="hero-inner">`
+        de `index.html` que nunca se cerraba.
+      - Segunda pasada: se promovieron a `<header>` los encabezados internos
+        de cada módulo del panel (`panel.html`, 8 secciones — Usuarios,
+        Torneos, Participantes, Resultados, Rondas, Reportes, Auditoría,
+        Configuración) y de la tarjeta de reglamento en
+        `detalle-torneo.html`; y a `<section>` los widgets de edición de
+        perfil (`perfil.html`) y de acceso restringido
+        (`crear-competencia.html`). Conteo real de etiquetas en
+        `SGDM App/app/*.html`, antes de tocar nada hoy → ahora:
+        `header` 8→17, `section` 26→35, `div` 254→236.
 - [x] Carpeta con el esquema de pantallas:
       [`esquema-pantallas/`](./esquema-pantallas/) (inventario de pantallas,
       ruta, propósito y acceso por rol, más mapa de navegación — sin

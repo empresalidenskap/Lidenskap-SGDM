@@ -53,21 +53,21 @@
     </section>
 
     <section id="panel-users" class="panel-module surface-card" data-panel-module="users" data-admin-only hidden>
-      <div class="panel-module-header"><div><p class="section-eyebrow">Administración</p><h2>USUARIOS Y ROLES</h2><p>Las cuatro cuentas habilitadas en esta entrega.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <header class="panel-module-header"><div><p class="section-eyebrow">Administración</p><h2>USUARIOS Y ROLES</h2><p>Las cuatro cuentas habilitadas en esta entrega.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <div class="panel-toolbar"><label class="panel-search">Buscar usuario<input id="usersSearch" type="search" placeholder="Nombre, correo o rol"></label><button class="btn-primary" type="button" data-panel-form="user">+ Crear usuario</button></div>
       <p id="usersCount" class="panel-count"></p>
       <div class="table-scroll"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="usersTableBody"></tbody></table></div>
     </section>
 
     <section id="panel-tournaments" class="panel-module surface-card" data-panel-module="tournaments" hidden>
-      <div class="panel-module-header"><div><p class="section-eyebrow">Competencias</p><h2>TODOS LOS TORNEOS</h2><p id="tournamentsScope">Listado completo de competencias registradas.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <header class="panel-module-header"><div><p class="section-eyebrow">Competencias</p><h2>TODOS LOS TORNEOS</h2><p id="tournamentsScope">Listado completo de competencias registradas.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <div class="panel-toolbar"><label class="panel-search">Buscar torneo<input id="panelTournamentSearch" type="search" placeholder="Nombre o disciplina"></label><a class="btn-primary" href="crear-competencia.html">+ Nueva competencia</a></div>
       <p id="panelTournamentsCount" class="panel-count"></p>
       <div class="table-scroll"><table><thead><tr><th>Torneo</th><th>Disciplina</th><th>Fecha</th><th>Inscripciones</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="panelTournamentsBody"></tbody></table></div>
     </section>
 
     <section id="panel-participants" class="panel-module surface-card" data-panel-module="participants" hidden>
-      <div class="panel-module-header"><div><p class="section-eyebrow">Gestión</p><h2>PARTICIPANTES Y EQUIPOS</h2><p>Consulta todas las inscripciones y los planteles registrados.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <header class="panel-module-header"><div><p class="section-eyebrow">Gestión</p><h2>PARTICIPANTES Y EQUIPOS</h2><p>Consulta todas las inscripciones y los planteles registrados.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <div class="panel-tabs" role="tablist"><button class="active" type="button" data-roster-tab="participants">Participantes <span>246</span></button><button type="button" data-roster-tab="teams">Equipos <span>38</span></button></div>
       <div id="participantsRoster">
         <div class="panel-toolbar"><label class="panel-search">Buscar participante<input id="participantsSearch" type="search" placeholder="Nombre, equipo o torneo"></label><button class="btn-primary" type="button" data-panel-form="participant">+ Agregar participante</button></div>
@@ -84,7 +84,7 @@
     </section>
 
     <section id="panel-results" class="panel-module surface-card" data-panel-module="results" hidden>
-      <div class="panel-module-header"><div><p class="section-eyebrow">Competencia</p><h2>TODOS LOS RESULTADOS</h2><p>Partidos finalizados, próximos encuentros y resultados pendientes.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <header class="panel-module-header"><div><p class="section-eyebrow">Competencia</p><h2>TODOS LOS RESULTADOS</h2><p>Partidos finalizados, próximos encuentros y resultados pendientes.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <div class="panel-toolbar"><label class="panel-search">Buscar resultado<input id="resultsSearch" type="search" placeholder="Torneo, equipo o jugador"></label><select id="resultsStatus" aria-label="Filtrar resultados"><option value="">Todos los estados</option><option value="Oficial">Oficiales</option><option value="Pendiente">Pendientes</option><option value="Próximo">Próximos</option></select></div>
       <p id="resultsCount" class="panel-count"></p>
       <div class="table-scroll"><table><thead><tr><th>Torneo</th><th>Ronda / Fecha</th><th>Enfrentamiento</th><th>Resultado</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="resultsTableBody"></tbody></table></div>
@@ -92,7 +92,7 @@
     </section>
 
     <section id="panel-rounds" class="panel-module surface-card" data-panel-module="rounds" hidden>
-      <div class="panel-module-header"><div><p class="section-eyebrow">Competencia</p><h2>RONDAS Y LLAVES</h2><p>Genera enfrentamientos, revisa los cruces y controla su publicación.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <header class="panel-module-header"><div><p class="section-eyebrow">Competencia</p><h2>RONDAS Y LLAVES</h2><p>Genera enfrentamientos, revisa los cruces y controla su publicación.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <div class="panel-toolbar"><label class="panel-search">Torneo<select id="roundTournament"></select></label><button class="btn-primary" id="generateRound" type="button">+ Generar siguiente ronda</button></div>
       <div class="round-status-grid"><article><span>Formato</span><strong id="roundFormat">-</strong></article><article><span>Ronda actual</span><strong id="roundCurrent">-</strong></article><article><span>Estado</span><strong id="roundStatus">-</strong></article></div>
       <div class="bracket" id="roundBracket" aria-label="Vista de rondas y llaves"></div>
@@ -100,14 +100,14 @@
     </section>
 
     <section id="panel-reports" class="panel-module surface-card" data-panel-module="reports" hidden>
-      <div class="panel-module-header"><div><p class="section-eyebrow">Análisis</p><h2>REPORTES DE TORNEOS</h2><p>Consulta indicadores de los torneos dentro de tu ámbito de administración.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <header class="panel-module-header"><div><p class="section-eyebrow">Análisis</p><h2>REPORTES DE TORNEOS</h2><p>Consulta indicadores de los torneos dentro de tu ámbito de administración.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <div class="panel-toolbar"><label class="panel-search">Torneo<select id="reportTournament"><option value="">Todos los torneos</option></select></label><button class="btn-secondary" id="exportReport" type="button">Descargar CSV</button></div>
       <section class="report-grid" aria-label="Indicadores del reporte"><article><span>Inscripciones</span><strong id="reportRegistrations">-</strong></article><article><span>Ocupación promedio</span><strong id="reportOccupancy">-</strong></article><article><span>Partidos registrados</span><strong id="reportMatches">-</strong></article><article><span>Resultados oficiales</span><strong id="reportOfficial">-</strong></article></section>
       <div class="table-scroll"><table><thead><tr><th>Torneo</th><th>Disciplina</th><th>Inscripciones</th><th>Cupo</th><th>Partidos</th><th>Estado</th></tr></thead><tbody id="reportsTableBody"></tbody></table></div>
     </section>
 
     <section id="panel-audit" class="panel-module surface-card" data-panel-module="audit" data-admin-only hidden>
-      <div class="panel-module-header"><div><p class="section-eyebrow">Seguridad</p><h2>REGISTRO DE AUDITORÍA</h2><p>Historial completo de accesos y modificaciones del sistema.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <header class="panel-module-header"><div><p class="section-eyebrow">Seguridad</p><h2>REGISTRO DE AUDITORÍA</h2><p>Historial completo de accesos y modificaciones del sistema.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <div class="panel-toolbar"><label class="panel-search">Buscar evento<input id="auditSearch" type="search" placeholder="Usuario, acción o módulo"></label><button class="btn-secondary" type="button" id="exportAudit">Exportar registro</button></div>
       <p id="auditCount" class="panel-count"></p>
       <div class="table-scroll"><table><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Módulo</th><th>Detalle</th></tr></thead><tbody id="auditTableBody"></tbody></table></div>
@@ -115,7 +115,7 @@
     </section>
 
     <section id="panel-settings" class="panel-module surface-card" data-panel-module="settings" data-admin-only hidden>
-      <div class="panel-module-header"><div><p class="section-eyebrow">Sistema</p><h2>CONFIGURACIÓN GENERAL</h2><p>Habilita módulos y define las reglas generales de publicación.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></div>
+      <header class="panel-module-header"><div><p class="section-eyebrow">Sistema</p><h2>CONFIGURACIÓN GENERAL</h2><p>Habilita módulos y define las reglas generales de publicación.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <form id="systemSettingsForm" class="settings-form">
         <fieldset><legend>Módulos de competencia</legend>
           <label class="setting-row"><span><strong>Formato Liga</strong><small>Tabla de posiciones, fechas y puntajes.</small></span><input type="checkbox" name="league" checked></label>
