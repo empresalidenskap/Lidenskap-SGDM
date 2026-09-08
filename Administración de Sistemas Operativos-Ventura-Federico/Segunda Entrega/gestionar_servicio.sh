@@ -1,6 +1,6 @@
 #!/bin/bash
-#Descripción: Permite gestionar servicios del sistema
-#(systemd) de forma interactiva.
+
+set -euo pipefail
 
 VERDE='\033[0;32m'
 ROJO='\033[0;31m'
