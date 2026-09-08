@@ -23,7 +23,7 @@ RETENCION_DB=7                              # diario, 1 semana
 
 # --- Código de la app + configuración ---
 DIR_APP="/var/www/html"
-CONFIG_PATHS=(/etc/apache2 /etc/php /etc/firewalld)
+CONFIG_PATHS=(/etc/httpd /etc/php /etc/firewalld)   # /etc/httpd, no /etc/apache2: AlmaLinux/RHEL
 DIR_BACKUP_APP="/var/backups/sgdm/app"
 RETENCION_APP=4                             # semanal, 1 mes
 
