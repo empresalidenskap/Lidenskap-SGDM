@@ -1,6 +1,5 @@
 #!/bin/bash
 #    No se incluyen logs del sistema/aplicación (rotación aparte via logrotate).
-#    ver OFFSITE_HABILITADO más abajo.
 #   Requiere rsync: (sudo dnf install -y rsync mariadb).
 set -euo pipefail
 
@@ -17,7 +16,7 @@ DIR_BACKUP_APP="/var/backups/sgdm/app"
 RETENCION_APP=4
 
 # Copia offsite
-# pendiente de definir destino.
+# pendiente de dejarlo en true y ponerle las credencaiales de drive
 OFFSITE_HABILITADO="false"
 OFFSITE_USER="sgdm_backup"
 OFFSITE_HOST="backup.lidenskap.local"
