@@ -1,35 +1,23 @@
 #!/bin/bash
-# respaldo_sgdm.sh
-#   Implementa la política de respaldos definida para SGDM:
-#     - Base de datos MariaDB completa: diario 03:00, retención 7 copias (1 semana).
-#     - Código de la app + configuración de Apache/PHP/firewalld: semanal
-#       domingo 03:30, retención 4 copias (1 mes).
-#   No se incluyen logs del sistema/aplicación (rotación aparte via logrotate).
-#   Cada respaldo se comprime y se guarda localmente con rotación. La copia
-#   offsite (a un equipo distinto del servidor) queda pendiente de definir:
-#   ver OFFSITE_HABILITADO más abajo. La acción "instalar-cron" programa
-#   ambos respaldos en cron.
-#   Requiere rsync y el cliente de mariadb: al ser AlmaLinux Minimal no vienen
-#   preinstalados (sudo dnf install -y rsync mariadb).
+#    No se incluyen logs del sistema/aplicación (rotación aparte via logrotate).
+#    ver OFFSITE_HABILITADO más abajo.
+#   Requiere rsync: (sudo dnf install -y rsync mariadb).
 set -euo pipefail
 
 LOG="/var/log/sgdm_respaldos.log"
 
-# --- Base de datos ---
 DB_NAME="sgdm"
-DB_DEFAULTS_FILE="/etc/mysql/backup.cnf"   # [client] user=... password=...  (chmod 600, no versionar)
+DB_DEFAULTS_FILE="/etc/mysql/backup.cnf"
 DIR_BACKUP_DB="/var/backups/sgdm/bd"
-RETENCION_DB=7                              # diario, 1 semana
+RETENCION_DB=7
 
-# --- Código de la app + configuración ---
 DIR_APP="/var/www/html"
-CONFIG_PATHS=(/etc/httpd /etc/php /etc/firewalld)   # /etc/httpd, no /etc/apache2: AlmaLinux/RHEL
+CONFIG_PATHS=(/etc/httpd /etc/php /etc/firewalld)  
 DIR_BACKUP_APP="/var/backups/sgdm/app"
-RETENCION_APP=4                             # semanal, 1 mes
+RETENCION_APP=4
 
-# --- Copia offsite (equipo distinto al de producción) ---
-# TODO: pendiente de definir destino (sin servidor propio ni presupuesto para uno).
-# Cuando se decida, poner OFFSITE_HABILITADO="true" y completar los datos reales.
+# Copia offsite
+# pendiente de definir destino.
 OFFSITE_HABILITADO="false"
 OFFSITE_USER="sgdm_backup"
 OFFSITE_HOST="backup.lidenskap.local"
@@ -46,7 +34,7 @@ require_root() {
     fi
 }
 
-# AlmaLinux Minimal no trae rsync ni el cliente de mariadb por defecto:
+# RECORDATORIO pa mi: AlmaLinux Minimal no trae rsync ni el cliente de mariadb por defecto:
 # hay que instalarlos con dnf antes del primer uso.
 verificar_dependencias() {
     local faltan=()
@@ -65,7 +53,6 @@ verificar_dependencias() {
     fi
 }
 
-# Prefiere mariadb-dump (nombre actual en MariaDB 10.11); usa mysqldump si es lo único disponible.
 comando_dump() {
     if command -v mariadb-dump >/dev/null; then
         echo "mariadb-dump"
@@ -74,7 +61,6 @@ comando_dump() {
     fi
 }
 
-# Elimina las copias más antiguas de $dir que excedan $retencion, según $patron.
 rotar_backups() {
     local dir=$1
     local patron=$2
