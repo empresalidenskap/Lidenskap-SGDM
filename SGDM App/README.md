@@ -5,7 +5,7 @@ backend PHP + base de datos MySQL) del Sistema de Gestión Deportiva
 Modular, ejecutable con un solo comando de Docker. Vive aparte de las
 carpetas de cada materia porque es el mismo código para todas. No
 pertenece a ninguna entrega en particular, aunque su desarrollo se
-documenta y evalúa dentro de **Programación Fullstack**
+documenta y evalúa dentro de **Programación Fullstack**.
 (`../Programación Fullstack-Ventura-Federico/`).
 
 ## Cómo levantarla
