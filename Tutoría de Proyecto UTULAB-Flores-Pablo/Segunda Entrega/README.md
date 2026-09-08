@@ -12,8 +12,6 @@ Requisitos de la letra de proyecto para esta entrega:
 
 ## Correcciones pendientes de la primera entrega
 
-Nota de la Entrega 1: 8/10 (Avance Significativo). Puntos a incorporar para la Entrega 2:
-
 - Formalizar **User Personas** (perfiles ficticios de organizadores, atletas y usuarios
   públicos) detallando necesidades, dolores y contextos de uso reales, para cubrir la
   competencia de Diseño Centrado en las Personas (CET3).
