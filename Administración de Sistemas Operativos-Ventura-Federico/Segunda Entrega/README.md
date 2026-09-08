@@ -14,7 +14,7 @@ Requisitos de la letra de proyecto para esta entrega:
     copia local con rotación)
 - [ ] Sistema de monitoreo implementado en el servidor (Zabbix, Grafana, etc.) Documentar Instalación
 - [x] Gestión de servicios (systemd) en `gestionar_servicio.sh` (start, stop,
-      restart, status, enable, disable de forma interactiva)
+      restart, status, enable, disable de forma interactiva).
 
 ## Correcciones pendientes de la primera entrega
 
