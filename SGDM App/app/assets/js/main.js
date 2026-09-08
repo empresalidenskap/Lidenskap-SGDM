@@ -645,6 +645,13 @@ function hasPermission(permission) {
   return Boolean(sesionUsuario && SGDM_PERMISSIONS[sesionUsuario.rol]?.includes(permission));
 }
 
+function passwordToggleButtonHtml() {
+  return `<button type="button" class="password-toggle" aria-label="Mostrar contraseña" aria-pressed="false">
+      <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+      <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.27 21.27 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.27 21.27 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+    </button>`;
+}
+
 function createAuthModal() {
   document.getElementById('loginModal')?.remove();
   document.body.insertAdjacentHTML('beforeend', `
@@ -660,11 +667,11 @@ function createAuthModal() {
           <p class="auth-help">Ingresá con tu cuenta, o probá una de las cuentas de demostración.</p>
           <form id="loginForm">
             <div class="field"><label for="loginEmail">Correo electrónico</label><input type="email" id="loginEmail" autocomplete="username" required></div>
-            <div class="field"><label for="loginPassword">Contraseña</label><input type="password" id="loginPassword" autocomplete="current-password" required></div>
+            <div class="field"><label for="loginPassword">Contraseña</label><div class="password-field"><input type="password" id="loginPassword" autocomplete="current-password" required>${passwordToggleButtonHtml()}</div></div>
             <p id="loginError" class="auth-error" hidden>Correo o contraseña incorrectos.</p>
             <button class="btn-primary" type="submit">Ingresar</button>
           </form>
-          <details class="demo-accounts"><summary>Ver cuentas de demostración</summary><ul><li><b>Administrador:</b> admin@lidenskap.com / admin123</li><li><b>Organizador:</b> organizador@lidenskap.com / org123</li><li><b>Participante:</b> atleta@lidenskap.com / user123</li><li><b>Usuario público:</b> publico@lidenskap.com / guest123</li></ul></details>
+          <details class="demo-accounts"><summary>Ver cuentas de demostración</summary><ul><li><b>Administrador:</b> admin@lidenskap.com / admin123</li><li><b>Organizador:</b> organizador@lidenskap.com / org123</li><li><b>Árbitro:</b> arbitro@lidenskap.com / arb123</li><li><b>Participante:</b> atleta@lidenskap.com / user123</li><li><b>Usuario público:</b> publico@lidenskap.com / guest123</li></ul></details>
         </section>
         <section id="viewRegister" hidden>
           <p class="section-eyebrow">Nueva cuenta</p><h2>REGISTRARSE</h2>
@@ -673,7 +680,7 @@ function createAuthModal() {
             <div class="field"><label for="registerNombre">Nombre</label><input id="registerNombre" autocomplete="given-name" required></div>
             <div class="field"><label for="registerApellido">Apellido</label><input id="registerApellido" autocomplete="family-name" required></div>
             <div class="field"><label for="registerEmail">Correo electrónico</label><input id="registerEmail" type="email" autocomplete="username" required></div>
-            <div class="field"><label for="registerPassword">Contraseña</label><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required></div>
+            <div class="field"><label for="registerPassword">Contraseña</label><div class="password-field"><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required>${passwordToggleButtonHtml()}</div></div>
             <p id="registerError" class="auth-error" hidden></p>
             <button class="btn-primary" type="submit">Crear cuenta</button>
             <p id="registerFeedback" class="form-feedback" aria-live="polite"></p>
@@ -813,7 +820,7 @@ function renderAccountNav() {
   slot.innerHTML = `
     <div class="profile-dropdown" id="profileDropdownWrap">
       <button type="button" class="btn-outline profile-dropdown-btn" id="profileDropdownBtn" aria-expanded="false" aria-haspopup="true">
-        Mi Perfil <span class="dropdown-caret" aria-hidden="true">▾</span>
+        Mi Perfil <span class="dropdown-caret" aria-hidden="true">▼</span>
       </button>
       <div class="profile-menu" id="profileMenu">
         <div class="profile-menu-header">
@@ -962,6 +969,20 @@ function applyRouteGuard() {
 }
 
 document.addEventListener('click', event => {
+  const passwordToggle = event.target.closest('.password-toggle');
+  if (passwordToggle) {
+    const input = passwordToggle.closest('.password-field')?.querySelector('input');
+    if (input) {
+      const showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      passwordToggle.setAttribute('aria-pressed', String(!showing));
+      passwordToggle.setAttribute('aria-label', showing ? 'Mostrar contraseña' : 'Ocultar contraseña');
+      passwordToggle.querySelector('.icon-eye').hidden = !showing;
+      passwordToggle.querySelector('.icon-eye-off').hidden = showing;
+    }
+    return;
+  }
+
   const loginTrigger = event.target.closest('[data-open-login]');
   const registerTrigger = event.target.closest('[data-open-register]');
   if (loginTrigger) {
@@ -1592,7 +1613,11 @@ function initializeDashboardByRole() {
       if (field.type === 'select') {
         return `<div class="field ${field.full ? 'field-full' : ''}"><label for="panel-${field.name}">${field.label}</label><select id="panel-${field.name}" name="${field.name}" required>${field.options.map(option => `<option value="${option}"${option === value ? ' selected' : ''}>${option}</option>`).join('')}</select></div>`;
       }
-      return `<div class="field ${field.full ? 'field-full' : ''}"><label for="panel-${field.name}">${field.label}</label><input id="panel-${field.name}" name="${field.name}" type="${field.type || 'text'}" value="${value}" ${field.required === false ? '' : 'required'}></div>`;
+      const inputHtml = `<input id="panel-${field.name}" name="${field.name}" type="${field.type || 'text'}" value="${value}" ${field.required === false ? '' : 'required'}>`;
+      if (field.type === 'password') {
+        return `<div class="field ${field.full ? 'field-full' : ''}"><label for="panel-${field.name}">${field.label}</label><div class="password-field">${inputHtml}${passwordToggleButtonHtml()}</div></div>`;
+      }
+      return `<div class="field ${field.full ? 'field-full' : ''}"><label for="panel-${field.name}">${field.label}</label>${inputHtml}</div>`;
     }).join('') + `<div class="form-actions field-full"><button class="btn-primary" type="submit">${submitLabel}</button><button class="btn-secondary" type="button" data-cancel-panel-form>Cancelar</button></div>`;
     panelRecordForm.onsubmit = event => {
       event.preventDefault();

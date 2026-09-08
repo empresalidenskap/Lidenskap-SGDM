@@ -1003,6 +1003,16 @@ nav {
 }
 .field textarea { resize: vertical; }
 .field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.password-field { position: relative; }
+.password-field input { padding-right: 2.75rem; }
+.password-toggle {
+  position: absolute; top: 50%; right: 0.5rem; transform: translateY(-50%);
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%;
+  background: transparent; color: var(--accent); cursor: pointer;
+}
+.password-toggle:hover, .password-toggle:focus-visible { background: rgba(112, 0, 14, 0.12); }
+.password-toggle svg { width: 22px; height: 22px; pointer-events: none; }
 .results-heading { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
 .results-heading > p { color: var(--text-secondary); }
 .card-top, .detail-badges { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6rem; }
