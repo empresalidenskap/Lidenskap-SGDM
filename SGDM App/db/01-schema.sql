@@ -236,7 +236,7 @@ JOIN torneo t       ON t.id_torneo      = i.id_torneo
 JOIN tipo_torneo tt ON tt.id_tipo_torneo = t.id_tipo_torneo;
 
 -- Roles base
-INSERT INTO rol (nombre_rol) VALUES ('ADMIN'), ('ORGANIZADOR'), ('PARTICIPANTE'), ('PUBLICO');
+INSERT INTO rol (nombre_rol) VALUES ('ADMIN'), ('ORGANIZADOR'), ('ARBITRO'), ('PARTICIPANTE'), ('PUBLICO');
 
 -- Catálogo de formatos de torneo, con su regla de puntaje
 INSERT INTO tipo_torneo (nombre_tipo, descripcion, puntos_victoria, puntos_empate, puntos_derrota) VALUES

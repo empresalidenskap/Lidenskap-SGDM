@@ -14,6 +14,7 @@ final class RoleLabels
     private const LABELS = [
         'ADMIN' => 'Administrador general',
         'ORGANIZADOR' => 'Organizador de torneo',
+        'ARBITRO' => 'Árbitro',
         'PARTICIPANTE' => 'Participante',
         'PUBLICO' => 'Usuario público',
     ];

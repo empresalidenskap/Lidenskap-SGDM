@@ -114,11 +114,13 @@ Con el túnel abierto, entrar a `http://localhost:19999` en el navegador local.
   `USAGE, PROCESS, REPLICATION CLIENT` — sin acceso a ninguna tabla ni base de
   datos de la app. Mismo principio de privilegio mínimo ya usado en
   `../Primera Entrega/gestion_usuarios.sh`.
-
-No se implementó un collector de Apache (`mod_status`): hubiera requerido tocar la
-configuración de `/etc/httpd` y recargar el servicio web de la app en producción
-para un beneficio marginal, dado que el monitoreo de sistema operativo ya cubre el
-requisito. Queda como posible trabajo futuro.
+- **Apache** (opcional, vía `sudo ./monitoreo_sgdm.sh collectors-apache`): habilita
+  `mod_status` (ya viene compilado en `httpd`, no requiere paquete aparte) mediante
+  una conf propia en `/etc/httpd/conf.d/status-netdata.conf` que solo permite el
+  acceso a `/server-status` desde `localhost` (`Require local`), y apunta el
+  collector `go.d/apache` de netdata a `http://127.0.0.1/server-status?auto`. No
+  se abre ningún puerto nuevo: `/server-status` se sirve dentro del mismo Apache
+  que ya escucha en 80/443, solo que restringido a loopback.
 
 ## 8. Mantenimiento
 
@@ -130,7 +132,6 @@ requisito. Queda como posible trabajo futuro.
 
 ## 9. Limitaciones / pendientes
 
-- Collector de Apache (`mod_status`) no implementado — ver sección 7.
 - El nombre exacto de la directiva de retención en disco de `netdata.conf` puede
   variar según la versión de Netdata que instale el kickstart en el momento; el
   script prueba varios nombres conocidos y avisa en el log si no encuentra

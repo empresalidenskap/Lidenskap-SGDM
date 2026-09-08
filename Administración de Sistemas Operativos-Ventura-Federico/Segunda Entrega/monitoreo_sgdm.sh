@@ -24,6 +24,9 @@ MYSQL_MONITOR_USER="netdata_monitor"
 MYSQL_MONITOR_HOST="localhost"
 MYSQL_MONITOR_CONF="/etc/netdata/go.d/mysql.conf"
 
+APACHE_STATUS_CONF="/etc/httpd/conf.d/status-netdata.conf"
+APACHE_MONITOR_CONF="/etc/netdata/go.d/apache.conf"
+
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG" >/dev/null
 }
@@ -165,6 +168,52 @@ EOF
     log "Collector de MariaDB configurado: usuario '${MYSQL_MONITOR_USER}'@'${MYSQL_MONITOR_HOST}' (solo metadatos, sin acceso a datos)."
 }
 
+# mod_status ya viene compilado dentro de httpd (no es un paquete aparte),
+# así que solo hace falta habilitarlo con una conf propia: no se toca
+# httpd.conf directamente, y el endpoint queda cerrado a cualquier IP que
+# no sea localhost (mismo criterio que el dashboard de netdata: nada nuevo
+# expuesto hacia afuera, solo lo que la app ya sirve en el 80/443).
+collectors_apache() {
+    require_root
+    verificar_netdata_instalado
+
+    if [[ ! -d /etc/httpd/conf.d ]]; then
+        log "ERROR: no se encontró /etc/httpd/conf.d; ¿está Apache (httpd) instalado?"
+        echo "Error: no se encontró /etc/httpd/conf.d; ¿está Apache (httpd) instalado?" >&2
+        exit 1
+    fi
+
+    cat > "$APACHE_STATUS_CONF" <<EOF
+# Generado por monitoreo_sgdm.sh collectors-apache
+# server-status solo accesible desde localhost (lo consume netdata local)
+<Location "/server-status">
+    SetHandler server-status
+    Require local
+</Location>
+ExtendedStatus On
+EOF
+    log "Config de mod_status escrita en $APACHE_STATUS_CONF (solo accesible desde localhost)."
+
+    if ! apachectl configtest >>"$LOG" 2>&1; then
+        log "ERROR: apachectl configtest falló tras agregar $APACHE_STATUS_CONF; revirtiendo."
+        rm -f "$APACHE_STATUS_CONF"
+        exit 1
+    fi
+    systemctl reload httpd
+    log "Apache recargado con mod_status habilitado."
+
+    mkdir -p "$(dirname "$APACHE_MONITOR_CONF")"
+    cat > "$APACHE_MONITOR_CONF" <<EOF
+jobs:
+  - name: local
+    url: http://127.0.0.1/server-status?auto
+EOF
+    chmod 644 "$APACHE_MONITOR_CONF"
+
+    systemctl restart "$SERVICIO"
+    log "Collector de Apache configurado contra http://127.0.0.1/server-status?auto."
+}
+
 todo() {
     instalar
     configurar
@@ -179,6 +228,7 @@ Acciones:
   configurar        Ajusta netdata.conf: dashboard solo en 127.0.0.1 y retención en disco limitada
   estado            Muestra si el servicio está activo y recuerda el túnel SSH
   collectors-mysql  Crea '${MYSQL_MONITOR_USER}'@'${MYSQL_MONITOR_HOST}' de solo metadatos para el collector de MariaDB
+  collectors-apache Habilita mod_status (solo localhost) y configura el collector de Apache
   todo              Ejecuta 'instalar' y 'configurar' en secuencia
 
 Nota: el dashboard (puerto 19999) nunca se expone en firewalld; se accede
@@ -194,6 +244,7 @@ main() {
         configurar)        configurar ;;
         estado)            estado ;;
         collectors-mysql)  collectors_mysql ;;
+        collectors-apache) collectors_apache ;;
         todo)              todo ;;
         *)                 uso; exit 1 ;;
     esac

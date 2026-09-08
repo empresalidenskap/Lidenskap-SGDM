@@ -43,6 +43,7 @@ sesión" en el sitio):
 |---|---|---|
 | Administrador general | `admin@lidenskap.com` | `admin123` |
 | Organizador de torneo | `organizador@lidenskap.com` | `org123` |
+| Árbitro | `arbitro@lidenskap.com` | `arb123` |
 | Participante | `atleta@lidenskap.com` | `user123` |
 | Usuario público | `publico@lidenskap.com` | `guest123` |
 

@@ -617,6 +617,10 @@ if (sportsScrollMenu) {
 const SGDM_PERMISSIONS = {
   ADMIN: ['view_public', 'view_profile', 'edit_profile', 'create_tournament', 'manage_tournaments', 'manage_users', 'manage_participants', 'manage_results', 'view_reports', 'view_audit', 'manage_settings'],
   ORGANIZADOR: ['view_public', 'view_profile', 'manage_tournaments', 'manage_participants', 'manage_results', 'view_reports'],
+  // RF-11: el Árbitro solo lee/actualiza resultados de sus encuentros asignados
+  // (no crea ni elimina); el acotamiento a "sus" encuentros se aplica en el
+  // backend cuando se implemente el módulo de resultados (Tercera Entrega).
+  ARBITRO: ['view_public', 'view_profile', 'edit_profile', 'manage_results'],
   PARTICIPANTE: ['view_public', 'view_profile', 'edit_profile', 'join_tournament'],
   PUBLICO: ['view_public', 'view_profile']
 };
@@ -741,7 +745,7 @@ function initializeAuthentication() {
       }
       sessionStorage.setItem('lidenskap-user', JSON.stringify(data.user));
       sesionUsuario = data.user;
-      const destination = authReturnTo || (sesionUsuario.rol === 'ADMIN' || sesionUsuario.rol === 'ORGANIZADOR' ? 'panel.html' : 'perfil.html');
+      const destination = authReturnTo || (['ADMIN', 'ORGANIZADOR', 'ARBITRO'].includes(sesionUsuario.rol) ? 'panel.html' : 'perfil.html');
       window.location.href = destination;
     } catch {
       loginError.textContent = 'No se pudo conectar con el servidor. Intentá de nuevo.';
@@ -1451,6 +1455,16 @@ function initializeProfileEditor() {
         ['status-open', 'Abierto', 'Open Individual de Verano', 'Tenis · 18 de 32 cupos', 'detalle-torneo.html?id=open-tenis']
       ]
     },
+    ARBITRO: {
+      subtitle: 'Actualiza resultados de los encuentros que tiene asignados',
+      stats: [['Encuentros asignados', '4'], ['Resultados cargados', '2'], ['Rondas activas', '1'], ['Reportes', '0']],
+      extras: [['Nivel de acceso', 'Encuentros asignados'], ['Ámbito', 'Carga de resultados']],
+      activityTitle: 'ENCUENTROS ASIGNADOS',
+      activity: [
+        ['status-progress', 'Pendiente', 'Cargar resultado', 'Copa Apertura · Fecha 3', 'panel.html#panel-results'],
+        ['status-open', 'Programado', 'Próximo encuentro', 'Liga Juvenil U18 · Fecha 5', 'panel.html#panel-results']
+      ]
+    },
     PARTICIPANTE: {
       subtitle: 'Montevideo, Uruguay · Miembro desde marzo de 2026',
       stats: [['Torneos jugados', '12'], ['Victorias', '28'], ['Posición histórica', '#18'], ['Próximo partido', '03 AGO']],
@@ -1617,7 +1631,7 @@ function initializeDashboardByRole() {
     render();
   };
 
-  const ROL_LABEL = { ADMIN: 'Administrador general', ORGANIZADOR: 'Organizador', PARTICIPANTE: 'Participante', PUBLICO: 'Usuario público' };
+  const ROL_LABEL = { ADMIN: 'Administrador general', ORGANIZADOR: 'Organizador', ARBITRO: 'Árbitro', PARTICIPANTE: 'Participante', PUBLICO: 'Usuario público' };
   const ROL_LABEL_A_CODIGO = Object.fromEntries(Object.entries(ROL_LABEL).map(([code, label]) => [label, code]));
 
   if (isAdmin) {
@@ -1668,7 +1682,7 @@ function initializeDashboardByRole() {
       fields: [
         { name: 'nombre', label: 'Nombre' }, { name: 'apellido', label: 'Apellido' },
         { name: 'email', label: 'Correo', type: 'email' }, { name: 'password', label: 'Contraseña inicial', type: 'password' },
-        { name: 'rol', label: 'Rol', type: 'select', options: ['Administrador general', 'Organizador'], full: true },
+        { name: 'rol', label: 'Rol', type: 'select', options: ['Administrador general', 'Organizador', 'Árbitro'], full: true },
       ],
       onSubmit: data => {
         fetch('api/usuarios.php', {

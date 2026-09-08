@@ -15,8 +15,11 @@ servidor con el sistema funcionando.
       Agregacion con torneo e inscripcion que se relaciona con acumula, tabla posiciones
 - [x] Modelo relacional normalizado hasta 3FN, con justificaciones de
       normalización: el modelo está en
-      [`01-schema.sql`](./01-schema.sql) (16 tablas) y las justificaciones
-      en [`Normalizacion_SGDM_3FN.pdf`](./Normalizacion_SGDM_3FN.pdf) Corregir la justificación según la corrección del MER
+      [`01-schema.sql`](./01-schema.sql) (16 tablas, ahora con el rol
+      `ARBITRO`) y las justificaciones en
+      [`Normalizacion_SGDM_3FN.pdf`](./Normalizacion_SGDM_3FN.pdf), ya
+      corregidas según la agregación TORNEO-Recibe-INSCRIPCION del MER
+      corregido
 - [x] Scripts DDL y DCL: DDL en [`01-schema.sql`](./01-schema.sql), DCL en
       [`02-users.sh`](./02-users.sh) (GRANT/REVOKE, tres niveles de usuario:
       `sgdm_admin`, `sgdm_app`, `sgdm_consulta`). Son copia de los que usa
@@ -28,7 +31,9 @@ servidor con el sistema funcionando.
 - [x] Implementación funcional completa según las pautas de la segunda
       entrega: login y registro con sesión de servidor, torneos
       (crear/listar/ver detalle/eliminar) y el módulo de usuarios y roles
-      del panel, todo con POO en PHP
+      del panel (ahora con el rol Árbitro, ver
+      [`RoleLabels.php`](../../SGDM%20App/app/src/RoleLabels.php)), todo
+      con POO en PHP
       ([`app/api/`](../../SGDM%20App/app/api),
       [`app/src/Models/`](../../SGDM%20App/app/src/Models)) sobre Apache y
       Docker ([`Dockerfile`](../../SGDM%20App/Dockerfile),

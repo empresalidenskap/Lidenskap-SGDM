@@ -68,9 +68,9 @@ function handleCreate(): void
     // Desde el panel solo se crean cuentas administrativas. Participante se
     // obtiene por inscripción (ver api/register.php) y Publico por
     // autorregistro — no tiene sentido darlas de alta manualmente acá.
-    if (!in_array($rolCodigo, ['ADMIN', 'ORGANIZADOR'], true)) {
+    if (!in_array($rolCodigo, ['ADMIN', 'ORGANIZADOR', 'ARBITRO'], true)) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Desde acá solo se pueden crear cuentas de Administrador u Organizador.']);
+        echo json_encode(['success' => false, 'error' => 'Desde acá solo se pueden crear cuentas de Administrador, Organizador o Árbitro.']);
         return;
     }
 
