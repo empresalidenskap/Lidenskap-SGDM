@@ -41,49 +41,54 @@ fi
 echo -e "${VERDE}El servicio '$servicio' existe.${SIN_COLOR}"
 echo ""
 
-echo "Seleccione la acción a realizar:"
-echo "1) Iniciar (start)"
-echo "2) Detener (stop)"
-echo "3) Reiniciar (restart)"
-echo "4) Ver estado (status)"
-echo "5) Habilitar en el arranque (enable)"
-echo "6) Deshabilitar en el arranque (disable)"
-echo "7) Salir"
+while true; do
+    echo "Seleccione la acción a realizar sobre '$servicio':"
+    echo "1) Iniciar (start)"
+    echo "2) Detener (stop)"
+    echo "3) Reiniciar (restart)"
+    echo "4) Ver estado (status)"
+    echo "5) Habilitar en el arranque (enable)"
+    echo "6) Deshabilitar en el arranque (disable)"
+    echo "7) Salir"
 
-if ! read -p "Opción [1-7]: " opcion; then
-    echo ""
-    echo -e "${ROJO}Entrada finalizada (EOF). Saliendo del script.${SIN_COLOR}"
-    exit 1
-fi
-
-case $opcion in
-    1) accion="start" ;;
-    2) accion="stop" ;;
-    3) accion="restart" ;;
-    4) accion="status" ;;
-    5) accion="enable" ;;
-    6) accion="disable" ;;
-    7)
-        echo "Saliendo..."
-        exit 0
-        ;;
-    *)
-        echo -e "${ROJO}Opción inválida.${SIN_COLOR}"
+    if ! read -p "Opción [1-7]: " opcion; then
+        echo ""
+        echo -e "${ROJO}Entrada finalizada (EOF). Saliendo del script.${SIN_COLOR}"
         exit 1
-        ;;
-esac
-
-echo ""
-echo "Ejecutando: systemctl $accion $unidad"
-
-if [[ "$accion" == "status" ]]; then
-    systemctl status "$unidad" --no-pager
-else
-    systemctl "$accion" "$unidad"
-    resultado=$?
-    if [[ $resultado -eq 0 ]]; then
-        echo -e "${VERDE}Acción '$accion' realizada correctamente sobre '$servicio'.${SIN_COLOR}"
-    else
-        echo -e "${ROJO}Ocurrió un error al ejecutar '$accion' sobre '$servicio'.${SIN_COLOR}"
     fi
-fi
+
+    case $opcion in
+        1) accion="start" ;;
+        2) accion="stop" ;;
+        3) accion="restart" ;;
+        4) accion="status" ;;
+        5) accion="enable" ;;
+        6) accion="disable" ;;
+        7)
+            echo "Saliendo..."
+            exit 0
+            ;;
+        *)
+            echo -e "${ROJO}Opción inválida.${SIN_COLOR}"
+            echo ""
+            continue
+            ;;
+    esac
+
+    echo ""
+    echo "Ejecutando: systemctl $accion $unidad"
+
+    if [[ "$accion" == "status" ]]; then
+        systemctl status "$unidad" --no-pager
+    else
+        systemctl "$accion" "$unidad"
+        resultado=$?
+        if [[ $resultado -eq 0 ]]; then
+            echo -e "${VERDE}Acción '$accion' realizada correctamente sobre '$servicio'.${SIN_COLOR}"
+        else
+            echo -e "${ROJO}Ocurrió un error al ejecutar '$accion' sobre '$servicio'.${SIN_COLOR}"
+        fi
+    fi
+
+    echo ""
+done
