@@ -70,9 +70,20 @@ levantarlo en [`SGDM App/README.md`](../../SGDM%20App/README.md).
         Configuración) y de la tarjeta de reglamento en
         `detalle-torneo.html`; y a `<section>` los widgets de edición de
         perfil (`perfil.html`) y de acceso restringido
-        (`crear-competencia.html`). Conteo real de etiquetas en
-        `SGDM App/app/*.html`, antes de tocar nada hoy → ahora:
-        `header` 8→17, `section` 26→35, `div` 254→236.
+        (`crear-competencia.html`).
+      - Tercera pasada: se corrigieron dos usos inconsistentes de `<div>`
+        donde el resto del sitio ya usaba una etiqueta más correcta —
+        `.section-eyebrow` era `<p>` en 23 lugares y `<div>` solo en 2 (los
+        dos en `index.html`), y `.format-name` en las tarjetas de formato de
+        `index.html` pasó a `<h3>` para igualar el patrón que ya usaban las
+        tarjetas de disciplina. También se llevó `.footer-copy` (texto de
+        copyright, `<div>` en las 10 páginas) a `<p>`, la etiqueta correcta
+        para una línea de texto. No son de la lista del profesor
+        (`header`/`nav`/`main`/`section`/`article`/`aside`/`footer`), pero
+        sí son estructuras semánticas reales — no se usó `<span>` (es un
+        elemento en línea, no reemplaza al uso de `<div>` en bloques).
+        Conteo real de etiquetas en `SGDM App/app/*.html`, antes de tocar
+        nada hoy → ahora: `header` 8→17, `section` 26→35, `div` 254→221.
 - [x] Carpeta con el esquema de pantallas:
       [`esquema-pantallas/`](./esquema-pantallas/) (inventario de pantallas,
       ruta, propósito y acceso por rol, más mapa de navegación — sin
