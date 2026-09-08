@@ -1,4 +1,5 @@
 -- Modelo relacional del SGDM (Segunda Entrega — Programación Fullstack)
+-- Normalizado hasta 3FN. Justificaciones en NORMALIZACION.md.
 
 SET NAMES utf8mb4;
 
@@ -81,10 +82,15 @@ CREATE TABLE equipo_participante (
 );
 
 -- TIPO_TORNEO (formato: liga, eliminación directa, sistema suizo)
+-- El puntaje es un hecho del formato (id_tipo_torneo -> puntos_*), por eso vive
+-- acá y no en tabla_posiciones: ver NORMALIZACION.md, punto 5.5.
 CREATE TABLE tipo_torneo (
     id_tipo_torneo  INT AUTO_INCREMENT PRIMARY KEY,
     nombre_tipo     VARCHAR(50) NOT NULL UNIQUE,
-    descripcion     TEXT
+    descripcion     TEXT,
+    puntos_victoria DECIMAL(3,1) NOT NULL DEFAULT 3.0,
+    puntos_empate   DECIMAL(3,1) NOT NULL DEFAULT 1.0,
+    puntos_derrota  DECIMAL(3,1) NOT NULL DEFAULT 0.0
 );
 
 -- MODULO_COMPETENCIA (disciplina)
@@ -163,12 +169,13 @@ CREATE TABLE enfrentamiento (
 );
 
 -- RESULTADO
+-- 3FN: 'ganador' NO se almacena porque se deduce de las dos puntuaciones
+-- (DF con determinante que no es superclave). Se expone en vista_resultado.
 CREATE TABLE resultado (
     id_resultado          INT AUTO_INCREMENT PRIMARY KEY,
     id_enfrentamiento     INT NOT NULL UNIQUE,
     puntuacion_local      INT NOT NULL DEFAULT 0,
     puntuacion_visitante  INT NOT NULL DEFAULT 0,
-    ganador               ENUM('local', 'visitante', 'empate'),
     validado              BOOLEAN NOT NULL DEFAULT FALSE,
     fecha_carga           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_resultado_enfrentamiento FOREIGN KEY (id_enfrentamiento) REFERENCES enfrentamiento(id_enfrentamiento)
@@ -176,26 +183,66 @@ CREATE TABLE resultado (
 );
 
 -- TABLA_POSICIONES
+-- 3FN: 'partidos_jugados' (= victorias + empates + derrotas) y
+-- 'puntos_acumulados' (según el puntaje del formato) NO se almacenan porque
+-- son atributos derivados. Se exponen en vista_tabla_posiciones.
 CREATE TABLE tabla_posiciones (
     id_posicion         INT AUTO_INCREMENT PRIMARY KEY,
     id_inscripcion      INT NOT NULL UNIQUE,
-    partidos_jugados    INT NOT NULL DEFAULT 0,
     victorias           INT NOT NULL DEFAULT 0,
     empates             INT NOT NULL DEFAULT 0,
     derrotas            INT NOT NULL DEFAULT 0,
-    puntos_acumulados   INT NOT NULL DEFAULT 0,
     CONSTRAINT fk_posiciones_inscripcion FOREIGN KEY (id_inscripcion) REFERENCES inscripcion(id_inscripcion)
         ON DELETE CASCADE
 );
 
+-- ---------------------------------------------------------------------------
+-- VISTAS DE ATRIBUTOS DERIVADOS
+-- No almacenan datos: reponen la información que se quitó de las tablas base
+-- para cumplir 3FN. Ver NORMALIZACION.md, puntos 5.4 y 5.5.
+-- ---------------------------------------------------------------------------
+
+CREATE OR REPLACE VIEW vista_resultado AS
+SELECT
+    r.id_resultado,
+    r.id_enfrentamiento,
+    r.puntuacion_local,
+    r.puntuacion_visitante,
+    CASE
+        WHEN r.puntuacion_local > r.puntuacion_visitante THEN 'local'
+        WHEN r.puntuacion_local < r.puntuacion_visitante THEN 'visitante'
+        ELSE 'empate'
+    END AS ganador,
+    r.validado,
+    r.fecha_carga
+FROM resultado r;
+
+CREATE OR REPLACE VIEW vista_tabla_posiciones AS
+SELECT
+    tp.id_posicion,
+    tp.id_inscripcion,
+    i.id_torneo,
+    i.id_competidor,
+    tp.victorias,
+    tp.empates,
+    tp.derrotas,
+    (tp.victorias + tp.empates + tp.derrotas) AS partidos_jugados,
+    (tp.victorias * tt.puntos_victoria
+   + tp.empates   * tt.puntos_empate
+   + tp.derrotas  * tt.puntos_derrota) AS puntos_acumulados
+FROM tabla_posiciones tp
+JOIN inscripcion i  ON i.id_inscripcion = tp.id_inscripcion
+JOIN torneo t       ON t.id_torneo      = i.id_torneo
+JOIN tipo_torneo tt ON tt.id_tipo_torneo = t.id_tipo_torneo;
+
 -- Roles base
 INSERT INTO rol (nombre_rol) VALUES ('ADMIN'), ('ORGANIZADOR'), ('PARTICIPANTE'), ('PUBLICO');
 
--- Catálogo de formatos de torneo
-INSERT INTO tipo_torneo (nombre_tipo, descripcion) VALUES
-    ('Liga', 'Todos contra todos'),
-    ('Eliminación Directa', 'Llaves de eliminación directa'),
-    ('Sistema Suizo', 'Emparejamiento por rendimiento acumulado');
+-- Catálogo de formatos de torneo, con su regla de puntaje
+INSERT INTO tipo_torneo (nombre_tipo, descripcion, puntos_victoria, puntos_empate, puntos_derrota) VALUES
+    ('Liga', 'Todos contra todos', 3.0, 1.0, 0.0),
+    ('Eliminación Directa', 'Llaves de eliminación directa', 1.0, 0.0, 0.0),
+    ('Sistema Suizo', 'Emparejamiento por rendimiento acumulado', 1.0, 0.5, 0.0);
 
 -- Catálogo de disciplinas
 INSERT INTO modulo_competencia (nombre_modulo) VALUES

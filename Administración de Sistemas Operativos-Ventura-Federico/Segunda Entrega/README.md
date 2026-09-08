@@ -12,7 +12,7 @@ Requisitos de la letra de proyecto para esta entrega:
   - [ ] Definir destino de la copia offsite (sin servidor propio ni
     presupuesto para uno; hoy `OFFSITE_HABILITADO="false"`, solo queda
     copia local con rotación)
-- [ ] Sistema de monitoreo implementado en el servidor (Zabbix, Grafana, etc.)
+- [ ] Sistema de monitoreo implementado en el servidor (Zabbix, Grafana, etc.) Documentar Instalación
 - [x] Gestión de servicios (systemd) en `gestionar_servicio.sh` (start, stop,
       restart, status, enable, disable de forma interactiva)
 
