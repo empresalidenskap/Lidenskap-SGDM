@@ -1,38 +1,29 @@
 #!/bin/bash
-# monitoreo_sgdm.sh
-#   Instala y configura Netdata (agente de monitoreo en tiempo real) para
-#   SGDM, elegido sobre Zabbix/Grafana por el presupuesto de recursos del
-#   servidor (1 vCPU / 4GB RAM / 32GB disco thin-provisioned, ver Primera
-#   Entrega): es un único agente liviano con dashboard web incorporado,
-#   sin base de datos propia ni proceso servidor pesado.
+#   Instala y configura Netdata
 #   El dashboard (puerto 19999) NUNCA se expone en firewalld ni se
 #   reverse-proxea por Apache: se ajusta netdata.conf para escuchar solo en
-#   127.0.0.1, y el acceso remoto es exclusivamente por túnel SSH:
-#     ssh -L 19999:localhost:19999 usuario@ip_servidor
-#   (misma idea de superficie de ataque mínima usada en el resto del
-#   proyecto: administración solo por SSH, sin abrir puertos nuevos).
+#   127.0.0.1, y el acceso remoto es exclusivamente por túnel SSH: ssh -L 19999:localhost:19999 usuario@ip_servidor
 #   EPEL no empaqueta netdata para AlmaLinux 8, así que se instala con el
-#   instalador oficial (kickstart.sh): se descarga primero a un archivo
-#   local (no un pipe ciego curl|bash), se deja registrado su hash en el
-#   log para poder auditar qué se ejecutó, y recién ahí se corre.
+#   instalador oficial (kickstart.sh) se descarga primero a un archivo
+#   local, se deja registrado su hash en el log para poder auditar qué se ejecutó, y recién ahí se corre.
 set -euo pipefail
 
 LOG="/var/log/sgdm_monitoreo.log"
 
-# --- Servicio y dashboard ---
+# Servicio y dashboard
 SERVICIO="netdata"
 CONF="/etc/netdata/netdata.conf"
 CONF_BACKUP="/etc/netdata/netdata.conf.orig"
 DASHBOARD_BIND="127.0.0.1"
 
-# --- Retención en disco (disco de 32GB thin-provisioned) ---
+# Retención en disco de 32GB thin-provisioned
 RETENCION_DISCO_MB=256
 
-# --- Instalador oficial de Netdata ---
+#Instalador oficial de Netdata
 KICKSTART_URL="https://get.netdata.cloud/kickstart.sh"
 KICKSTART_LOCAL="/tmp/netdata-kickstart.sh"
 
-# --- Collector de MariaDB (usuario de solo metadatos) ---
+# Collector de MariaDB
 MYSQL_MONITOR_USER="netdata_monitor"
 MYSQL_MONITOR_HOST="localhost"
 MYSQL_MONITOR_CONF="/etc/netdata/go.d/mysql.conf"
