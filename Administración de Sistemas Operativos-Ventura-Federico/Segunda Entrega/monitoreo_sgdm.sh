@@ -10,20 +10,16 @@ set -euo pipefail
 
 LOG="/var/log/sgdm_monitoreo.log"
 
-# Servicio y dashboard
 SERVICIO="netdata"
 CONF="/etc/netdata/netdata.conf"
 CONF_BACKUP="/etc/netdata/netdata.conf.orig"
 DASHBOARD_BIND="127.0.0.1"
 
-# Retención en disco de 32GB thin-provisioned
 RETENCION_DISCO_MB=256
 
-#Instalador oficial de Netdata
 KICKSTART_URL="https://get.netdata.cloud/kickstart.sh"
 KICKSTART_LOCAL="/tmp/netdata-kickstart.sh"
 
-# Collector de MariaDB
 MYSQL_MONITOR_USER="netdata_monitor"
 MYSQL_MONITOR_HOST="localhost"
 MYSQL_MONITOR_CONF="/etc/netdata/go.d/mysql.conf"
