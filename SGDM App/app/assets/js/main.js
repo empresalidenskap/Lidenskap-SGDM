@@ -956,7 +956,7 @@ function applyRouteGuard() {
         : 'Esta función requiere una cuenta de Administrador general.';
     renderAccessGate('NO PODÉS CREAR COMPETENCIAS', createAccessMessage, !sesionUsuario);
   }
-  if (page === 'dashboard' && !(hasPermission('manage_tournaments') || hasPermission('manage_users'))) {
+  if (page === 'dashboard' && !(hasPermission('manage_tournaments') || hasPermission('manage_users') || hasPermission('manage_results'))) {
     renderAccessGate('PANEL NO DISPONIBLE', sesionUsuario ? `El rol ${sesionUsuario.rolNombre} no tiene acceso a herramientas de gestión.` : 'Iniciá sesión como Administrador general u Organizador de torneo para acceder al panel.', !sesionUsuario);
   }
 }

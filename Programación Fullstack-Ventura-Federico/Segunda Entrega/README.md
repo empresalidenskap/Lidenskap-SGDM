@@ -8,7 +8,7 @@ servidor con el sistema funcionando.
 
 ## Carpeta del proyecto
 
-- [ ] Primera entrega corregida y esquema de pantallas (ver
+- [x] Primera entrega corregida y esquema de pantallas (ver
       "Correcciones pendientes de la primera entrega" más abajo)
 - [x] Modelo Entidad-Relación (MER): [`MER_SGDM_Proyecto.xml`](./MER_SGDM_Proyecto.xml)
       (diagrama, con COMPETIDOR como supertipo de PARTICIPANTE/EQUIPO) 
@@ -54,6 +54,16 @@ levantarlo en [`SGDM App/README.md`](../../SGDM%20App/README.md).
 - [x] **Separar el CSS y el JS en un directorio aparte**: resuelto, el código
       se reorganizó dentro de `assets/css/`, `assets/js/`, `assets/img/`
       y `assets/icons/`.
-- [ ] No abusar del `div`: usar más estructuras semánticas (`header`, `nav`,
-      `main`, `section`, `article`, `aside`, `footer`).
-- [ ] Falta la carpeta con el esquema de pantallas.
+- [x] No abusar del `div`: usar más estructuras semánticas (`header`, `nav`,
+      `main`, `section`, `article`, `aside`, `footer`). La mayoría de las
+      páginas de [`SGDM App/app/`](../../SGDM%20App/app/) ya usaba bastante
+      semántica; se promovieron a `<section>` las regiones de página que
+      seguían siendo `<div>` (Disciplinas, Formatos, CTA y resumen del
+      dashboard en `index.html` y `panel.html`, el formulario en
+      `crear-competencia.html`, y el cuerpo de texto en `privacidad.html` /
+      `terminos.html`). De paso se corrigió un `<div class="hero-inner">`
+      de `index.html` que nunca se cerraba.
+- [x] Carpeta con el esquema de pantallas:
+      [`esquema-pantallas/`](./esquema-pantallas/) (inventario de pantallas,
+      ruta, propósito y acceso por rol, más mapa de navegación — sin
+      capturas porque no se pudo levantar Docker en este entorno).
