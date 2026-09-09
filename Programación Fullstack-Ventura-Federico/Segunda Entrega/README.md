@@ -82,8 +82,33 @@ levantarlo en [`SGDM App/README.md`](../../SGDM%20App/README.md).
         (`header`/`nav`/`main`/`section`/`article`/`aside`/`footer`), pero
         sí son estructuras semánticas reales — no se usó `<span>` (es un
         elemento en línea, no reemplaza al uso de `<div>` en bloques).
+      - Cuarta pasada (objetivo: bajar de 200 divs en `SGDM App/app/*.html`):
+        se repitió el mismo patrón "eyebrow + título" que ya se había
+        convertido a `<header>` en otros lugares, ahora en
+        `.calendar-section-heading` (`calendario.html`, 3 veces),
+        `.results-heading` (`torneos.html`), `.carrusel-label` y
+        `.section-header` (`index.html`) y `.section-header.compact-header`
+        (`panel.html`, `disciplinas.html`, `perfil.html`). Se pasaron a
+        `<section>` dos pestañas del panel de participantes/equipos
+        (`#participantsRoster`/`#teamsRoster`), `.round-status-grid` (para
+        igualar a `.report-grid`, que ya era `<section>` y comparte la misma
+        regla CSS) y `#profileContent` en `perfil.html`. Se encontraron dos
+        usos de `<span>` genuinamente correctos por inconsistencia con un
+        patrón ya usado en el propio sitio: `.format-tag` (badge tipo
+        píldora, mismo `display: inline-flex; border-radius: 999px` que
+        `.status-pill`/`.role-label`, que ya son `<span>`) y `.rules-icon`/
+        `.empty-icon` (un solo emoji decorativo, igual que `.file-icon`, que
+        ya era `<span>`). Y un caso de `<figure>`/`<figcaption>`: el slide
+        del carrusel de `index.html` es exactamente el patrón de imagen con
+        leyenda que esas etiquetas existen para resolver.
+
+        `aside` se quedó en 3 — se revisó a propósito buscando contenido
+        realmente complementario que siguiera en `<div>`, y no apareció
+        ninguno; forzar `<aside>` donde ya correspondía `<section>` (como
+        los paneles de filtros) habría sido incorrecto, así que no se tocó.
+
         Conteo real de etiquetas en `SGDM App/app/*.html`, antes de tocar
-        nada hoy → ahora: `header` 8→17, `section` 26→35, `div` 254→221.
+        nada hoy → ahora: `header` 8→27, `section` 26→39, `div` 254→200.
 - [x] Carpeta con el esquema de pantallas:
       [`esquema-pantallas/`](./esquema-pantallas/) (inventario de pantallas,
       ruta, propósito y acceso por rol, más mapa de navegación — sin

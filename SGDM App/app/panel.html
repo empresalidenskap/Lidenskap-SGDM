@@ -42,11 +42,11 @@
 
       <div class="dashboard-layout">
         <section class="surface-card">
-          <div class="section-header compact-header"><div><p class="section-eyebrow">Gestión</p><h2>PARTICIPANTES RECIENTES</h2></div><button class="btn-secondary" type="button" data-panel-target="participants">Ver todos</button></div>
+          <header class="section-header compact-header"><div><p class="section-eyebrow">Gestión</p><h2>PARTICIPANTES RECIENTES</h2></div><button class="btn-secondary" type="button" data-panel-target="participants">Ver todos</button></header>
           <div class="table-scroll"><table><thead><tr><th>Participante</th><th>Equipo</th><th>Torneo</th><th>Estado</th></tr></thead><tbody><tr><td>Lucía Fernández</td><td>Unión Central</td><td>Copa Apertura</td><td><span class="status-pill status-open">Confirmada</span></td></tr><tr><td>Mateo Rodríguez</td><td>Club del Parque</td><td>Copa Apertura</td><td><span class="status-pill status-progress">Pendiente</span></td></tr><tr><td>Sofía Martínez</td><td>Sin equipo</td><td>Suizo de Invierno</td><td><span class="status-pill status-open">Confirmada</span></td></tr></tbody></table></div>
         </section>
         <aside data-admin-only class="surface-card">
-          <div class="section-header compact-header"><div><p class="section-eyebrow">Auditoría</p><h2>ACTIVIDAD RECIENTE</h2></div><button class="btn-secondary" type="button" data-panel-target="audit">Ver todo</button></div>
+          <header class="section-header compact-header"><div><p class="section-eyebrow">Auditoría</p><h2>ACTIVIDAD RECIENTE</h2></div><button class="btn-secondary" type="button" data-panel-target="audit">Ver todo</button></header>
           <ol class="activity-list"><li><span>22:14</span><p><strong>Resultado actualizado</strong><small>Copa Apertura · Fecha 3</small></p></li><li><span>20:46</span><p><strong>Participante aprobado</strong><small>Suizo de Invierno</small></p></li><li><span>18:05</span><p><strong>Torneo publicado</strong><small>Open Individual</small></p></li><li><span>Ayer</span><p><strong>Rol modificado</strong><small>Usuario a Organizador</small></p></li></ol>
         </aside>
       </div>
@@ -69,18 +69,18 @@
     <section id="panel-participants" class="panel-module surface-card" data-panel-module="participants" hidden>
       <header class="panel-module-header"><div><p class="section-eyebrow">Gestión</p><h2>PARTICIPANTES Y EQUIPOS</h2><p>Consulta todas las inscripciones y los planteles registrados.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <div class="panel-tabs" role="tablist"><button class="active" type="button" data-roster-tab="participants">Participantes <span>246</span></button><button type="button" data-roster-tab="teams">Equipos <span>38</span></button></div>
-      <div id="participantsRoster">
+      <section id="participantsRoster" aria-label="Participantes">
         <div class="panel-toolbar"><label class="panel-search">Buscar participante<input id="participantsSearch" type="search" placeholder="Nombre, equipo o torneo"></label><button class="btn-primary" type="button" data-panel-form="participant">+ Agregar participante</button></div>
         <p id="participantsCount" class="panel-count"></p>
         <div class="table-scroll"><table><thead><tr><th>Participante</th><th>Equipo</th><th>Torneo</th><th>Rol</th><th>Estado</th></tr></thead><tbody id="participantsTableBody"></tbody></table></div>
         <div class="panel-pagination"><button class="btn-secondary" id="participantsPrev" type="button">← Anterior</button><span id="participantsPage"></span><button class="btn-secondary" id="participantsNext" type="button">Siguiente →</button></div>
-      </div>
-      <div id="teamsRoster" hidden>
+      </section>
+      <section id="teamsRoster" hidden aria-label="Equipos">
         <div class="panel-toolbar"><label class="panel-search">Buscar equipo<input id="teamsSearch" type="search" placeholder="Equipo, capitán o disciplina"></label><button class="btn-primary" type="button" data-panel-form="team">+ Agregar equipo</button></div>
         <p id="teamsCount" class="panel-count"></p>
         <div class="table-scroll"><table><thead><tr><th>Equipo</th><th>Capitán/a</th><th>Disciplina</th><th>Integrantes</th><th>Estado</th></tr></thead><tbody id="teamsTableBody"></tbody></table></div>
         <div class="panel-pagination"><button class="btn-secondary" id="teamsPrev" type="button">← Anterior</button><span id="teamsPage"></span><button class="btn-secondary" id="teamsNext" type="button">Siguiente →</button></div>
-      </div>
+      </section>
     </section>
 
     <section id="panel-results" class="panel-module surface-card" data-panel-module="results" hidden>
@@ -94,7 +94,7 @@
     <section id="panel-rounds" class="panel-module surface-card" data-panel-module="rounds" hidden>
       <header class="panel-module-header"><div><p class="section-eyebrow">Competencia</p><h2>RONDAS Y LLAVES</h2><p>Genera enfrentamientos, revisa los cruces y controla su publicación.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <div class="panel-toolbar"><label class="panel-search">Torneo<select id="roundTournament"></select></label><button class="btn-primary" id="generateRound" type="button">+ Generar siguiente ronda</button></div>
-      <div class="round-status-grid"><article><span>Formato</span><strong id="roundFormat">-</strong></article><article><span>Ronda actual</span><strong id="roundCurrent">-</strong></article><article><span>Estado</span><strong id="roundStatus">-</strong></article></div>
+      <section class="round-status-grid" aria-label="Estado de la ronda"><article><span>Formato</span><strong id="roundFormat">-</strong></article><article><span>Ronda actual</span><strong id="roundCurrent">-</strong></article><article><span>Estado</span><strong id="roundStatus">-</strong></article></section>
       <div class="bracket" id="roundBracket" aria-label="Vista de rondas y llaves"></div>
       <div class="round-actions"><button class="btn-secondary" id="publishRound" type="button">Publicar ronda</button><button class="btn-secondary" id="closeRound" type="button">Cerrar ronda</button><p id="roundFeedback" class="form-feedback" aria-live="polite"></p></div>
     </section>
