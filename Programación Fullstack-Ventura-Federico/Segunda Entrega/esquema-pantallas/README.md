@@ -1,12 +1,18 @@
 # Esquema de pantallas — SGDM
 
 Inventario de las pantallas de la aplicación ([`SGDM App/app/`](../../../SGDM%20App/app/)),
-con su ruta, propósito y el acceso por rol. Se arma como esquema textual (tabla +
-mapa de navegación) en lugar de capturas, porque este documento se generó sin
-poder levantar el contenedor Docker de la app; la interfaz real de cada pantalla
-puede verse corriendo el proyecto según
-[`SGDM App/README.md`](../../../SGDM%20App/README.md) (`docker compose up -d`,
-luego `http://localhost`).
+con su ruta, propósito y el acceso por rol.
+
+- **[`SGDM-Manual-Usuario.pdf`](SGDM-Manual-Usuario.pdf)** — manual con capturas
+  reales de las 16 pantallas (no maquetas), tomadas contra el proyecto corriendo
+  en Docker con datos de ejemplo reales. GitHub lo muestra directamente en el
+  navegador al abrir el archivo, sin necesidad de descargarlo.
+- Copia (versión resumida, 10 pantallas) también disponible en Google Drive:
+  ["SGDM Lidenskap — Manual de Usuario (esquema de pantallas)"](https://docs.google.com/document/d/1IrhukKT2CYDr6YSFpD-SDED9QxjaSg49mGFsMRz2PGM/edit).
+- Este README complementa el manual con una tabla y un mapa de navegación en
+  formato texto. La interfaz real puede verse corriendo el proyecto según
+  [`SGDM App/README.md`](../../../SGDM%20App/README.md) (`docker compose up -d`,
+  luego `http://localhost`).
 
 Roles: **Admin** (Administrador general), **Org** (Organizador de torneo),
 **Árb** (Árbitro), **Part** (Participante), **Púb** (Usuario público / sin

@@ -110,6 +110,9 @@ levantarlo en [`SGDM App/README.md`](../../SGDM%20App/README.md).
         Conteo real de etiquetas en `SGDM App/app/*.html`, antes de tocar
         nada hoy → ahora: `header` 8→27, `section` 26→39, `div` 254→200.
 - [x] Carpeta con el esquema de pantallas:
-      [`esquema-pantallas/`](./esquema-pantallas/) (inventario de pantallas,
-      ruta, propósito y acceso por rol, más mapa de navegación — sin
-      capturas porque no se pudo levantar Docker en este entorno).
+      [`esquema-pantallas/`](./esquema-pantallas/) — inventario de pantallas,
+      ruta, propósito y acceso por rol, más mapa de navegación, y un manual
+      de usuario en PDF ([`SGDM-Manual-Usuario.pdf`](./esquema-pantallas/SGDM-Manual-Usuario.pdf))
+      con capturas reales de las 16 pantallas del sistema corriendo en
+      Docker (no maquetas), también subido a Google Drive en versión
+      resumida.
