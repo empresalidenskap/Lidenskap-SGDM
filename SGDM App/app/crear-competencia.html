@@ -16,7 +16,6 @@
 <body data-page="create-tournament">
   <div id="star-container"></div>
 
-  <!-- NAVEGACIÓN -->
   <nav>
     <a href="index.html" class="nav-logo">
       <img id="logoImg" src="assets/img/logodark.png" alt="Lidenskap" class="nav-logo-img">
@@ -35,10 +34,8 @@
     </div>
   </nav>
 
-  <!-- CONTENIDO PRINCIPAL -->
   <main class="page-shell">
     
-    <!-- BLOQUE A: Acceso Denegado (Para no organizadores) -->
     <section id="unauthorizedBox" class="surface-card empty-state" hidden aria-label="Acceso restringido">
       <span class="empty-icon">🔒</span>
       <h2>ACCESO RESTRENGIDO</h2>
@@ -49,7 +46,6 @@
       </div>
     </section>
 
-    <!-- BLOQUE B: Formulario Principal de Creación Custom -->
     <section id="createFormContainer" aria-label="Formulario de creación de competencia">
       <header class="page-hero">
         <p class="section-eyebrow">Panel de Organización</p>
@@ -59,7 +55,6 @@
 
       <form id="createTournamentForm" class="surface-card form-grid" enctype="multipart/form-data">
         
-        <!-- DATOS GENERALES -->
         <fieldset class="form-section field-full">
           <legend>Información General</legend>
           <div class="form-grid">
@@ -84,13 +79,11 @@
               </select>
             </div>
 
-            <!-- Campo dinámico si eligen "Custom" -->
             <div class="field" id="customDisciplineGroup" hidden>
               <label for="customDisciplineName">Especifique Disciplina Custom *</label>
               <input type="text" id="customDisciplineName" name="customDisciplineName" placeholder="Ej: Pádel, Kickball, etc.">
             </div>
 
-            <!-- Campo dinámico si eligen "Esports" -->
             <div class="field" id="esportsGameGroup" hidden>
               <label for="esportsGameSelect">Videojuego / Título *</label>
               <select id="esportsGameSelect" name="esportsGame">
@@ -110,7 +103,6 @@
           </div>
         </fieldset>
 
-        <!-- FORMATO Y REGLAS -->
         <fieldset class="form-section field-full">
           <legend>Formato y Reglas de Juego</legend>
           <div class="form-grid">
@@ -142,7 +134,6 @@
           </div>
         </fieldset>
 
-        <!-- SUBIR REGLAMENTO (CUSTOM ARCHIVO) -->
         <fieldset class="form-section field-full">
           <legend>Reglamento Oficial</legend>
           <div class="field field-full">
@@ -152,7 +143,6 @@
           </div>
         </fieldset>
 
-        <!-- ACCIONES -->
         <div class="form-actions field-full">
           <button type="submit" class="btn-primary" id="btnSubmitTournament">Publicar Competencia</button>
           <a href="torneos.html" class="btn-secondary">Cancelar</a>
@@ -164,7 +154,6 @@
 
   </main>
 
-  <!-- PIE DE PÁGINA -->
   <footer>
     <div class="footer-inner">
       <ul class="footer-links">

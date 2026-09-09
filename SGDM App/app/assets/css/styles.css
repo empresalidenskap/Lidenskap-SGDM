@@ -1,13 +1,6 @@
-/*
-   LIDENSKAP SGDM  |  styles.css
-   Paleta: Dark Ruby #70000E · Armor #030303 · Pearl #F5F4F2
-           Catacomb Walls #DCD7D4 · Creme White #C3B79D · Meteorite #2C2929
-   Gold accent (logo): #D4A017 */
-
-/*TOKENS*/
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 4rem; 
+  scroll-padding-top: 4rem;
 }
 
 :root {
@@ -61,10 +54,7 @@ html {
   --carrusel-btn-bg: rgba(3,3,3,0.06);
 }
 
-/* RESET */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-
-
 
 body {
   font-family: 'Inter', sans-serif;
@@ -77,7 +67,6 @@ body {
 
 [hidden] { display: none !important; }
 
-/* STAR BURST */
 #star-container {
   position: fixed;
   inset: 0;
@@ -111,7 +100,6 @@ body {
   }
 }
 
-/* GOLD ACTIVE EFFECT */
 .gold-active {
   background: var(--gold) !important;
   border-color: var(--gold) !important;
@@ -121,7 +109,6 @@ body {
 
 .gold-active svg { stroke: #030303 !important; }
 
-/* NAVIGATION */
 nav {
   position: fixed; top:0; left:0; right:0; z-index:100;
   backdrop-filter: blur(18px);
@@ -179,16 +166,6 @@ nav {
 
 .btn-outline:hover { background: var(--bg-card); border-color: var(--text-muted); }
 
-/*.btn-accent {
-  padding: 0.5rem 1.4rem; border: none; border-radius: 4px;
-  background: var(--accent); color: #F5F4F2;
-  font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600;
-  letter-spacing: 0.05em; cursor: pointer; text-decoration: none;
-  transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem;
-}
-
-.btn-accent:hover { background: var(--accent-light); transform: translateY(-1px); } */
-
 .theme-toggle {
   width: 36px; height: 36px; border: 1px solid var(--border);
   border-radius: 50%; background: var(--bg-card); color: var(--text-secondary);
@@ -198,7 +175,6 @@ nav {
 
 .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
-/* HERO */
 .hero {
   min-height: 100vh; padding-top: 64px;
   display: flex; flex-direction: column;
@@ -237,25 +213,23 @@ nav {
   font-size: clamp(2.5rem, 7vw, 6.5rem);
   line-height: 0.9; letter-spacing: 0.02em;
   color: var(--text-primary); margin-bottom: 1.5rem;
-position: relative; 
+position: relative;
 }
 
-.hero-title .accent-word { 
-  color: var(--accent); 
+.hero-title .accent-word {
+  color: var(--accent);
 }
 
 .hero-title-img {
-  /* Posicionamiento absoluto para que NO mueva el texto */
+
   position: absolute;
-  right: 0;         /* La pega por completo a la derecha */
-  top: 50%;         /* La centra verticalmente respecto al bloque de texto */
-  transform: translateY(-50%); /* Ajuste perfecto del centrado vertical */
-  
-  /* Tus propiedades de tamaño */
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+
   width: 150px;
   height: 150px;
 }
-
 
 .hero-subtitle {
   font-size: 1.05rem; color: var(--text-secondary);
@@ -307,20 +281,14 @@ position: relative;
 
 .stat-divider { display: none; width:1px; background: var(--border); align-self:stretch; }
 
-/*
-   SPORTS SELECTOR — mobile first
-   */
-
-/* Sección contenedora */
 .sports-section {
   background: var(--bg-secondary);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  /* mobile: padding compacto */
+
   padding: 0.9rem 0.75rem;
 }
 
-/* Inner: apilado en columna en móvil */
 .sports-inner {
   max-width: 1200px;
   margin: 0 auto;
@@ -329,8 +297,6 @@ position: relative;
   gap: 0.65rem;
 }
 
-
-/* Fila superior: label + flechas */
 .sports-top-row {
  display: flex;
   align-items: center;
@@ -349,8 +315,6 @@ position: relative;
   flex-shrink: 0;
 }
 
-
-/* Par de flechas */
 .sports-arrows {
   display: flex;
   gap: 0.35rem;
@@ -388,24 +352,21 @@ position: relative;
   cursor: not-allowed;
 }
 
-/* Nuevo contenedor para alinear las Flechas + Track en la misma línea */
 .sports-track-container {
   display: flex;
   align-items: center;
   width: 100%;
-  gap: 0.6rem; /* Distancia entre las flechas y los chips en celular */
+  gap: 0.6rem;
 }
 
-/* Wrapper que recorta el scroll y lleva los gradientes fade */
 .sports-track-wrapper {
   position: relative;
-  /* evita que los chips se vean fuera del área */
+
  overflow: hidden;
-  flex: 1;        /* Hace que ocupe todo el espacio sobrante entre las flechas */
-  min-width: 0;   /* Evita que los flex-items rompan el ancho de pantalla */
+  flex: 1;
+  min-width: 0;
 }
 
-/* Gradientes de difuminado en los bordes */
 .sports-fade {
   position: absolute;
   top: 0;
@@ -426,32 +387,29 @@ position: relative;
   background: linear-gradient(to left, var(--bg-secondary), transparent);
 }
 
-/* Ocultar fade cuando no hay más contenido en esa dirección */
 .sports-fade--left.hidden,
 .sports-fade--right.hidden {
   opacity: 0;
 }
 
-/* Scroll horizontal de chips */
 .sports-scroll {
   display: flex;
   gap: 0.55rem;
   overflow-x: auto;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;          /* Firefox */
-  padding: 4px 2px 4px;          /* espacio para box-shadow de chips */
+  scrollbar-width: none;
+  padding: 4px 2px 4px;
 }
 
 .sports-scroll::-webkit-scrollbar { display: none; }
 
-/* KRIDX-style: ícono arriba, texto abajo */
 .sport-chip {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
-  /* mobile: chips más compactos */
+
   padding: 0.6rem 0.75rem;
   min-width: 64px;
   border: 1px solid var(--border);
@@ -464,7 +422,7 @@ position: relative;
   cursor: pointer;
   flex-shrink: 0;
   transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
-  /* tap highlight en móvil */
+
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -497,13 +455,12 @@ position: relative;
   box-shadow: 0 0 10px rgba(195,183,157,0.3);
 }
 
-/* Barra de progreso de scroll */
 .sports-progress-track {
   height: 6px;
   border-radius: 999px;
   background: var(--border);
   overflow: hidden;
-  /* pequeño margen lateral para alinearse con los chips */
+
   margin: 0 2px;
 }
 
@@ -511,13 +468,12 @@ position: relative;
   height: 100%;
   border-radius: 999px;
   background: var(--gold-light);
-  /* ancho y posición se controlan desde JS */
+
   width: 30%;
   transform: translateX(0%);
   transition: width 0.15s ease, transform 0.15s ease;
 }
 
-/* CARRUSEL SECTION */
 .carrusel-section {
   padding: 3rem 2rem 2rem;
   max-width: 1200px; margin: 0 auto;
@@ -649,7 +605,6 @@ position: relative;
   background: var(--gold); width: 24px; border-radius: 4px;
 }
 
-/* SECTION SHARED */
 .section {
   padding: 5rem 2rem; max-width: 1200px; margin: 0 auto;
 }
@@ -678,7 +633,6 @@ position: relative;
 
 .section-link:hover { gap: 0.7rem; }
 
-/* FORMAT CARDS */
 .formats-grid {
   display: grid; grid-template-columns: 1fr;
   gap: 1px; background: var(--border);
@@ -720,8 +674,6 @@ position: relative;
 
 .format-card:hover .format-tag { border-color: var(--accent); color: var(--accent); }
 
-/* CTA */
-
 .cta-section {
   padding: 6rem 2rem; background: var(--accent);
   text-align: center; position: relative; overflow: hidden; width: 100%;
@@ -759,7 +711,6 @@ position: relative;
 
 .btn-cta:hover { background: #F5F4F2; color: var(--accent); }
 
-/* FOOTER */
 footer {
   padding: 2.5rem 1rem; background: var(--bg-primary);
   border-top: 1px solid var(--border);
@@ -793,14 +744,8 @@ footer {
 
 .footer-links a:hover { color: var(--accent); }
 
-/* MISC */
 .full-divider { height: 1px; background: var(--border); }
 
-/*
-   RESPONSIVE — mobile first, escala hacia arriba
-   */
-
-/* --- tablet 600px+ --- */
 @media (min-width: 600px) {
   .hero-stats { gap: 3rem; }
   .stat-divider { display: block; }
@@ -823,21 +768,18 @@ footer {
   .sports-arrow-btn svg { width: 16px; height: 16px; }
 }
 
-/* --- desktop 900px+ --- */
 @media (min-width: 900px) {
   .sports-section { padding: 1.2rem 2rem; }
 
-  /* en desktop las flechas se ubican fuera del track, a los lados */
   .sports-inner { gap: 0.8rem; }
 
   .sports-top-row { justify-content: center; }
 
 .sports-scroll {
-    justify-content: safe center; /* 'safe' evita que se corte el contenido si la pantalla es chica */
+    justify-content: safe center;
   gap: 1.5rem;
   }
 
-  /* para que en monitores gigantes las flechas no se vayan a los extremos de la pantalla */
 .sports-track-container {
     max-width: 1150px;
     margin: 0 auto;
@@ -857,29 +799,20 @@ footer {
   .sports-arrow-btn { width: 36px; height: 36px; }
   .sports-arrow-btn svg { width: 16px; height: 16px; }
 
-  /* barra un poco más gruesa en desktop */
   .sports-progress-track { height: 3px; }
 
-  /* formato de cards en 3 columnas */
   .formats-grid { grid-template-columns: repeat(3, 1fr); }
 
   .nav-links { display: flex; }
 
   .img { height: 540px; }
 
-  
-
-  /* Fuerza a que la barra de progreso esté llena en PC  */
   .sports-progress-thumb {
     width: 100% !important;
-    left: 0 !important;       /* Asegura que empiece perfectamente desde la izquierda */
-    transform: none !important; /* Cancela cualquier movimiento del JS en PC */
+    left: 0 !important;
+    transform: none !important;
   }
 }
-
-/*
-   PRIMERA ENTREGA — SISTEMA DE PÁGINAS MOBILE FIRST
-   */
 
 nav {
   height: 64px;
@@ -941,7 +874,6 @@ nav {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Las reglas base son móviles; los anchos mayores solo agregan espacio/columnas. */
 .hero-inner, .section, .carrusel-section { padding-left: 1rem; padding-right: 1rem; }
 .hero-title-img { opacity: 0.32; }
 
@@ -1104,7 +1036,6 @@ fieldset legend { margin-bottom: 0.75rem; }
 .form-guide > p:not(.section-eyebrow) { color: var(--text-secondary); margin: 0.25rem 0 1.5rem; }
 .helper-text { padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.78rem; }
 
-/* Calendario general: base Mobile First. */
 .calendar-hero { position: relative; overflow: hidden; max-width: none; }
 .calendar-hero::after { content: 'MATCH DAY'; position: absolute; right: 0; bottom: 0; z-index: -1; color: var(--accent); opacity: 0.035; font-family: 'Bebas Neue', sans-serif; font-size: clamp(5rem, 20vw, 13rem); line-height: 0.7; white-space: nowrap; pointer-events: none; }
 .calendar-summary { display: grid; grid-template-columns: 1fr; gap: 0.6rem; margin-top: 1.5rem; }
@@ -1226,11 +1157,9 @@ fieldset legend { margin-bottom: 0.75rem; }
 }
 
 @media (min-width: 900px) {
-  /* En PC, las flechas dejan de ser absolutas y entran al flujo normal (entre todas y custom) */
- 
-  /* Separación limpia entre las flechas y el bloque de deportes */
+
   .sports-track-container {
-    gap: 1.2rem; 
+    gap: 1.2rem;
 
   }
 }
@@ -1240,24 +1169,23 @@ fieldset legend { margin-bottom: 0.75rem; }
 
 .disciplina-display-container {
   max-width: 1100px;
-  /* Margen fluido: 1.5rem en móvil, crece dinámicamente hasta 3rem en PC */
-  margin: clamp(1.5rem, 4vw, 3rem) auto; 
-  /* Padding fluido: 1rem en móvil, hasta 1.5rem en PC */
+
+  margin: clamp(1.5rem, 4vw, 3rem) auto;
+
   padding: 0 clamp(1rem, 3vw, 1.5rem);
-  min-height: auto; 
+  min-height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Tarjeta principal que contiene la información */
 .disciplina-card-full {
   display: grid;
   grid-template-columns: 1fr;
-  /* Espaciado interno y entre columnas fluido */
+
   gap: clamp(1.5rem, 4vw, 2.5rem);
-  background: var(--bg-card); 
-  border: 1px solid var(--border); 
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: clamp(1.5rem, 5vw, 3rem);
   width: 100%;
@@ -1265,19 +1193,17 @@ fieldset legend { margin-bottom: 0.75rem; }
   animation: fadeSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Animación suave de entrada al cambiar de pestaña */
 @keyframes fadeSlideIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(15px); 
+  from {
+    opacity: 0;
+    transform: translateY(15px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Único Media Query necesario para la estructura (Grid) */
 @media (min-width: 800px) {
   .disciplina-card-full {
     grid-template-columns: 1.2fr 0.8fr;
@@ -1285,7 +1211,6 @@ fieldset legend { margin-bottom: 0.75rem; }
   }
 }
 
-/* COLUMNA IZQUIERDA (INFORMACIÓN) */
 .disciplina-info-left {
   display: flex;
   flex-direction: column;
@@ -1295,7 +1220,6 @@ fieldset legend { margin-bottom: 0.75rem; }
 .disciplina-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
 .discipline-page-selector { margin-bottom: 1.5rem; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
 
-/* Subtítulo pequeño en dorado */
 .disciplina-tag {
   color: var(--gold);
   font-family: 'Inter', sans-serif;
@@ -1306,7 +1230,6 @@ fieldset legend { margin-bottom: 0.75rem; }
   margin-bottom: clamp(0.5rem, 2vw, 0.75rem);
 }
 
-/* Título de la disciplina con fuente de impacto */
 .disciplina-title {
   font-family: 'Bebas Neue', sans-serif;
   font-size: clamp(2.2rem, 5vw + 1rem, 3.2rem);
@@ -1316,7 +1239,6 @@ fieldset legend { margin-bottom: 0.75rem; }
   margin-bottom: clamp(1rem, 3vw, 1.5rem);
 }
 
-/* Descripción de la disciplina */
 .disciplina-description {
   color: var(--text-secondary);
   font-size: clamp(0.7rem, 2vw + 0.3rem, 1rem);
@@ -1324,7 +1246,6 @@ fieldset legend { margin-bottom: 0.75rem; }
   margin-bottom: clamp(1.5rem, 4vw, 2rem);
 }
 
-/* Lista de características con iconos de estrellas */
 .disciplina-features {
   list-style: none;
   padding: 0;
@@ -1345,13 +1266,12 @@ fieldset legend { margin-bottom: 0.75rem; }
 
 .disciplina-features li::before {
   content: '✦';
-  color: var(--ruby-light); 
+  color: var(--ruby-light);
   font-size: clamp(0.85rem, 2vw + 0.4rem, 0.9rem);
   flex-shrink: 0;
   margin-top: 2px;
 }
 
-/* COLUMNA DERECHA (MÓDULO CONFIGURACIÓN) */
 .disciplina-preview-panel {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
@@ -1373,7 +1293,6 @@ fieldset legend { margin-bottom: 0.75rem; }
   letter-spacing: 0.05em;
 }
 
-/* Cada fila con detalles de configuración del deporte */
 .config-item {
   display: flex;
   justify-content: space-between;
@@ -1408,15 +1327,14 @@ fieldset legend { margin-bottom: 0.75rem; }
     padding: 0;
 }
 
-/* Cada una de las 3 líneas */
 .menu-btn span {
     width: 100%;
     height: 4px;
-    background-color: #333; /* Cambia esto al color que quieras */
+    background-color: #333;
     border-radius: 2px;
     transition: 0.3s ease;
 }
-/* MODAL DE AUTENTICACIÓN INTERACTIVO */
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -1539,7 +1457,7 @@ fieldset legend { margin-bottom: 0.75rem; }
   outline: none;
   border-color: var(--accent);
 }
-/* Botón por defecto (Modo Oscuro) -> Fondo Negro y texto blanco */
+
 #btnCrearCuentaGratis {
   background-color: #000000 !important;
   color: #ffffff !important;
@@ -1551,7 +1469,6 @@ fieldset legend { margin-bottom: 0.75rem; }
   transition: all 0.3s ease;
 }
 
-/* Modo Claro -> Fondo Blanco y texto negro */
 [data-theme="light"] #btnCrearCuentaGratis,
 body.light #btnCrearCuentaGratis {
   background-color: #ffffff !important;
@@ -1559,12 +1476,11 @@ body.light #btnCrearCuentaGratis {
   border: 1px solid #cccccc;
 }
 
-/* Efecto Hover */
 #btnCrearCuentaGratis:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
-/* MODAL DE TODAS LAS DISCIPLINAS */
+
 #modalTodasDisciplinas .modal-content {
   background-color: var(--bg-primary, #121212);
   border: 1px solid var(--border, #2a2a2a);
@@ -1608,7 +1524,7 @@ body.light #btnCrearCuentaGratis {
   background: rgba(112, 0, 14, 0.25);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
-/* FORZAR VISIBILIDAD DEL MODAL DE DISCIPLINAS */
+
 #modalTodasDisciplinas.active {
   display: flex !important;
   opacity: 1 !important;
@@ -1637,10 +1553,6 @@ body.light #btnCrearCuentaGratis {
   color: #ffffff;
   transform: translateY(-2px);
 }
-
-/*
-   CARRUSEL DE TORNEOS POR DISCIPLINA
-   */
 
 .torneos-disciplina-section {
   max-width: 1100px;
@@ -1786,15 +1698,12 @@ body.light #btnCrearCuentaGratis {
   padding: 0.7rem 1.5rem;
 }
 
-
-
 @media (min-width: 600px) {
   .torneos-carrusel { gap: 1.25rem; }
   .torneo-card { padding: 2rem; }
   .torneo-nombre { font-size: 1.8rem; }
 }
 
-/* Panel administrativo: base móvil y expansión progresiva. */
 .dashboard-header { display: flex; flex-direction: column; align-items: flex-start; gap: 1.25rem; padding: 1.5rem 0 2rem; }
 .dashboard-header h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.7rem, 12vw, 5rem); line-height: 0.95; }
 .dashboard-header p:last-child { color: var(--text-secondary); margin-top: 0.5rem; }
@@ -1879,11 +1788,7 @@ body.light #btnCrearCuentaGratis {
   .report-grid { grid-template-columns: repeat(4, 1fr); }
   .bracket { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-/*
-   AJUSTES NAVEGACIÓN Y BOTONES - ESTILOS SÓLIDOS Y MOBILE-FIRST
-   */
 
-/* 1. Fondo sólido/definido en la barra de navegación para evitar transparencias al hacer scroll */
 nav {
   background-color: var(--card-bg, #121212) !important;
   backdrop-filter: blur(10px);
@@ -1895,7 +1800,6 @@ nav {
   background-color: #ffffff !important;
 }
 
-/* 2. Corregir botones transparentes del Nav */
 .nav-right .btn-outline,
 nav .btn-outline {
   background-color: var(--card-bg, #1e1e1e);
@@ -1919,7 +1823,6 @@ nav .btn-outline:hover {
   border-color: var(--primary, #2563eb);
 }
 
-/* 3. Botón de cambio de tema sólido */
 .theme-toggle {
   background-color: var(--card-bg, #1e1e1e);
   border: 1px solid var(--border, rgba(255, 255, 255, 0.2));
@@ -1938,7 +1841,6 @@ nav .btn-outline:hover {
   border-color: #cccccc;
 }
 
-/* 4. Adaptabilidad Mobile-First para la barra de navegación */
 @media (max-width: 768px) {
   nav {
     padding: 0.8rem 1rem;
@@ -1953,9 +1855,6 @@ nav .btn-outline:hover {
     font-size: 0.85rem;
   }
 }
-/*
-   MENÚ DESPLEGABLE DE PERFIL (PROFILE DROPDOWN)
-   */
 
 .profile-dropdown {
   position: relative;
@@ -2064,9 +1963,6 @@ nav .btn-outline:hover {
 .btn-logout:hover {
   background-color: rgba(255, 77, 77, 0.15);
 }
-/*
-   ESTILOS DE VISTA DETALLE Y REGLAMENTO (PASO 6 - MOBILE-FIRST)
-   */
 
 .detail-layout {
   display: flex;
@@ -2132,7 +2028,6 @@ nav .btn-outline:hover {
   justify-content: center;
 }
 
-/* Escalado progresivo para Tablet y Desktop */
 @media (min-width: 768px) {
   .rules-download-box {
     flex-direction: row;
@@ -2152,29 +2047,19 @@ nav .btn-outline:hover {
     align-items: start;
   }
 }
-/*
-   LAYOUT MOBILE-FIRST (1 Columna por defecto en móviles)
-   */
 
-/* Panel de Filtros */
 .search-panel {
   display: grid;
-  grid-template-columns: 1fr; /* 1 columna en teléfonos */
+  grid-template-columns: 1fr;
   gap: 1rem;
 }
 
-/* Grilla de Torneos */
 .tournament-grid {
   display: grid;
-  grid-template-columns: 1fr; /* 1 columna en teléfonos */
+  grid-template-columns: 1fr;
   gap: 1.25rem;
 }
 
-/*
-   RESPONSIVE DESIGN (Media Queries Progresivas)
-   */
-
-/* Tablets / Pantallas medianas */
 @media (min-width: 640px) {
   .search-panel {
     grid-template-columns: repeat(2, 1fr);
@@ -2187,7 +2072,6 @@ nav .btn-outline:hover {
   }
 }
 
-/* Escritorio / Pantallas grandes */
 @media (min-width: 1024px) {
   .search-panel {
     grid-template-columns: 2fr repeat(4, 1fr) auto;

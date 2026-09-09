@@ -1,10 +1,5 @@
-/* 
-   LIDENSKAP SGDM main.js
-    */
-
 'use strict';
 
-/*  DATOS DEL CARRUSEL  */
 const imagenes = [
   {
     url: 'assets/img/imagen1.jpg',
@@ -25,7 +20,6 @@ const imagenes = [
 
 let actual = 0;
 
-/*  REFERENCIAS DOM  */
 const btnAtras   = document.getElementById('atras');
 const btnAdelante= document.getElementById('adelante');
 const imgWrap    = document.getElementById('img');
@@ -36,11 +30,8 @@ const starContainer = document.getElementById('star-container');
 const logoImg = document.getElementById('logoImg');
 const ilustracion = document.getElementById('ilustracion');
 
-/* 
-   CARRUSEL
-    */
 function renderSlide(idx, direction = 'right') {
-  if (!imgWrap || !textoWrap) return; // esta página no tiene el carrusel de imágenes de la home
+  if (!imgWrap || !textoWrap) return;
 
   const d = imagenes[idx];
 
@@ -94,7 +85,6 @@ function nextSlide() {
 if (btnAtras)    btnAtras.addEventListener('click', prevSlide);
 if (btnAdelante) btnAdelante.addEventListener('click', nextSlide);
 
-/* Auto-advance cada 5s, solamente en la página que contiene el carrusel. */
 let autoTimer = null;
 if (imgWrap) autoTimer = setInterval(nextSlide, 5000);
 document.querySelector('.carrusel')?.addEventListener('mouseenter', () => {
@@ -105,14 +95,12 @@ document.querySelector('.carrusel')?.addEventListener('mouseleave', () => {
   autoTimer = setInterval(nextSlide, 5000);
 });
 
-/* Init */
 renderSlide(actual);
 if (logoImg) {
   logoImg.src =
     document.documentElement.dataset.theme === 'dark'
       ? 'assets/img/logodark.png'
       : 'assets/img/logo.png';
-
 
     }
 if (ilustracion) {
@@ -122,10 +110,6 @@ if (ilustracion) {
       : 'assets/img/ilustracion.png';
 }
 
-
-/* 
-   TEMA CLARO / OSCURO
-    */
 function toggleTheme() {
   const html = document.documentElement;
   const nextTheme = html.dataset.theme === 'dark' ? 'light' : 'dark';
@@ -169,9 +153,6 @@ function initializeTheme() {
 
 initializeTheme();
 
-/* 
-   SPORT CHIPS — color dorado + estrella burst al hacer clic
-    */
 const STAR_CHARS = [ '✦', '✧'];
 
 function spawnStar(x, y) {
@@ -180,7 +161,6 @@ function spawnStar(x, y) {
   star.className = 'star-burst';
   star.textContent = STAR_CHARS[Math.floor(Math.random() * STAR_CHARS.length)];
 
-  /* Dispersión aleatoria leve */
   const offsetX = (Math.random() - 0.5) * 60;
   const offsetY = (Math.random() - 0.5) * 40;
 
@@ -199,10 +179,6 @@ function burstStars(x, y, count = 4) {
   }
 }
 
-/* 
-   SPORTS SELECTOR — flechas, barra de progreso y fades
-    */
-
 const sportsScroll      = document.getElementById('sportsScroll');
 const sportsLeft        = document.getElementById('sportsLeft');
 const sportsRight       = document.getElementById('sportsRight');
@@ -210,7 +186,6 @@ const progressThumb     = document.getElementById('sportsProgressThumb');
 const fadeLeft          = document.querySelector('.sports-fade--left');
 const fadeRight         = document.querySelector('.sports-fade--right');
 
-/* Cuántos px se desplaza cada clic de flecha (≈ 2 chips) */
 const SCROLL_STEP = 180;
 
 function updateSportsUI() {
@@ -219,30 +194,26 @@ function updateSportsUI() {
   const { scrollLeft, scrollWidth, clientWidth } = sportsScroll;
   const maxScroll = scrollWidth - clientWidth;
 
-  /*  Barra de progreso  */
   if (progressThumb && maxScroll > 0) {
-    const ratio      = scrollLeft / maxScroll;           // 0 → 1
-    const thumbW     = clientWidth / scrollWidth * 100;  // % del track
-    const thumbLeft  = ratio * (100 - thumbW);           // % de desplazamiento
+    const ratio      = scrollLeft / maxScroll;
+    const thumbW     = clientWidth / scrollWidth * 100;
+    const thumbLeft  = ratio * (100 - thumbW);
 
     progressThumb.style.width     = thumbW + '%';
     progressThumb.style.transform = `translateX(${(thumbLeft / thumbW) * 100}%)`;
   }
 
-  /*  Fades laterales  */
   if (fadeLeft)  fadeLeft.classList.toggle('hidden',  scrollLeft <= 2);
   if (fadeRight) fadeRight.classList.toggle('hidden', scrollLeft >= maxScroll - 2);
 
-  /*  Estado disabled de flechas  */
   if (sportsLeft)  sportsLeft.disabled  = scrollLeft <= 2;
   if (sportsRight) sportsRight.disabled = scrollLeft >= maxScroll - 2;
 }
 
-/* Scroll suave al hacer clic en las flechas */
 if (sportsLeft) {
   sportsLeft.addEventListener('click', () => {
     sportsScroll.scrollBy({ left: -SCROLL_STEP, behavior: 'smooth' });
-    /* burst de estrella en la flecha */
+
     const r = sportsLeft.getBoundingClientRect();
     burstStars(r.left + r.width / 2, r.top + r.height / 2, 2);
   });
@@ -256,15 +227,13 @@ if (sportsRight) {
   });
 }
 
-/* Actualizar en cada evento de scroll (incluye swipe táctil) */
 if (sportsScroll) {
   sportsScroll.addEventListener('scroll', updateSportsUI, { passive: true });
-  /* Inicializar al cargar y al redimensionar */
+
   updateSportsUI();
   window.addEventListener('resize', updateSportsUI, { passive: true });
 }
 
-/* Delegación de click en chips */
 if (sportsScroll) {
   sportsScroll.addEventListener('click', (e) => {
     const chip = e.target.closest('.sport-chip');
@@ -273,16 +242,13 @@ if (sportsScroll) {
     document.querySelectorAll('.sport-chip').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
 
-    /* Centrar el chip seleccionado en el scroll */
     chip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
 
-    /* Estrellas */
     const rect = chip.getBoundingClientRect();
     burstStars(rect.left + rect.width / 2, rect.top + rect.height / 2, 5);
   });
 }
 
-/* Burst en botones generales de la página */
 document.querySelectorAll('.btn-hero, .btn-ghost, .btn-accent, .btn-outline, .format-card, .carrusel-btn').forEach(el => {
   el.addEventListener('click', () => {
     const rect = el.getBoundingClientRect();
@@ -290,11 +256,6 @@ document.querySelectorAll('.btn-hero, .btn-ghost, .btn-accent, .btn-outline, .fo
   });
 });
 
-/* 
-   FRONTEND DINÁMICO DE DISCIPLINAS
-    */
-
-// Base de datos de cada deporte (¡Ahora con Rugby y Voleibol!)
 const infoDisciplinas = {
   futbol: {
     categoria: "Deporte de Campo",
@@ -422,32 +383,31 @@ const displayContenedor = document.getElementById('disciplinaDisplay');
 
 function actualizarVistaDisciplina(key) {
   if (!displayContenedor) return;
-  
+
   const datos = infoDisciplinas[key];
   if (!datos) {
     displayContenedor.innerHTML = "";
     return;
   }
 
-  // Generamos el HTML de la disciplina activa
   displayContenedor.innerHTML = `
     <div class="disciplina-card-full">
       <div class="disciplina-info-left">
         <span class="disciplina-tag">${datos.categoria}</span>
         <h3 class="disciplina-title">${datos.titulo}</h3>
         <p class="disciplina-description">${datos.descripcion}</p>
-        
+
         <ul class="disciplina-features">
           ${datos.caracteristicas.map(feat => `<li>${feat}</li>`).join('')}
         </ul>
-        
+
         <div class="disciplina-actions">
           <a href="crear-competencia.html?disciplina=${key}" class="btn-primary">Crear torneo →</a>
           <a href="torneos.html?disciplina=${key}" class="btn-secondary">Ver torneos →</a>
           <a href="calendario.html?disciplina=${key}" class="btn-secondary">Ver calendario →</a>
         </div>
       </div>
-      
+
       <div class="disciplina-preview-panel">
         <div>
           <div class="panel-title">Módulo de Configuración</div>
@@ -458,7 +418,7 @@ function actualizarVistaDisciplina(key) {
             </div>
           `).join('')}
         </div>
-        
+
         <div style="margin-top: 1.5rem; font-size: 0.75rem; color: var(--text-secondary); text-align: center;">
           * Módulo editable desde tu panel de organizador.
         </div>
@@ -468,12 +428,6 @@ function actualizarVistaDisciplina(key) {
   applyNavigationPermissions();
 }
 
-/* 
-   CARRUSEL DE TORNEOS POR DISCIPLINA
-    */
-
-// Vista derivada de SGDM_TOURNAMENTS. Se completa después de declarar
-// la colección principal para evitar mantener dos listas diferentes.
 let torneosPorDisciplina = {};
 
 const NOMBRES_DISCIPLINAS = {
@@ -579,8 +533,6 @@ function torneoNext() {
 if (btnTorneoAtras)    btnTorneoAtras.addEventListener('click', torneoPrev);
 if (btnTorneoAdelante) btnTorneoAdelante.addEventListener('click', torneoNext);
 
-// Escuchador que detecta el clic en los chips para refrescar la información
-// (info de la disciplina + carrusel de torneos de esa disciplina)
 const sportsScrollMenu = document.getElementById('sportsScroll');
 if (sportsScrollMenu) {
   sportsScrollMenu.addEventListener('click', (e) => {
@@ -610,16 +562,10 @@ if (sportsScrollMenu) {
     if (torneosPorDisciplina[deporte]) cambiarDisciplinaTorneos(deporte);
   });
 }
-/* 
-   LIDENSKAP — SISTEMA DE AUTENTICACIÓN POR ROLES (INGENIERÍA)
-    */
 
 const SGDM_PERMISSIONS = {
   ADMIN: ['view_public', 'view_profile', 'edit_profile', 'create_tournament', 'manage_tournaments', 'manage_users', 'manage_participants', 'manage_results', 'view_reports', 'view_audit', 'manage_settings'],
   ORGANIZADOR: ['view_public', 'view_profile', 'manage_tournaments', 'manage_participants', 'manage_results', 'view_reports'],
-  // RF-11: el Árbitro solo lee/actualiza resultados de sus encuentros asignados
-  // (no crea ni elimina); el acotamiento a "sus" encuentros se aplica en el
-  // backend cuando se implemente el módulo de resultados (Tercera Entrega).
   ARBITRO: ['view_public', 'view_profile', 'edit_profile', 'manage_results'],
   PARTICIPANTE: ['view_public', 'view_profile', 'edit_profile', 'join_tournament'],
   PUBLICO: ['view_public', 'view_profile']
@@ -865,22 +811,15 @@ function renderAccountNav() {
 
   applyNavigationPermissions();
 }
-/* 
-   LIDENSKAP — REDIRECCIÓN A LA PÁGINA DE TODAS LAS DISCIPLINAS
-    */
+
 document.addEventListener('click', function (e) {
   const btnTodas = e.target.closest('#btnTodasDisciplinas') || e.target.closest('[data-sport="todas"]');
-  
+
   if (btnTodas && document.body.dataset.page !== 'disciplines') {
     e.preventDefault();
-    // Nos lleva a la vista independiente de disciplinas
     window.location.href = 'disciplinas.html';
   }
 });
-
-/* 
-   NAVEGACIÓN COMPARTIDA Y PÁGINAS DE LA PRIMERA ENTREGA
-    */
 
 const SGDM_NAV_ITEMS = [
   ['index.html', 'Inicio'],
@@ -1154,9 +1093,6 @@ function statusClass(status) {
   return status === 'abierto' ? 'status-open' : status === 'curso' ? 'status-progress' : 'status-closed';
 }
 
-// Mapeo del estado real de torneo (planificado/en_curso/finalizado/
-// cancelado) al vocabulario que ya usa la UI de filtros (abierto/curso/
-// cerrado), para no tener que rehacer el <select> de torneos.html.
 const ESTADO_TORNEO_A_UI = {
   planificado: 'abierto',
   en_curso: 'curso',
@@ -1439,7 +1375,6 @@ function initializeTournamentDetail() {
     })
     .catch(showNotFound);
 }
-
 
 function initializeContactPrototype() {
   const form = document.getElementById('contactPrototypeForm');
