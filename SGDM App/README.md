@@ -1,7 +1,7 @@
 # SGDM App
 
 Esta carpeta es **la aplicación en sí**: el sistema completo (frontend +
-backend PHP + base de datos MySQL) del Sistema de Gestión Deportiva
+backend PHP + base de datos MariaDB) del Sistema de Gestión Deportiva
 Modular, ejecutable con un solo comando de Docker. Vive aparte de las
 carpetas de cada materia porque es el mismo código para todas. No
 pertenece a ninguna entrega en particular, aunque su desarrollo se
@@ -17,7 +17,7 @@ instalado y corriendo. Desde esta carpeta (`SGDM App/`):
 docker compose up -d
 ```
 
-Esperar unos 15-20 segundos a que MySQL termine de inicializar, y abrir
+Esperar unos 15-20 segundos a que MariaDB termine de inicializar, y abrir
 **<http://localhost>**.
 
 Para bajarlo:
@@ -71,7 +71,7 @@ solo hace falta cambiarlos para un despliegue real:
 | Variable | Uso |
 |---|---|
 | `DB_NAME` | Nombre de la base (`sgdm`) |
-| `DB_ROOT_PASSWORD` | Contraseña de `root` en MySQL |
+| `DB_ROOT_PASSWORD` | Contraseña de `root` en MariaDB |
 | `DB_ADMIN_USER` / `DB_ADMIN_PASSWORD` | Usuario con todos los privilegios (mantenimiento) |
 | `DB_APP_USER` / `DB_APP_PASSWORD` | Usuario que usa la app PHP (sin DDL) |
 | `DB_CONSULTA_USER` / `DB_CONSULTA_PASSWORD` | Usuario de solo lectura pública |

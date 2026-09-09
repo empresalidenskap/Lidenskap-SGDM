@@ -24,7 +24,7 @@ independiente, de modo que la plataforma no queda atada a un deporte ni a un
 único modelo de competencia.
 
 **Arquitectura:** Modelo-Vista-Controlador
-**Stack:** HTML · CSS · JavaScript (frontend) · PHP (backend) · MySQL · Apache · Docker
+**Stack:** HTML · CSS · JavaScript (frontend) · PHP (backend) · MariaDB · Apache · Docker
 
 ## Integrantes
 
@@ -106,7 +106,7 @@ cd "SGDM App"
 docker compose up -d
 ```
 
-Esperar unos 15-20 segundos a que MySQL inicialice, y abrir
+Esperar unos 15-20 segundos a que MariaDB inicialice, y abrir
 <http://localhost>. Para bajarlo, `docker compose down`. Detalle completo
 (cuentas de demostración, variables de entorno) en
 [`SGDM App/README.md`](./SGDM%20App/README.md).

@@ -9,12 +9,12 @@ services:
     depends_on:
       - db
 
-  db:                           # MySQL
-    image: mysql:8
+  db:                           # MariaDB
+    image: mariadb:11.4
     env_file: .env
     environment:
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     volumes:
       - ./db:/docker-entrypoint-initdb.d:ro
       - db_data:/var/lib/mysql

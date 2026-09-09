@@ -1,7 +1,7 @@
 # Aplicación SGDM
 
 Implementación del Sistema de Gestión Deportiva Modular: frontend
-(HTML/CSS/JS) y backend PHP, servidos por Apache y conectados a MySQL.
+(HTML/CSS/JS) y backend PHP, servidos por Apache y conectados a MariaDB.
 
 ## Estructura
 
@@ -33,7 +33,7 @@ docker compose up -d
 ```
 
 Abrir <http://localhost>. Levanta Apache+PHP sirviendo `app/` y una base
-MySQL con el esquema, el DCL (usuarios `sgdm_admin`/`sgdm_app`/
+MariaDB con el esquema, el DCL (usuarios `sgdm_admin`/`sgdm_app`/
 `sgdm_consulta`) y las 4 cuentas de demostración ya cargadas. Para bajarlo:
 `docker compose down` (agregar `-v` para reiniciar la base desde cero).
 
@@ -43,7 +43,7 @@ Más detalle de las variables de entorno en `../README.md` (la carpeta
 ## Ejecución local sin Docker
 
 No es una opción real hoy: la aplicación ya tiene backend en PHP con
-conexión a MySQL (login, registro, torneos, panel), así que un servidor
+conexión a MariaDB (login, registro, torneos, panel), así que un servidor
 puramente estático (`python3 -m http.server`) solo serviría el HTML sin
 ninguna de esas funciones. Usar Docker.
 
