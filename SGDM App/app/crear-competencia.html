@@ -9,21 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 
-  <!-- Persistencia del tema sin parpadeo -->
-  <script>
-    (function() {
-      try {
-        var saved = localStorage.getItem('lidenskap-theme');
-        var theme = 'dark';
-        if (saved === 'light' || saved === 'dark') {
-          theme = saved;
-        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches === false) {
-          theme = 'light';
-        }
-        document.documentElement.setAttribute('data-theme', theme);
-      } catch (e) {}
-    })();
-  </script>
+  <script src="assets/js/theme-init.js?v=20260908-1"></script>
 
   <link rel="stylesheet" href="assets/css/styles.css?v=20260908-1">
 </head>
