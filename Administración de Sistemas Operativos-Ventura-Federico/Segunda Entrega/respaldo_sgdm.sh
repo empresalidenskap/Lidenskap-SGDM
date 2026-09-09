@@ -1,6 +1,6 @@
 #!/bin/bash
 #    No se incluyen logs del sistema/aplicación (rotación aparte via logrotate).
-#   Requiere rsync: (sudo dnf install -y rsync mariadb).
+#   Requiere rclone para la copia offsite a Google Drive (sudo dnf install -y rclone mariadb).
 set -euo pipefail
 
 LOG="/var/log/sgdm_respaldos.log"
@@ -15,12 +15,14 @@ CONFIG_PATHS=(/etc/httpd /etc/php /etc/firewalld)
 DIR_BACKUP_APP="/var/backups/sgdm/app"
 RETENCION_APP=4
 
-# Copia offsite
-# pendiente de dejarlo en true y ponerle las credencaiales de drive
+# Copia offsite a Google Drive (via rclone)
+# Setup de una sola vez en el servidor (interactivo, no lo puede hacer este script):
+#   sudo dnf install -y rclone
+#   rclone config          # crear un remote llamado "gdrive" (tipo "drive", cuenta propia)
+# Después de eso, cambiar OFFSITE_HABILITADO a "true".
 OFFSITE_HABILITADO="false"
-OFFSITE_USER="sgdm_backup"
-OFFSITE_HOST="backup.lidenskap.local"
-OFFSITE_DIR="/srv/backups/sgdm"
+OFFSITE_RCLONE_REMOTE="gdrive"
+OFFSITE_RCLONE_PATH="sgdm-backups"
 
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG" >/dev/null
@@ -41,13 +43,13 @@ verificar_dependencias() {
     command -v tar >/dev/null || faltan+=("tar")
     command -v mariadb-dump >/dev/null || command -v mysqldump >/dev/null || faltan+=("mariadb (mariadb-dump/mysqldump)")
     if [[ "$OFFSITE_HABILITADO" == "true" ]]; then
-        command -v rsync >/dev/null || faltan+=("rsync")
+        command -v rclone >/dev/null || faltan+=("rclone")
     fi
 
     if [[ ${#faltan[@]} -gt 0 ]]; then
         log "ERROR: faltan dependencias: ${faltan[*]}."
         echo "Error: faltan dependencias: ${faltan[*]}." >&2
-        echo "Instalar con: sudo dnf install -y rsync mariadb" >&2
+        echo "Instalar con: sudo dnf install -y rclone mariadb" >&2
         exit 1
     fi
 }
@@ -74,15 +76,15 @@ enviar_offsite() {
     local archivo=$1
 
     if [[ "$OFFSITE_HABILITADO" != "true" ]]; then
-        log "PENDIENTE: copia offsite de '$archivo' no enviada (destino offsite aún sin definir)."
+        log "PENDIENTE: copia offsite de '$archivo' no enviada (falta correr 'rclone config' y habilitar OFFSITE_HABILITADO)."
         return 0
     fi
 
-    if ! rsync -az -e ssh "$archivo" "${OFFSITE_USER}@${OFFSITE_HOST}:${OFFSITE_DIR}/"; then
-        log "ERROR: no se pudo enviar '$archivo' al servidor offsite ${OFFSITE_HOST}."
+    if ! rclone copy "$archivo" "${OFFSITE_RCLONE_REMOTE}:${OFFSITE_RCLONE_PATH}/" --quiet; then
+        log "ERROR: no se pudo enviar '$archivo' a Google Drive (remote '${OFFSITE_RCLONE_REMOTE}')."
         return 1
     fi
-    log "Copia offsite de '$archivo' enviada a ${OFFSITE_HOST}:${OFFSITE_DIR}."
+    log "Copia offsite de '$archivo' enviada a Google Drive (${OFFSITE_RCLONE_REMOTE}:${OFFSITE_RCLONE_PATH})."
 }
 
 respaldar_bd() {
@@ -158,8 +160,10 @@ Acciones:
   todo            Ejecuta 'bd' y 'app' en secuencia
   instalar-cron   Crea /etc/cron.d/sgdm_respaldos con el cronograma definido
 
-Nota: la copia offsite está pendiente de definir (OFFSITE_HABILITADO="false").
-Mientras tanto solo se guarda copia local con rotación.
+Nota: la copia offsite a Google Drive está definida (rclone, remote
+'$OFFSITE_RCLONE_REMOTE') pero deshabilitada hasta correr 'rclone config'
+en el servidor y poner OFFSITE_HABILITADO="true". Mientras tanto solo se
+guarda copia local con rotación.
 EOF
 }
 
