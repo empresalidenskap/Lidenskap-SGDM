@@ -22,7 +22,7 @@ https://drive.google.com/file/d/1ZgYbPPQchzdYM_kwcEUKYEmYvBtgKPsF/view?usp=drive
       [`main.js`](../../SGDM%20App/app/assets/js/main.js): solo lee y
       actualiza resultados, sin crear/eliminar, asignable desde el panel por
       Administrador u Organizador — RF-11).
-  - [ ] Falta trasladar el rol **ROL-05 Árbitro** a la tabla del Bloque B
+  - [x] Falta trasladar el rol **ROL-05 Árbitro** a la tabla del Bloque B
         (Roles y Perfiles de Usuario) del documento "Ingeniería de software
         Segunda entrega" en Drive — no se puede editar el Google Doc desde
         acá, texto listo para pegar (ver mensaje de la sesión que hizo el
