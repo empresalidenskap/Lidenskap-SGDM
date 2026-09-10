@@ -6,10 +6,13 @@ Requisitos de la letra de proyecto para esta entrega:
 
 - [x] Actualización del ESRE con requisitos específicos (funcionales y no funcionales)
 - [x] Diagramas UML de Casos de Uso (planilla y diagramación)
-- [x] Diagramas de clase
+- [x] Diagramas de clase 
 - [x] Estudio de factibilidad
 - [x] Plan de contingencias
 - [ ] Diagrama de Gantt (hasta la segunda entrega)
+      
+## link del draw.io de drive para editar
+https://drive.google.com/file/d/1ZgYbPPQchzdYM_kwcEUKYEmYvBtgKPsF/view?usp=drive_link
 
 ## Correcciones pendientes de la primera entrega
 
