@@ -17,7 +17,7 @@ servidor con el sistema funcionando.
       normalización: el modelo está en
       [`01-schema.sql`](./01-schema.sql) (16 tablas, ahora con el rol
       `ARBITRO`) y las justificaciones en
-      [`Normalizacion_SGDM_3FN.pdf`](./Normalizacion_SGDM_3FN.pdf), ya
+      [`Programación Fullstack Segunda entrega.pdf`](./Programación%20Fullstack%20Segunda%20entrega.pdf), ya
       corregidas según la agregación TORNEO-Recibe-INSCRIPCION del MER
       corregido
 - [x] Scripts DDL y DCL: DDL en [`01-schema.sql`](./01-schema.sql), DCL en
@@ -112,7 +112,7 @@ levantarlo en [`SGDM App/README.md`](../../SGDM%20App/README.md).
 - [x] Carpeta con el esquema de pantallas:
       [`esquema-pantallas/`](./esquema-pantallas/) — inventario de pantallas,
       ruta, propósito y acceso por rol, más mapa de navegación, y un manual
-      de usuario en PDF ([`SGDM-Manual-Usuario.pdf`](./esquema-pantallas/SGDM-Manual-Usuario.pdf))
+      de usuario en PDF ([`Programación Fullstack Segunda entrega.pdf`](./Programación%20Fullstack%20Segunda%20entrega.pdf))
       con capturas reales de las 16 pantallas del sistema corriendo en
       Docker (no maquetas), también subido a Google Drive en versión
       resumida.
