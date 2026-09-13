@@ -8,7 +8,7 @@ Requisitos de la letra de proyecto para esta entrega:
 - [x] **Repositorio git accesible con toda la implementación del proyecto** (este repositorio)
 - [x] Actas de reunión formal interna de la segunda entrega (mínimo 6)
 - [x] Análisis costo-beneficio del sistema a desarrollar
-- [ ] Seguimiento de planificación del sistema
+- [x] Seguimiento de planificación del sistema
 
 ## Correcciones pendientes de la primera entrega
 
