@@ -20,7 +20,7 @@ RETENCION_APP=4
 #   sudo dnf install -y rclone
 #   rclone config          # crear un remote llamado "gdrive" (tipo "drive", cuenta propia)
 # Después de eso, cambiar OFFSITE_HABILITADO a "true".
-OFFSITE_HABILITADO="false"
+OFFSITE_HABILITADO="true"
 OFFSITE_RCLONE_REMOTE="gdrive"
 OFFSITE_RCLONE_PATH="sgdm-backups"
 
