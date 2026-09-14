@@ -1,0 +1,236 @@
+<mxfile host="app.diagrams.net" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36">
+  <diagram id="bfe91b75-5d2c-26a0-9c1d-138518896778" name="Página-1">
+    <mxGraphModel dx="2277" dy="1160" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1100" pageHeight="850" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="7c3789c024ecab99-79" parent="1" style="rounded=1;whiteSpace=wrap;html=1;shadow=0;comic=0;strokeColor=#036897;strokeWidth=2;fillColor=none;fontFamily=Verdana;fontSize=28;fontColor=#6881B3;align=center;arcSize=11;verticalAlign=top;" value="" vertex="1">
+          <mxGeometry height="539" width="655.18" x="1122" y="1017" as="geometry" />
+        </mxCell>
+        <mxCell id="7c3789c024ecab99-52" edge="1" parent="1" source="7c3789c024ecab99-10" style="edgeStyle=none;html=1;labelBackgroundColor=none;endArrow=none;endFill=0;strokeWidth=2;fontFamily=Verdana;fontSize=15;fontColor=#036897;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="7c3789c024ecab99-54">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2018.1799999999998" y="1122" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7c3789c024ecab99-10" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.router;rounded=0;shadow=0;comic=0;" value="" vertex="1">
+          <mxGeometry height="30" width="100" x="1820.1799999999998" y="1107" as="geometry" />
+        </mxCell>
+        <mxCell id="7c3789c024ecab99-25" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.pc;rounded=0;shadow=0;comic=0;" value="" vertex="1">
+          <mxGeometry height="70" width="100" x="1225.1800000000003" y="1242" as="geometry" />
+        </mxCell>
+        <mxCell id="7c3789c024ecab99-27" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.pc;rounded=0;shadow=0;comic=0;" value="" vertex="1">
+          <mxGeometry height="70" width="100" x="1571.1800000000003" y="1254" as="geometry" />
+        </mxCell>
+        <mxCell id="7c3789c024ecab99-50" edge="1" parent="1" source="7c3789c024ecab99-30" style="html=1;labelBackgroundColor=none;endArrow=none;endFill=0;strokeWidth=2;fontFamily=Verdana;fontSize=15;fontColor=#036897;exitX=1;exitY=0.7;exitDx=0;exitDy=0;exitPerimeter=0;" target="7c3789c024ecab99-10">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1915.1799999999998" y="1097" as="sourcePoint" />
+            <mxPoint x="1795.1799999999994" y="887" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7c3789c024ecab99-30" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.wireless_hub;rounded=0;shadow=0;comic=0;" value="" vertex="1">
+          <mxGeometry height="85" width="100" x="1376.6800000000003" y="1063" as="geometry" />
+        </mxCell>
+        <mxCell id="7c3789c024ecab99-24" edge="1" parent="1" source="7c3789c024ecab99-25" style="edgeStyle=none;html=1;labelBackgroundColor=none;endArrow=none;endFill=0;strokeWidth=2;fontFamily=Verdana;fontSize=15;fontColor=#036897;exitX=0.64;exitY=0.096;exitDx=0;exitDy=0;exitPerimeter=0;" target="7c3789c024ecab99-30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7c3789c024ecab99-26" edge="1" parent="1" source="7c3789c024ecab99-27" style="edgeStyle=none;html=1;labelBackgroundColor=none;endArrow=none;endFill=0;strokeWidth=2;fontFamily=Verdana;fontSize=15;fontColor=#036897;" target="7c3789c024ecab99-30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7c3789c024ecab99-56" edge="1" parent="1" source="7c3789c024ecab99-54" style="edgeStyle=none;html=1;labelBackgroundColor=none;endArrow=none;endFill=0;strokeWidth=2;fontFamily=Verdana;fontSize=28;fontColor=#6881B3;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" target="dIRmtjgy5XkikxT-MZs5-83">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2178.977101449275" y="1054" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7c3789c024ecab99-54" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.router;rounded=0;shadow=0;comic=0;" value="" vertex="1">
+          <mxGeometry height="30" width="100" x="2018.1799999999998" y="1107" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6C8EBF;dashed=1;verticalAlign=top;align=left;fontSize=13;fontStyle=1;fontColor=#33517E;spacingLeft=10;spacingTop=8;" value="&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;Red institucional UTU - 10.0.0.0/23 (compartida con el resto del instituto)" vertex="1">
+          <mxGeometry height="936" width="1550" x="930" y="1697" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F7FA;strokeColor=#6C8EBF;verticalAlign=top;align=left;fontSize=12;fontStyle=1;fontColor=#33517E;spacingLeft=10;spacingTop=8;" value="&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; Hypervisor Proxmox (institucional)" vertex="1">
+          <mxGeometry height="850" width="1344" x="1076" y="1745" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#33517E;strokeWidth=2;verticalAlign=top;align=left;fontSize=13;fontStyle=1;fontColor=#33517E;spacingLeft=10;spacingTop=8;" value="&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;VM AlmaLinux 8.10 Minimal - 10.0.0.X /23 (1 vCPU, 4GB RAM, disco 32GB thin)" vertex="1">
+          <mxGeometry height="780" width="1239" x="1151" y="1785" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-58" edge="1" parent="1" source="dIRmtjgy5XkikxT-MZs5-7" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="dIRmtjgy5XkikxT-MZs5-9" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-7" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.firewall;" value="" vertex="1">
+          <mxGeometry height="90" width="90" x="1360" y="1825" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-8" parent="1" style="rounded=6;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=11;align=left;verticalAlign=middle;spacingLeft=10;" value="ufw (PERIMETRO: Firewall + Internet) - default deny incoming, allow outgoing.&lt;br&gt;Reglas activas: allow 80/tcp - allow 443/tcp - allow 22/tcp (SSH, sin restriccion por IP: ver PROPUESTA)." vertex="1">
+          <mxGeometry height="70" width="850" x="1470" y="1833" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-9" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.secured;" value="fail2ban" vertex="1">
+          <mxGeometry height="88" width="70" x="1370" y="1957" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-10" parent="1" style="rounded=6;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=11;align=left;verticalAlign=middle;spacingLeft=10;" value="fail2ban - monitorea intentos fallidos de SSH y bloquea la IP origen tras fuerza bruta." vertex="1">
+          <mxGeometry height="70" width="440" x="1455" y="1948" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-11" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.web_server;" value="web" vertex="1">
+          <mxGeometry height="90" width="80" x="1370" y="2087.5" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-12" parent="1" style="rounded=6;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=11;align=left;verticalAlign=middle;spacingLeft=10;" value="web - Apache + PHP, instalados directamente en la VM (sin contenedores).&lt;br&gt;Puerto 80. 443/TLS: pendiente (Tercera Entrega).&lt;br&gt;Document root: /var/www/html." vertex="1">
+          <mxGeometry height="90" width="390" x="1470" y="2080" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-13" parent="1" style="rounded=6;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#999999;fontSize=11;align=left;verticalAlign=middle;spacingLeft=10;" value="svc_sgdm - cuenta de servicio sin shell (/sbin/nologin), duena de /var/www/html" vertex="1">
+          <mxGeometry height="55" width="490" x="1370" y="2210" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-14" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.server;" value="db (MariaDB)" vertex="1">
+          <mxGeometry height="90" width="80" x="1890" y="2075" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-15" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=10;fontColor=#33517E;" value="3306" vertex="1">
+          <mxGeometry height="65" width="50" x="1985" y="2100" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-16" parent="1" style="rounded=6;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=11;align=left;verticalAlign=middle;spacingLeft=10;" value="MariaDB, instalada directamente en la VM (mismo servidor que web, sin contenedores) - puerto 3306." vertex="1">
+          <mxGeometry height="90" width="285" x="2055" y="2075" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-19" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.monitor;" value="Netdata" vertex="1">
+          <mxGeometry height="66" width="80" x="1354" y="2304" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-20" parent="1" style="rounded=6;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=10.5;align=left;verticalAlign=middle;spacingLeft=10;" value="Netdata (monitoreo) - 127.0.0.1:19999, solo loopback.&lt;br&gt;Acceso unicamente via tunel SSH (-L 19999:localhost:19999).&lt;br&gt;Collectors: CPU/RAM/disco/red, MariaDB, Apache mod_status (Require local)." vertex="1">
+          <mxGeometry height="90" width="430" x="1460" y="2292" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-21" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.storage;" value="Backups + logrotate" vertex="1">
+          <mxGeometry height="80" width="80" x="1921" y="2297" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-22" parent="1" style="rounded=6;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=10.5;align=left;verticalAlign=middle;spacingLeft=10;" value="Backups automatizados (cron) - respaldo_sgdm.sh + logrotate.&lt;br&gt;DB: diario 03:00 (retencion 7). App+config: domingo 03:30 (retencion 4).&lt;br&gt;Copia offsite via rclone (pendiente de habilitar)." vertex="1">
+          <mxGeometry height="90" width="320" x="2027" y="2292" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-28" edge="1" parent="1" source="dIRmtjgy5XkikxT-MZs5-52" style="rounded=0;html=1;fontSize=11;fontColor=#333333;strokeColor=#333333;endArrow=classic;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" target="dIRmtjgy5XkikxT-MZs5-47">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="781" y="1902" as="sourcePoint" />
+            <mxPoint x="781.0000000000005" y="1802" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-29" connectable="0" parent="dIRmtjgy5XkikxT-MZs5-28" style="text;html=1;align=center;fontSize=10;fontColor=#333333;" value="HTTPS / HTTP" vertex="1">
+          <mxGeometry relative="1" x="-0.1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-32" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;fontColor=#333333;strokeColor=#333333;endArrow=classic;curved=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1033.69" y="2217.38" />
+              <mxPoint x="1033.69" y="2220" />
+              <mxPoint x="1290" y="2220" />
+              <mxPoint x="1290" y="1900" />
+            </Array>
+            <mxPoint x="857.55" y="2215.42" as="sourcePoint" />
+            <mxPoint x="1359.9999999999998" y="1900" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-33" connectable="0" parent="dIRmtjgy5XkikxT-MZs5-32" style="text;html=1;align=center;fontSize=10;fontColor=#333333;" value="SSH 22 (clave publica, sudo via sgdm_admins)" vertex="1">
+          <mxGeometry relative="1" x="-0.1" as="geometry">
+            <mxPoint x="-213" y="-30" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-34" edge="1" parent="1" style="rounded=0;html=1;fontSize=11;fontColor=#333333;strokeColor=#333333;dashed=1;endArrow=classic;curved=1;" target="dIRmtjgy5XkikxT-MZs5-19">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1259.03" y="2245.47" />
+            </Array>
+            <mxPoint x="859.82" y="2245.47" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-35" connectable="0" parent="dIRmtjgy5XkikxT-MZs5-34" style="text;html=1;align=center;fontSize=10;fontColor=#333333;" value="Tunel SSH -L 19999:localhost:19999" vertex="1">
+          <mxGeometry relative="1" x="-0.1" as="geometry">
+            <mxPoint x="-95" y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-36" edge="1" parent="1" source="dIRmtjgy5XkikxT-MZs5-7" style="rounded=0;html=1;fontSize=11;fontColor=#333333;strokeColor=#333333;endArrow=classic;" target="dIRmtjgy5XkikxT-MZs5-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-37" connectable="0" parent="dIRmtjgy5XkikxT-MZs5-36" style="text;html=1;align=center;fontSize=10;fontColor=#333333;" value="vigila puerto 22" vertex="1">
+          <mxGeometry relative="1" x="-0.1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-38" edge="1" parent="1" source="dIRmtjgy5XkikxT-MZs5-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;fontColor=#333333;strokeColor=#333333;endArrow=classic;curved=1;exitX=0.87;exitY=0.14;exitDx=0;exitDy=0;exitPerimeter=0;" target="dIRmtjgy5XkikxT-MZs5-14">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1439.62" y="2040" />
+              <mxPoint x="1930" y="2040" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-39" connectable="0" parent="dIRmtjgy5XkikxT-MZs5-38" style="text;html=1;align=center;fontSize=10;fontColor=#333333;" value="PDO MySQL (localhost, mismo servidor)" vertex="1">
+          <mxGeometry relative="1" x="-0.1" as="geometry">
+            <mxPoint x="22" y="2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-40" edge="1" parent="1" source="dIRmtjgy5XkikxT-MZs5-21" style="rounded=0;html=1;fontSize=11;fontColor=#333333;strokeColor=#333333;dashed=1;endArrow=classic;edgeStyle=orthogonalEdgeStyle;" target="dIRmtjgy5XkikxT-MZs5-45">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1961.03" y="2430.14" />
+            </Array>
+            <mxPoint x="1020" y="2545" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-41" connectable="0" parent="dIRmtjgy5XkikxT-MZs5-40" style="text;html=1;align=center;fontSize=10;fontColor=#333333;" value="rclone offsite (pendiente habilitar)" vertex="1">
+          <mxGeometry relative="1" x="-0.1" as="geometry">
+            <mxPoint x="77" y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-45" parent="1" style="html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.cloud;fontColor=#ffffff;align=center;" value="" vertex="1">
+          <mxGeometry height="100" width="190" x="706" y="2370" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-46" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(51, 81, 126); font-weight: 700;&quot;&gt;Google Drive &lt;/span&gt;&lt;span style=&quot;color: rgb(51, 81, 126); font-weight: 700;&quot;&gt;(backup offsite, rclone)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="150" x="726" y="2418" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-47" parent="1" style="html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.cloud;fontColor=#ffffff;align=center;" value="" vertex="1">
+          <mxGeometry height="100" width="190" x="686" y="1692" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-51" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font color=&quot;#33517e&quot;&gt;&lt;b&gt;Internet&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="150" x="706" y="1737" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-52" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.user_male;" value="" vertex="1">
+          <mxGeometry height="100" width="40" x="761" y="1882" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-53" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;color: rgb(0, 102, 204); white-space: nowrap;&quot;&gt;Usuario publico&lt;/span&gt;&lt;br style=&quot;color: rgb(0, 102, 204); white-space: nowrap;&quot;&gt;&lt;span style=&quot;color: rgb(0, 102, 204); white-space: nowrap;&quot;&gt;(ROL-04 y superiores)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="751" y="1988" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-89" edge="1" parent="1" source="dIRmtjgy5XkikxT-MZs5-55" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;" target="dIRmtjgy5XkikxT-MZs5-66">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-55" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.router;rounded=0;shadow=0;comic=0;" value="" vertex="1">
+          <mxGeometry height="30" width="100" x="976" y="1755" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-56" edge="1" parent="1" source="dIRmtjgy5XkikxT-MZs5-47" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.91;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" target="dIRmtjgy5XkikxT-MZs5-55" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="936" y="1952" as="sourcePoint" />
+            <mxPoint x="986" y="1902" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-59" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontColor=light-dark(#000000,#3399FF);" value="&lt;span style=&quot;color: rgb(0, 102, 204); white-space: nowrap;&quot;&gt;ufw&lt;/span&gt;" vertex="1">
+          <mxGeometry height="28" width="36" x="1404" y="1909" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-62" parent="1" style="text;whiteSpace=wrap;html=1;align=center;" value="&lt;span style=&quot;color: rgb(0, 102, 204); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: nowrap; background-color: rgb(236, 236, 236); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Administradores&lt;/span&gt;&lt;br style=&quot;forced-color-adjust: none; color: rgb(0, 102, 204); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: nowrap; background-color: rgb(236, 236, 236); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;&quot;&gt;&lt;span style=&quot;color: rgb(0, 102, 204); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: nowrap; background-color: rgb(236, 236, 236); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;sprieto - frodriguez - gvisos - jvillena&lt;/span&gt;&lt;br style=&quot;forced-color-adjust: none; color: rgb(0, 102, 204); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: nowrap; background-color: rgb(236, 236, 236); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;&quot;&gt;&lt;span style=&quot;color: rgb(0, 102, 204); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: nowrap; background-color: rgb(236, 236, 236); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;SSH + sudo (grupo sgdm_admins)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="65" width="220" x="709.9974293518067" y="2263.9968537902832" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-63" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.user_male;" value="" vertex="1">
+          <mxGeometry height="100" width="40" x="800" y="2155" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-66" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.virtual_pc;" value="" vertex="1">
+          <mxGeometry height="85" width="115" x="1188" y="1827.5" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-82" parent="1" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.server;" value="" vertex="1">
+          <mxGeometry height="100" width="90" x="1230.1799999999998" y="1376" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-83" parent="1" style="html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.cloud;fontColor=#ffffff;align=center;" value="" vertex="1">
+          <mxGeometry height="116" width="190" x="1973.1799999999998" y="921" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-84" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font color=&quot;#33517e&quot; style=&quot;font-size: 24px;&quot;&gt;&lt;b style=&quot;&quot;&gt;Internet&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="134" x="2001.1799999999998" y="977" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-86" parent="1" style="text;whiteSpace=wrap;html=1;fontSize=15;" value="&lt;div style=&quot;text-align: center;&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font color=&quot;#33517e&quot;&gt;&lt;b&gt;Servidor Fisico Proxmox IP Gestión: 192.168.2.55&lt;/b&gt;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="39.32" width="306.36" x="1122" y="1483" as="geometry" />
+        </mxCell>
+        <mxCell id="dIRmtjgy5XkikxT-MZs5-88" edge="1" parent="1" source="7c3789c024ecab99-25" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;endFill=0;fontSize=15;strokeWidth=2;" target="dIRmtjgy5XkikxT-MZs5-82">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
