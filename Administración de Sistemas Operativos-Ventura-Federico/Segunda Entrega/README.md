@@ -12,10 +12,6 @@ Requisitos de la letra de proyecto para esta entrega:
   - [x] Definir destino de la copia offsite: Google Drive, vía `rclone`
     (sin servidor propio ni presupuesto para uno). Implementado en
     `enviar_offsite()`.
-    - [ ] Activar en el servidor real: correr `rclone config` (paso
-      interactivo, crea el remote `gdrive`) y cambiar
-      `OFFSITE_HABILITADO` a `"true"`. Hasta entonces sigue quedando
-      solo copia local con rotación.
 - [x] Sistema de monitoreo implementado en el servidor (Zabbix, Grafana, etc.) Documentar Instalación
   (`monitoreo_sgdm.sh`, documentación en `MONITOREO.md`)
   - [x] Collector de MariaDB (`netdata_monitor`@`localhost`, solo metadatos)

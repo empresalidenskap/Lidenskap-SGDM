@@ -45,22 +45,27 @@ materia se separa por entrega:
 .
 ├── Administración de Sistemas Operativos-Ventura-Federico/
 │   ├── Primera Entrega/
-│   └── Segunda Entrega/
+│   ├── Segunda Entrega/
+│   └── Tercera Entrega/
 ├── Ciberseguridad-Padula-Vladimir/
 │   ├── Primera Entrega/
-│   └── Segunda Entrega/
+│   ├── Segunda Entrega/
+│   └── Tercera Entrega/
 ├── Filosofia-Cabrera-Gabriela/
 │   └── Tercera Entrega/
 ├── Ingeniería de Software-Flores-Pablo/
 │   ├── Primera Entrega/
-│   └── Segunda Entrega/
+│   ├── Segunda Entrega/
+│   └── Tercera Entrega/
 ├── Programación Fullstack-Ventura-Federico/
 │   ├── Primera Entrega/
-│   └── Segunda Entrega/
+│   ├── Segunda Entrega/
+│   └── Tercera Entrega/
 ├── SGDM App/                    ← la aplicación en sí (ver más abajo)
 └── Tutoría de Proyecto UTULAB-Flores-Pablo/
     ├── Primera Entrega/
-    └── Segunda Entrega/
+    ├── Segunda Entrega/
+    └── Tercera Entrega/
 ```
 
 `SGDM App/` vive aparte de las carpetas por materia porque es un único

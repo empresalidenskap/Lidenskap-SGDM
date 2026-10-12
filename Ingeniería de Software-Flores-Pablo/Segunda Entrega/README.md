@@ -9,7 +9,6 @@ Requisitos de la letra de proyecto para esta entrega:
 - [x] Diagramas de clase 
 - [x] Estudio de factibilidad
 - [x] Plan de contingencias
-- [ ] Diagrama de Gantt (hasta la segunda entrega)
       
 ## link del draw.io de drive para editar
 https://drive.google.com/file/d/1ZgYbPPQchzdYM_kwcEUKYEmYvBtgKPsF/view?usp=drive_link
@@ -27,6 +26,3 @@ https://drive.google.com/file/d/1ZgYbPPQchzdYM_kwcEUKYEmYvBtgKPsF/view?usp=drive
         Segunda entrega" en Drive — no se puede editar el Google Doc desde
         acá, texto listo para pegar (ver mensaje de la sesión que hizo el
         cambio de código).
-- [ ] Detallar explícitamente los RNF de seguridad técnica: sanitización de
-      datos, hashing de contraseñas con bcrypt y protección contra OWASP
-      Top 10 (texto también preparado para pegar en el mismo documento).

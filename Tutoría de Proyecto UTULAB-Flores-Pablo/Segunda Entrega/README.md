@@ -10,11 +10,3 @@ Requisitos de la letra de proyecto para esta entrega:
 - [x] Análisis costo-beneficio del sistema a desarrollar
 - [x] Seguimiento de planificación del sistema
 
-## Correcciones pendientes de la primera entrega
-
-- Formalizar **User Personas** (perfiles ficticios de organizadores, atletas y usuarios
-  públicos) detallando necesidades, dolores y contextos de uso reales, para cubrir la
-  competencia de Diseño Centrado en las Personas (CET3).
-- Formalizar un **prototipo navegable Lo-Fi / Mid-Fi**, con registro de las pruebas de
-  validación con usuarios (reales o simulados) y las iteraciones realizadas a la interfaz a
-  partir del feedback obtenido.
