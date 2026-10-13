@@ -81,12 +81,10 @@ while true; do
     if [[ "$accion" == "status" ]]; then
         systemctl status "$unidad" --no-pager || true
     else
-        systemctl "$accion" "$unidad"
-        resultado=$?
         if systemctl "$accion" "$unidad"; then
-        echo -e "${VERDE}Acción '$accion' realizada correctamente sobre '$servicio'.${SIN_COLOR}"
-    else
-    echo -e "${ROJO}Ocurrió un error al ejecutar '$accion' sobre '$servicio'.${SIN_COLOR}"
+            echo -e "${VERDE}Acción '$accion' realizada correctamente sobre '$servicio'.${SIN_COLOR}"
+        else
+            echo -e "${ROJO}Ocurrió un error al ejecutar '$accion' sobre '$servicio'.${SIN_COLOR}"
         fi
     fi
 
