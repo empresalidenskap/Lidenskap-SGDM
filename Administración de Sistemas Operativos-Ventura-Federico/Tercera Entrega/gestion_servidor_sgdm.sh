@@ -1,11 +1,4 @@
 #!/bin/bash
-# gestion_servidor_sgdm.sh
-#   Script general de gestión del servidor del SGDM.
-#   Menú que reúne todos los scripts de administración instalados en
-#   /usr/local/sbin (servicios, usuarios, respaldos, monitoreo y consultas
-#   de la base de datos), más consultas rápidas del estado del servidor.
-#   Cada acción queda registrada en el log con el usuario que la ejecutó.
-#   Uso: sudo /usr/local/sbin/gestion_servidor_sgdm.sh
 
 LOG="/var/log/sgdm_gestion_servidor.log"
 DIR_SBIN="/usr/local/sbin"
