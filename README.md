@@ -121,6 +121,6 @@ Esperar unos 15-20 segundos a que MariaDB inicialice, y abrir
 | Entrega | Fecha | Estado |
 |---|---|---|
 | Primera entrega (digital) | 27 de julio | Entregada |
-| Segunda entrega (digital) | 14 de septiembre | En curso |
+| Segunda entrega (digital) | 14 de septiembre | Entregada |
 | Entrega final (impresa) | 28 de octubre | Pendiente |
 | Defensa | 9, 10, 11, 12 y 13 de noviembre | Pendiente |
