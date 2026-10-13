@@ -1,7 +1,3 @@
-# sgdm_gestor.sh  (se instala en /etc/profile.d/)
-#   Al iniciar sesión, pregunta a los administradores del SGDM si quieren
-#   abrir el gestor del servidor. Solo en sesiones interactivas (no afecta a
-#   scp/sftp), solo para root o el grupo sgdm_admins, y no se repite al usar sudo -i.
 
 GESTOR="/usr/local/sbin/gestion_servidor_sgdm.sh"
 
