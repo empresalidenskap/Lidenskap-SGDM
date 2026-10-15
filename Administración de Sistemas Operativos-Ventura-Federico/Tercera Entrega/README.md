@@ -6,7 +6,7 @@ Requisitos de la letra de proyecto para esta entrega:
 
 - [ ] Políticas de seguridad
 - [ ] Implementación de firewall, iptables, antivirus, entre otros dentro del servidor
-- [ ] Script de consultas y monitoreo de base de datos dentro del servidor
+- [x] Script de consultas y monitoreo de base de datos dentro del servidor
 - [x] Script general de gestión del servidor (`gestion_servidor_sgdm.sh`)
   - Menú único que reúne todos los scripts instalados en `/usr/local/sbin`:
     servicios (`gestionar_servicio.sh`), usuarios del sistema
