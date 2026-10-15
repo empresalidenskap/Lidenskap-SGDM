@@ -1,4 +1,3 @@
-
 GESTOR="/usr/local/sbin/gestion_servidor_sgdm.sh"
 
 case $- in

@@ -12,7 +12,7 @@ Requisitos de la letra de proyecto para esta entrega:
     servicios (`gestionar_servicio.sh`), usuarios del sistema
     (`gestion_usuarios.sh`), respaldos (`respaldo_sgdm.sh`), monitoreo con
     Netdata (`monitoreo_sgdm.sh`) y consultas de la base de datos
-    (`consultas_bd_sgdm.sh`, cuando esté instalado).
+    (`consultas_monitoreo_bd_sgdm.sh`, cuando esté instalado).
   - También muestra el estado del servidor (memoria, disco, servicios del
     SGDM y último respaldo), las reglas de firewalld y los logs.
   - Pide confirmación antes de bloquear o eliminar un usuario y registra cada

@@ -163,8 +163,8 @@ while true; do
         4) menu_respaldos ;;
         5) ejecutar monitoreo_sgdm.sh estado ;;
         6)
-            if [[ -x "$DIR_SBIN/consultas_bd_sgdm.sh" ]]; then
-                ejecutar consultas_bd_sgdm.sh
+            if [[ -x "$DIR_SBIN/consultas_monitoreo_bd_sgdm.sh" ]]; then
+                ejecutar consultas_monitoreo_bd_sgdm.sh
             else
                 echo -e "${AMARILLO}El script de consultas de la base de datos todavía no está instalado.${SIN_COLOR}"
             fi
