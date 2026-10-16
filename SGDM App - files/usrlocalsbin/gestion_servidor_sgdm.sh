@@ -65,7 +65,7 @@ estado_servidor() {
     df -h /
     echo ""
     echo "---- Servicios ----"
-    for servicio in httpd mariadb php-fpm firewalld crond netdata; do
+    for servicio in httpd mariadb php-fpm firewalld fail2ban crond netdata; do
         if systemctl is-active --quiet "$servicio"; then
             echo -e "$servicio: ${VERDE}activo${SIN_COLOR}"
         else
@@ -128,9 +128,33 @@ menu_respaldos() {
     esac
 }
 
+menu_seguridad() {
+    echo "1) Estado de la seguridad"
+    echo "2) Reglas del firewall"
+    echo "3) IPs bloqueadas (fail2ban)"
+    echo "4) Desbloquear una IP"
+    echo "5) Escanear con el antivirus ahora"
+    echo "0) Volver"
+    read -p "Opción: " op || salir
+    case $op in
+        1) ejecutar seguridad_sgdm.sh estado ;;
+        2) firewall-cmd --list-all ;;
+        3) fail2ban-client banned ;;
+        4)
+            read -p "IP: " ip || salir
+            if confirmar "¿Desbloquear la IP '$ip'?"; then
+                log "Desbloquea la IP: $ip"
+                fail2ban-client unban "$ip"
+            fi
+            ;;
+        5) ejecutar seguridad_sgdm.sh escanear ;;
+    esac
+}
+
 ver_logs() {
     for archivo in /var/log/sgdm_respaldos.log /var/log/sgdm_monitoreo.log \
-                   /var/log/sgdm_gestion_usuarios.log /var/log/httpd/sgdm-error.log "$LOG"; do
+                   /var/log/sgdm_gestion_usuarios.log /var/log/sgdm_seguridad.log \
+                   /var/log/sgdm_antivirus.log /var/log/httpd/sgdm-error.log "$LOG"; do
         echo "---- $archivo ----"
         tail -n 20 "$archivo" 2>/dev/null || echo "(no existe todavía)"
         echo ""
@@ -151,7 +175,7 @@ while true; do
     echo "4) Respaldos"
     echo "5) Monitoreo (Netdata)"
     echo "6) Consultas de la base de datos"
-    echo "7) Firewall"
+    echo "7) Seguridad (firewall, fail2ban, antivirus)"
     echo "8) Ver logs"
     echo "0) Salir"
     read -p "Opción: " opcion || salir
@@ -169,7 +193,7 @@ while true; do
                 echo -e "${AMARILLO}El script de consultas de la base de datos todavía no está instalado.${SIN_COLOR}"
             fi
             ;;
-        7) firewall-cmd --list-all ;;
+        7) menu_seguridad ;;
         8) ver_logs ;;
         0) salir ;;
         *) echo -e "${ROJO}Opción inválida.${SIN_COLOR}" ;;
