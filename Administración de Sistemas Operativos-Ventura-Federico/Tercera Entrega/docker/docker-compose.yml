@@ -1,0 +1,58 @@
+# SGDM en contenedores, junto a la instalación nativa del servidor.
+# Lo maneja docker_sgdm.sh desde /opt/sgdm/docker (ver DOCKER.md).
+name: sgdm
+
+services:
+  web:                              # Apache + PHP con el código del SGDM
+    build: .
+    image: sgdm-web
+    restart: unless-stopped
+    ports:
+      - "8080:80"                   # 80 y 443 ya los usa el Apache nativo
+    environment:                    # solo lo que necesita la app, sin las claves de root ni admin
+      DB_HOST: db
+      DB_NAME: ${DB_NAME}
+      DB_APP_USER: ${DB_APP_USER}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy  # espera a que MariaDB esté lista
+    networks:
+      - frontend
+      - backend
+    mem_limit: 256m
+    cpus: 0.5
+
+  db:                               # MariaDB, sin puertos publicados
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      DB_ADMIN_USER: ${DB_ADMIN_USER}
+      DB_ADMIN_PASSWORD: ${DB_ADMIN_PASSWORD}
+      DB_APP_USER: ${DB_APP_USER}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD}
+      DB_CONSULTA_USER: ${DB_CONSULTA_USER}
+      DB_CONSULTA_PASSWORD: ${DB_CONSULTA_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql                          # los datos sobreviven al contenedor
+      - ./db:/docker-entrypoint-initdb.d:ro,Z           # esquema, usuarios y demo (solo la 1.ª vez)
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - backend
+    mem_limit: 512m
+    cpus: 0.5
+
+networks:
+  frontend:                         # web <-> exterior (puerto 8080)
+  backend:                          # web <-> db, sin salida ni entrada desde afuera
+    internal: true
+
+volumes:
+  db_data:

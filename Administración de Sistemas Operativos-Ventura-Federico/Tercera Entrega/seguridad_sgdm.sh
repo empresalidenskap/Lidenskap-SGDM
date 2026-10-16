@@ -12,6 +12,7 @@ LOG_ANTIVIRUS="/var/log/sgdm_antivirus.log"
 # Red desde la que se permite SSH (ej: "192.168.1.0/24"). Vacío = desde cualquier lado.
 SSH_RED_PERMITIDA=""
 GRUPO_ADMIN="sgdm_admins"
+PUERTO_DOCKER="8080/tcp"
 
 DIR_CUARENTENA="/var/lib/sgdm/cuarentena"
 DIRS_ESCANEO=(/var/www/html /home /tmp /var/tmp /opt/sgdm)
@@ -40,8 +41,10 @@ firewall() {
     for s in cockpit dhcpv6-client; do
         firewall-cmd --permanent --zone=public --remove-service="$s" >/dev/null 2>&1 || true
     done
-    # Cierra los puertos abiertos a mano (por ejemplo 3306 de MariaDB)
+    # Cierra los puertos abiertos a mano (por ejemplo 3306 de MariaDB),
+    # salvo el del SGDM en Docker (docker_sgdm.sh)
     for p in $(firewall-cmd --permanent --zone=public --list-ports); do
+        [[ "$p" == "$PUERTO_DOCKER" ]] && continue
         firewall-cmd --permanent --zone=public --remove-port="$p" >/dev/null
         log "Firewall: puerto $p cerrado."
     done

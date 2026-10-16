@@ -65,7 +65,7 @@ estado_servidor() {
     df -h /
     echo ""
     echo "---- Servicios ----"
-    for servicio in httpd mariadb php-fpm firewalld fail2ban crond netdata; do
+    for servicio in httpd mariadb php-fpm firewalld fail2ban crond netdata docker; do
         if systemctl is-active --quiet "$servicio"; then
             echo -e "$servicio: ${VERDE}activo${SIN_COLOR}"
         else
@@ -151,10 +151,32 @@ menu_seguridad() {
     esac
 }
 
+menu_docker() {
+    echo "1) Estado de los contenedores"
+    echo "2) Levantar (construir y arrancar)"
+    echo "3) Detener"
+    echo "4) Ver logs de los contenedores"
+    echo "5) Respaldar la base del contenedor"
+    echo "0) Volver"
+    read -p "Opción: " op || salir
+    case $op in
+        1) ejecutar docker_sgdm.sh estado ;;
+        2) ejecutar docker_sgdm.sh levantar ;;
+        3)
+            if confirmar "¿Detener el SGDM en Docker (puerto 8080)?"; then
+                ejecutar docker_sgdm.sh bajar
+            fi
+            ;;
+        4) ejecutar docker_sgdm.sh logs ;;
+        5) ejecutar docker_sgdm.sh respaldo ;;
+    esac
+}
+
 ver_logs() {
     for archivo in /var/log/sgdm_respaldos.log /var/log/sgdm_monitoreo.log \
                    /var/log/sgdm_gestion_usuarios.log /var/log/sgdm_seguridad.log \
-                   /var/log/sgdm_antivirus.log /var/log/httpd/sgdm-error.log "$LOG"; do
+                   /var/log/sgdm_antivirus.log /var/log/sgdm_docker.log \
+                   /var/log/httpd/sgdm-error.log "$LOG"; do
         echo "---- $archivo ----"
         tail -n 20 "$archivo" 2>/dev/null || echo "(no existe todavía)"
         echo ""
@@ -177,6 +199,7 @@ while true; do
     echo "6) Consultas de la base de datos"
     echo "7) Seguridad (firewall, fail2ban, antivirus)"
     echo "8) Ver logs"
+    echo "9) Docker (app en contenedores)"
     echo "0) Salir"
     read -p "Opción: " opcion || salir
     echo ""
@@ -195,6 +218,7 @@ while true; do
             ;;
         7) menu_seguridad ;;
         8) ver_logs ;;
+        9) menu_docker ;;
         0) salir ;;
         *) echo -e "${ROJO}Opción inválida.${SIN_COLOR}" ;;
     esac

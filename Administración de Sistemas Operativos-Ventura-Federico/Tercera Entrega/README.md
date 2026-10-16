@@ -23,7 +23,8 @@ Requisitos de la letra de proyecto para esta entrega:
     servicios (`gestionar_servicio.sh`), usuarios del sistema
     (`gestion_usuarios.sh`), respaldos (`respaldo_sgdm.sh`), monitoreo con
     Netdata (`monitoreo_sgdm.sh`), consultas de la base de datos
-    (`consultas_monitoreo_bd_sgdm.sh`) y seguridad (`seguridad_sgdm.sh`).
+    (`consultas_monitoreo_bd_sgdm.sh`), seguridad (`seguridad_sgdm.sh`) y
+    Docker (`docker_sgdm.sh`).
   - También muestra el estado del servidor (memoria, disco, servicios del
     SGDM y último respaldo), el firewall, las IPs bloqueadas y los logs.
   - Pide confirmación antes de bloquear o eliminar un usuario y registra cada
@@ -32,7 +33,17 @@ Requisitos de la letra de proyecto para esta entrega:
     pregunta a root y a los miembros de `sgdm_admins` si quieren abrir el
     gestor `[s/n]`.
   - Uso manual: `sudo /usr/local/sbin/gestion_servidor_sgdm.sh`
-- [ ] Implementación con Docker de la aplicación web
+- [x] Implementación con Docker de la aplicación web
+  (`docker_sgdm.sh` y [`docker/`](./docker/), documentado en [DOCKER.md](./DOCKER.md))
+  - Segunda copia del SGDM en contenedores (Docker CE) en el puerto 8080, junto
+    a la instalación nativa: contenedor `web` (Apache + PHP 8.3, código dentro
+    de la imagen) y `db` (MariaDB 11.4 sin puertos publicados).
+  - Redes `frontend` y `backend` (interna), volumen `db_data` para los datos,
+    `.env` con contraseñas aleatorias (solo root) y cada contenedor recibe solo
+    las variables que necesita.
+  - Límites de RAM y CPU, healthchecks, reinicio automático y logs con tamaño máximo.
+  - Uso: `sudo docker_sgdm.sh instalar`, `levantar`, `estado`, o el gestor del servidor (opción 9).
+  - [ ] Falta probarlo en el servidor real.
 
 ## Corrección de la segunda entrega de Administración de Sistemas Operativos
 
