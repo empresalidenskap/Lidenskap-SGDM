@@ -568,8 +568,16 @@ const SGDM_PERMISSIONS = {
   ORGANIZADOR: ['view_public', 'view_profile', 'manage_tournaments', 'manage_participants', 'manage_results', 'view_reports'],
   ARBITRO: ['view_public', 'view_profile', 'edit_profile', 'manage_results'],
   PARTICIPANTE: ['view_public', 'view_profile', 'edit_profile', 'join_tournament'],
-  PUBLICO: ['view_public', 'view_profile']
+  PUBLICO: ['view_public', 'view_profile', 'request_tournament']
 };
+
+const ROL_LABEL = { ADMIN: 'Administrador general', ORGANIZADOR: 'Organizador', ARBITRO: 'Árbitro', PARTICIPANTE: 'Participante', PUBLICO: 'Usuario público' };
+
+// Texto escrito por usuarios (nombres de torneo, de personas...) antes de
+// meterlo en innerHTML, para que no pueda inyectar HTML o scripts.
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+}
 
 function readSession() {
   try {
@@ -587,8 +595,42 @@ function cerrarSesion() {
 let sesionUsuario = readSession();
 let authReturnTo = '';
 
+// sesionUsuario.rol es el rol global (ADMIN o PUBLICO); rolesTorneo trae los
+// roles activos por torneo (ORGANIZADOR, ARBITRO, PARTICIPANTE). Los permisos
+// son la unión de todos.
 function hasPermission(permission) {
-  return Boolean(sesionUsuario && SGDM_PERMISSIONS[sesionUsuario.rol]?.includes(permission));
+  if (!sesionUsuario) return false;
+  const roles = [sesionUsuario.rol, ...(sesionUsuario.rolesTorneo || []).map(item => item.rol)];
+  return roles.some(rol => SGDM_PERMISSIONS[rol]?.includes(permission));
+}
+
+function hasTorneoRole(idTorneo, rol) {
+  return Boolean(sesionUsuario?.rolesTorneo?.some(item => item.idTorneo === Number(idTorneo) && item.rol === rol));
+}
+
+function canCreateTournament() {
+  return hasPermission('create_tournament') || hasPermission('request_tournament');
+}
+
+function canUsePanel() {
+  return hasPermission('manage_tournaments') || hasPermission('manage_users') || hasPermission('manage_results');
+}
+
+// Los roles por torneo cambian sin que el usuario vuelva a loguearse (le
+// aprueban una solicitud, o el torneo termina y se le revoca). Si lo que
+// devuelve el servidor no coincide con lo guardado, se actualiza y se recarga.
+function refreshSession() {
+  if (!sesionUsuario) return;
+  fetch('api/sesion.php')
+    .then(response => response.json())
+    .then(data => {
+      const actual = data.user ? JSON.stringify(data.user) : null;
+      if (actual === sessionStorage.getItem('lidenskap-user')) return;
+      if (actual) sessionStorage.setItem('lidenskap-user', actual);
+      else sessionStorage.removeItem('lidenskap-user');
+      window.location.reload();
+    })
+    .catch(() => {});
 }
 
 function passwordToggleButtonHtml() {
@@ -617,11 +659,11 @@ function createAuthModal() {
             <p id="loginError" class="auth-error" hidden>Correo o contraseña incorrectos.</p>
             <button class="btn-primary" type="submit">Ingresar</button>
           </form>
-          <details class="demo-accounts"><summary>Ver cuentas de demostración</summary><ul><li><b>Administrador:</b> admin@lidenskap.com / admin123</li><li><b>Organizador:</b> organizador@lidenskap.com / org123</li><li><b>Árbitro:</b> arbitro@lidenskap.com / arb123</li><li><b>Participante:</b> atleta@lidenskap.com / user123</li><li><b>Usuario público:</b> publico@lidenskap.com / guest123</li></ul></details>
+          <details class="demo-accounts"><summary>Ver cuentas de demostración</summary><ul><li><b>Administrador:</b> admin@lidenskap.com / admin123</li><li><b>Organizador de Copa Demo:</b> organizador@lidenskap.com / org123</li><li><b>Árbitro de Copa Demo:</b> arbitro@lidenskap.com / arb123</li><li><b>Participante de Copa Demo:</b> atleta@lidenskap.com / user123</li><li><b>Usuario público:</b> publico@lidenskap.com / guest123</li></ul></details>
         </section>
         <section id="viewRegister" hidden>
           <p class="section-eyebrow">Nueva cuenta</p><h2>REGISTRARSE</h2>
-          <p class="auth-help">Se crea como cuenta de Usuario público. Para competir en un torneo, un Organizador debe inscribirte y validarte como Participante.</p>
+          <p class="auth-help">Se crea como cuenta de Usuario público. Con ella podés solicitar crear un torneo, participar o arbitrar en uno; el rol vale solo para ese torneo.</p>
           <form id="registerForm">
             <div class="field"><label for="registerNombre">Nombre</label><input id="registerNombre" autocomplete="given-name" required></div>
             <div class="field"><label for="registerApellido">Apellido</label><input id="registerApellido" autocomplete="family-name" required></div>
@@ -698,7 +740,7 @@ function initializeAuthentication() {
       }
       sessionStorage.setItem('lidenskap-user', JSON.stringify(data.user));
       sesionUsuario = data.user;
-      const destination = authReturnTo || (['ADMIN', 'ORGANIZADOR', 'ARBITRO'].includes(sesionUsuario.rol) ? 'panel.html' : 'perfil.html');
+      const destination = authReturnTo || (canUsePanel() ? 'panel.html' : 'perfil.html');
       window.location.href = destination;
     } catch {
       loginError.textContent = 'No se pudo conectar con el servidor. Intentá de nuevo.';
@@ -876,10 +918,10 @@ function initializeSharedNavigation() {
 
 function applyNavigationPermissions() {
   document.querySelectorAll('a[href^="crear-competencia.html"]').forEach(link => {
-    link.hidden = !hasPermission('create_tournament');
+    link.hidden = !canCreateTournament();
   });
   document.querySelectorAll('a[href="panel.html"]').forEach(link => {
-    link.hidden = !(hasPermission('manage_tournaments') || hasPermission('manage_users'));
+    link.hidden = !canUsePanel();
   });
 }
 
@@ -894,16 +936,11 @@ function applyRouteGuard() {
   if (page === 'profile' && !sesionUsuario) {
     renderAccessGate('INICIÁ SESIÓN PARA VER TU PERFIL', 'Todavía no hay un usuario autenticado. Ingresá con una de las cuatro cuentas habilitadas o consultá el maquetado de registro.', true);
   }
-  if (page === 'create-tournament' && !hasPermission('create_tournament')) {
-    const createAccessMessage = sesionUsuario?.rol === 'ORGANIZADOR'
-      ? 'El Organizador no puede crear competencias nuevas. Puede configurar únicamente los torneos asignados desde su panel.'
-      : sesionUsuario
-        ? `El rol ${sesionUsuario.rolNombre} no tiene permiso para crear competencias.`
-        : 'Esta función requiere una cuenta de Administrador general.';
-    renderAccessGate('NO PODÉS CREAR COMPETENCIAS', createAccessMessage, !sesionUsuario);
+  if (page === 'create-tournament' && !canCreateTournament()) {
+    renderAccessGate('INICIÁ SESIÓN PARA CREAR UN TORNEO', 'Cualquier cuenta puede solicitar un torneo nuevo; el Administrador general revisa la solicitud y, si la aprueba, quedás como Organizador de ese torneo.', true);
   }
-  if (page === 'dashboard' && !(hasPermission('manage_tournaments') || hasPermission('manage_users') || hasPermission('manage_results'))) {
-    renderAccessGate('PANEL NO DISPONIBLE', sesionUsuario ? `El rol ${sesionUsuario.rolNombre} no tiene acceso a herramientas de gestión.` : 'Iniciá sesión como Administrador general u Organizador de torneo para acceder al panel.', !sesionUsuario);
+  if (page === 'dashboard' && !canUsePanel()) {
+    renderAccessGate('PANEL NO DISPONIBLE', sesionUsuario ? 'Tu cuenta no organiza ni arbitra ningún torneo vigente. Podés solicitarlo desde la página de cada torneo.' : 'Iniciá sesión como Administrador general u Organizador de torneo para acceder al panel.', !sesionUsuario);
   }
 }
 
@@ -936,20 +973,20 @@ document.addEventListener('click', event => {
   const href = protectedLink.getAttribute('href') || '';
   if (href.startsWith('perfil.html') && !sesionUsuario) {
     event.preventDefault(); openAuthModal('login', 'perfil.html');
-  } else if (href.startsWith('crear-competencia.html') && !hasPermission('create_tournament')) {
+  } else if (href.startsWith('crear-competencia.html') && !canCreateTournament()) {
     event.preventDefault();
-    if (!sesionUsuario) openAuthModal('login', href);
-    else alert(`Acceso denegado: el rol ${sesionUsuario.rolNombre} no puede crear competencias.`);
-  } else if (href.startsWith('panel.html') && !(hasPermission('manage_tournaments') || hasPermission('manage_users'))) {
+    openAuthModal('login', href);
+  } else if (href.startsWith('panel.html') && !canUsePanel()) {
     event.preventDefault();
     if (!sesionUsuario) openAuthModal('login', 'panel.html');
-    else alert(`Acceso denegado: el rol ${sesionUsuario.rolNombre} no puede administrar el sistema.`);
+    else alert('Tu cuenta no organiza ni arbitra ningún torneo vigente, así que no tiene panel de gestión.');
   }
 });
 
 initializeSharedNavigation();
 initializeAuthentication();
 applyRouteGuard();
+refreshSession();
 
 const SGDM_TOURNAMENTS = [
   { id: 'copa-apertura', name: 'Copa Apertura 2026', discipline: 'futbol', disciplineLabel: 'Fútbol', format: 'liga', formatLabel: 'Liga', status: 'abierto', statusLabel: 'Inscripciones abiertas', date: '3 Ago 2026', venue: 'Montevideo', slots: '10 / 16', description: 'Competencia abierta para clubes y equipos amateur de Montevideo.' },
@@ -1132,8 +1169,8 @@ function initializeTournamentSearch() {
       return `
       <article class="tournament-card">
         <div class="card-top"><span class="status-pill ${statusClass(estadoUi)}">${ESTADO_UI_LABEL[estadoUi]}</span><span class="neutral-pill">${FORMATO_LABEL[t.formato] || t.formatoNombre}</span></div>
-        <div class="card-category-line"><p class="section-eyebrow">${t.disciplinaNombre || 'Personalizada'}</p></div><h3>${t.nombre}</h3><p>${t.descripcion || ''}</p>
-        <dl class="card-meta"><div><dt>Inicio</dt><dd>${t.fechaInicio || 'A definir'}</dd></div><div><dt>Cupos</dt><dd>${cupos}</dd></div><div><dt>Sede</dt><dd>${t.sede || 'A definir'}</dd></div></dl>
+        <div class="card-category-line"><p class="section-eyebrow">${escapeHtml(t.disciplinaNombre || 'Personalizada')}</p></div><h3>${escapeHtml(t.nombre)}</h3><p>${escapeHtml(t.descripcion)}</p>
+        <dl class="card-meta"><div><dt>Inicio</dt><dd>${t.fechaInicio || 'A definir'}</dd></div><div><dt>Cupos</dt><dd>${cupos}</dd></div><div><dt>Sede</dt><dd>${escapeHtml(t.sede || 'A definir')}</dd></div></dl>
         <a class="btn-primary" href="detalle-torneo.html?id=${t.id}">Ver detalle</a>
       </article>`;
     }).join('');
@@ -1311,7 +1348,7 @@ function initializeTournamentDetail() {
 
   if (!id) { showNotFound(); return; }
 
-  const ESTADOS = { planificado: 'Inscripciones Abiertas', en_curso: 'En Curso', finalizado: 'Finalizado', cancelado: 'Cancelado' };
+  const ESTADOS = { solicitado: 'Solicitud pendiente', rechazado: 'Solicitud rechazada', planificado: 'Inscripciones Abiertas', en_curso: 'En Curso', finalizado: 'Finalizado', cancelado: 'Cancelado' };
   const FORMATOS = { liga: 'Liga', eliminacion: 'Eliminación Directa', suizo: 'Sistema Suizo' };
   const set = (elementId, value) => { const el = document.getElementById(elementId); if (el) el.textContent = value; };
 
@@ -1341,17 +1378,48 @@ function initializeTournamentDetail() {
       const teamsList = document.getElementById('teamsList');
       if (teamsList) {
         teamsList.innerHTML = confirmados.length
-          ? confirmados.map(i => `<li><span class="team-bullet">🛡️</span> ${i.nombre}</li>`).join('')
+          ? confirmados.map(i => `<li><span class="team-bullet">🛡️</span> ${escapeHtml(i.nombre)}</li>`).join('')
           : '<li>Todavía no hay inscriptos confirmados.</li>';
       }
 
       const registerBtn = document.getElementById('btnRegisterInDetail');
+      const refereeBtn = document.getElementById('btnRefereeInDetail');
+      const solicitar = async (tipo, button) => {
+        button.disabled = true;
+        try {
+          const response = await fetch('api/solicitudes.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tipo, idTorneo: t.id }),
+          });
+          const data = await response.json();
+          if (!data.success) { alert(data.error || 'No se pudo enviar la solicitud.'); button.disabled = false; return; }
+          registerBtn.textContent = 'Solicitud enviada';
+          registerBtn.disabled = true;
+          refereeBtn.hidden = true;
+        } catch {
+          alert('No se pudo conectar con el servidor. Intentá de nuevo.');
+          button.disabled = false;
+        }
+      };
+      const miRol = sesionUsuario?.rolesTorneo?.find(item => item.idTorneo === t.id);
       if (registerBtn) {
         if (!sesionUsuario) {
           registerBtn.textContent = 'Iniciar sesión para inscribirme';
           registerBtn.addEventListener('click', () => openAuthModal('login', `detalle-torneo.html?id=${t.id}`));
+        } else if (sesionUsuario.rol === 'ADMIN' || hasTorneoRole(t.id, 'ORGANIZADOR')) {
+          registerBtn.textContent = 'Gestionar solicitudes';
+          registerBtn.addEventListener('click', () => { window.location.href = 'panel.html#panel-requests'; });
+        } else if (miRol) {
+          registerBtn.textContent = `Sos ${ROL_LABEL[miRol.rol]} de este torneo`;
+          registerBtn.disabled = true;
+        } else if (t.estado !== 'planificado') {
+          registerBtn.hidden = true;
         } else {
-          registerBtn.addEventListener('click', () => alert('La inscripción de equipos se habilita en la próxima etapa.'));
+          registerBtn.textContent = 'Solicitar participar';
+          registerBtn.addEventListener('click', () => solicitar('participar', registerBtn));
+          refereeBtn.hidden = false;
+          refereeBtn.addEventListener('click', () => solicitar('arbitrar', refereeBtn));
         }
       }
 
@@ -1400,50 +1468,16 @@ function initializeProfileEditor() {
         ['status-closed', 'Auditoría', 'Consultar registro de actividad', '48 eventos registrados', 'panel.html#panel-audit']
       ]
     },
-    ORGANIZADOR: {
-      subtitle: 'Gestión limitada a sus torneos asignados',
-      stats: [['Torneos asignados', '3'], ['Participantes', '74'], ['Resultados pendientes', '6'], ['Reportes', '3']],
-      extras: [['Nivel de acceso', 'Torneos asignados'], ['Ámbito', 'Organización y resultados']],
-      activityTitle: 'TORNEOS ASIGNADOS',
-      activity: [
-        ['status-open', 'Abierto', 'Copa Apertura 2026', 'Fútbol · 10 de 16 cupos', 'detalle-torneo.html?id=copa-apertura'],
-        ['status-progress', 'En curso', 'Liga Juvenil U18', 'Básquetbol · Fecha 5', 'detalle-torneo.html?id=liga-juvenil'],
-        ['status-open', 'Abierto', 'Open Individual de Verano', 'Tenis · 18 de 32 cupos', 'detalle-torneo.html?id=open-tenis']
-      ]
-    },
-    ARBITRO: {
-      subtitle: 'Actualiza resultados de los encuentros que tiene asignados',
-      stats: [['Encuentros asignados', '4'], ['Resultados cargados', '2'], ['Rondas activas', '1'], ['Reportes', '0']],
-      extras: [['Nivel de acceso', 'Encuentros asignados'], ['Ámbito', 'Carga de resultados']],
-      activityTitle: 'ENCUENTROS ASIGNADOS',
-      activity: [
-        ['status-progress', 'Pendiente', 'Cargar resultado', 'Copa Apertura · Fecha 3', 'panel.html#panel-results'],
-        ['status-open', 'Programado', 'Próximo encuentro', 'Liga Juvenil U18 · Fecha 5', 'panel.html#panel-results']
-      ]
-    },
-    PARTICIPANTE: {
-      subtitle: 'Montevideo, Uruguay · Miembro desde marzo de 2026',
-      stats: [['Torneos jugados', '12'], ['Victorias', '28'], ['Posición histórica', '#18'], ['Próximo partido', '03 AGO']],
-      extras: [['Equipo', 'Atlético Sur'], ['Disciplina principal', 'Fútbol']],
-      activityTitle: 'MIS TORNEOS',
-      activity: [
-        ['status-open', 'Próximo', 'Copa Apertura 2026', 'Fútbol · 3 de agosto', 'detalle-torneo.html?id=copa-apertura'],
-        ['status-progress', 'En curso', 'Suizo Clásico de Invierno', 'Ajedrez · Ronda 3 de 7', 'detalle-torneo.html?id=suizo-invierno'],
-        ['status-closed', 'Finalizado', 'Liga Juvenil U18', 'Básquetbol · 4.º puesto', 'detalle-torneo.html?id=liga-juvenil']
-      ]
-    },
+    // Organizador/Árbitro/Participante no son roles de la cuenta: un Usuario
+    // público los tiene en torneos puntuales (se listan abajo, desde la API).
     PUBLICO: {
-      subtitle: 'Cuenta de consulta · Sin permisos de modificación',
+      subtitle: 'Cuenta personal · Tus roles dependen de cada torneo',
       stats: [['Torneos consultables', '11'], ['Calendarios públicos', '11'], ['Resultados oficiales', '24'], ['Acciones de gestión', '0']],
-      extras: [['Nivel de acceso', 'Solo lectura'], ['Ámbito', 'Información pública']],
-      activityTitle: 'ACCESO PÚBLICO',
-      activity: [
-        ['status-open', 'Consulta', 'Torneos publicados', 'Buscar por disciplina o formato', 'torneos.html'],
-        ['status-progress', 'Consulta', 'Calendarios y resultados', 'Información oficial disponible', 'detalle-torneo.html?id=copa-apertura'],
-        ['status-closed', 'Restringido', 'Sin acciones de modificación', 'No puede inscribirse ni administrar', 'torneos.html']
-      ]
+      extras: [['Nivel de acceso', 'Según cada torneo'], ['Ámbito', 'Torneos donde tenés un rol']],
+      activityTitle: 'MIS TORNEOS Y SOLICITUDES',
+      activity: []
     }
-  }[sesionUsuario.rol];
+  }[sesionUsuario.rol === 'ADMIN' ? 'ADMIN' : 'PUBLICO'];
 
   let storedProfile = {};
   try { storedProfile = JSON.parse(localStorage.getItem(`lidenskap-profile-${sesionUsuario.email}`) || '{}'); } catch { storedProfile = {}; }
@@ -1454,7 +1488,6 @@ function initializeProfileEditor() {
   document.getElementById('profileHeading').textContent = displayName.toUpperCase();
   document.getElementById('profileSubtitle').textContent = profileData.subtitle;
   document.getElementById('profileEmail').textContent = sesionUsuario.email;
-  document.getElementById('profileRoleDetail').textContent = sesionUsuario.rolNombre;
   profileData.stats.forEach(([label, value], index) => {
     document.getElementById(`statLabel${index + 1}`).textContent = label;
     document.getElementById(`statValue${index + 1}`).textContent = value;
@@ -1465,6 +1498,25 @@ function initializeProfileEditor() {
   document.getElementById('profileExtraValue2').textContent = profileData.extras[1][1];
   document.getElementById('profileActivityTitle').textContent = profileData.activityTitle;
   document.getElementById('profileActivity').innerHTML = profileData.activity.map(([status, badge, title, subtitle, href]) => `<a href="${href}"><span class="status-pill ${status}">${badge}</span><div><strong>${title}</strong><small>${subtitle}</small></div><span>→</span></a>`).join('');
+  const rolesTorneo = sesionUsuario.rolesTorneo || [];
+  document.getElementById('profileRoleDetail').textContent = [sesionUsuario.rolNombre, ...rolesTorneo.map(item => `${ROL_LABEL[item.rol]} de ${item.torneo}`)].join(' · ');
+
+  // Usuario público: sus roles por torneo y el estado de cada solicitud.
+  // Un rol aprobado de un torneo que ya terminó figura como "Finalizado".
+  if (sesionUsuario.rol !== 'ADMIN') {
+    const ESTADO_SOLICITUD = { pendiente: ['status-progress', 'Pendiente'], aprobada: ['status-open', 'Vigente'], rechazada: ['status-closed', 'Rechazada'] };
+    fetch('api/solicitudes.php?ambito=mias')
+      .then(response => response.json())
+      .then(data => {
+        const filas = data.success ? data.solicitudes : [];
+        document.getElementById('profileActivity').innerHTML = filas.length
+          ? filas.map(s => {
+            const [pill, label] = s.estado === 'aprobada' && !s.activo ? ['status-closed', 'Finalizado'] : ESTADO_SOLICITUD[s.estado];
+            return `<a href="detalle-torneo.html?id=${s.idTorneo}"><span class="status-pill ${pill}">${label}</span><div><strong>${escapeHtml(s.torneo)}</strong><small>${ROL_LABEL[s.rol]}</small></div><span>→</span></a>`;
+          }).join('')
+          : '<p>Todavía no tenés roles ni solicitudes. Buscá un torneo para participar o arbitrar, o solicitá crear el tuyo.</p>';
+      });
+  }
 
   const editor = document.getElementById('profileEditor');
   const edit = document.getElementById('editProfile');
@@ -1489,14 +1541,20 @@ function initializeDashboardByRole() {
   if (document.body.dataset.page !== 'dashboard' || !sesionUsuario) return;
   if (!document.getElementById('dashboardTitle')) return;
   const isAdmin = sesionUsuario.rol === 'ADMIN';
+  const isOrganizer = hasPermission('manage_tournaments');
+  // Admin: todo. Organizador: lo de sus torneos. Solo Árbitro: resultados.
   const allowedModules = isAdmin
-    ? ['users', 'tournaments', 'participants', 'results', 'rounds', 'reports', 'audit', 'settings']
-    : ['tournaments', 'participants', 'results', 'rounds', 'reports'];
-  document.getElementById('dashboardRole').textContent = sesionUsuario.rolNombre;
+    ? ['users', 'requests', 'tournaments', 'participants', 'results', 'rounds', 'reports', 'audit', 'settings']
+    : isOrganizer ? ['requests', 'tournaments', 'participants', 'results', 'rounds', 'reports'] : ['results'];
+  const rolesTexto = (sesionUsuario.rolesTorneo || []).map(item => `${ROL_LABEL[item.rol]} · ${item.torneo}`).join(' / ');
+  document.getElementById('dashboardRole').textContent = isAdmin ? sesionUsuario.rolNombre : rolesTexto;
   document.getElementById('dashboardTitle').textContent = isAdmin ? 'PANEL GENERAL' : 'MIS TORNEOS';
-  document.getElementById('dashboardDescription').textContent = isAdmin ? 'Control completo de usuarios, módulos, torneos, resultados, reportes y auditoría.' : 'Gestión limitada a las competencias asignadas a tu cuenta de organizador.';
+  document.getElementById('dashboardDescription').textContent = isAdmin ? 'Control completo de usuarios, solicitudes, torneos, resultados, reportes y auditoría.' : 'Gestión limitada a los torneos donde tenés un rol asignado.';
   document.querySelectorAll('[data-admin-only]').forEach(element => {
     if (!element.hasAttribute('data-panel-module')) element.hidden = !isAdmin;
+  });
+  document.querySelectorAll('.module-card[data-panel-target]').forEach(card => {
+    card.hidden = !allowedModules.includes(card.dataset.panelTarget);
   });
   document.body.classList.toggle('organizer-panel', !isAdmin);
   if (!isAdmin) {
@@ -1546,7 +1604,12 @@ function initializeDashboardByRole() {
     panelRecordForm.innerHTML = fields.map(field => {
       const value = values[field.name] ?? '';
       if (field.type === 'select') {
-        return `<div class="field ${field.full ? 'field-full' : ''}"><label for="panel-${field.name}">${field.label}</label><select id="panel-${field.name}" name="${field.name}" required>${field.options.map(option => `<option value="${option}"${option === value ? ' selected' : ''}>${option}</option>`).join('')}</select></div>`;
+        // option puede ser un texto o { value, label }
+        const optionsHtml = field.options.map(option => {
+          const { value: optionValue, label } = typeof option === 'object' ? option : { value: option, label: option };
+          return `<option value="${optionValue}"${String(optionValue) === String(value) ? ' selected' : ''}>${label}</option>`;
+        }).join('');
+        return `<div class="field ${field.full ? 'field-full' : ''}"><label for="panel-${field.name}">${field.label}</label><select id="panel-${field.name}" name="${field.name}" ${field.required === false ? '' : 'required'}>${optionsHtml}</select></div>`;
       }
       const inputHtml = `<input id="panel-${field.name}" name="${field.name}" type="${field.type || 'text'}" value="${value}" ${field.required === false ? '' : 'required'}>`;
       if (field.type === 'password') {
@@ -1591,8 +1654,6 @@ function initializeDashboardByRole() {
     render();
   };
 
-  const ROL_LABEL = { ADMIN: 'Administrador general', ORGANIZADOR: 'Organizador', ARBITRO: 'Árbitro', PARTICIPANTE: 'Participante', PUBLICO: 'Usuario público' };
-  const ROL_LABEL_A_CODIGO = Object.fromEntries(Object.entries(ROL_LABEL).map(([code, label]) => [label, code]));
 
   if (isAdmin) {
     let users = [];
@@ -1601,7 +1662,7 @@ function initializeDashboardByRole() {
       const query = normalize(document.getElementById('usersSearch').value);
       const visible = users.filter(user => !query || normalize(Object.values(user).join(' ')).includes(query));
       document.getElementById('usersCount').textContent = `${visible.length} de ${users.length} usuarios`;
-      document.getElementById('usersTableBody').innerHTML = visible.map(user => `<tr><td><strong>${user.nombre} ${user.apellido}</strong></td><td>${user.email}</td><td>${ROL_LABEL[user.rol] || user.rol}</td><td><span class="status-pill ${user.estado === 'activo' ? 'status-open' : 'status-closed'}">${user.estado}</span></td><td><div class="table-actions"><button class="table-action" type="button" data-user-edit="${user.id}">Editar</button>${user.id === sesionUsuario.id_usuario || user.estado !== 'activo' ? '' : `<button class="table-action danger-action" type="button" data-user-delete="${user.id}">Desactivar</button>`}</div></td></tr>`).join('');
+      document.getElementById('usersTableBody').innerHTML = visible.map(user => `<tr><td><strong>${escapeHtml(`${user.nombre} ${user.apellido}`)}</strong></td><td>${escapeHtml(user.email)}</td><td>${ROL_LABEL[user.rol] || user.rol}${user.rolesTorneo.map(item => `<br><small>${ROL_LABEL[item.rol]} · ${escapeHtml(item.torneo)}</small>`).join('')}</td><td><span class="status-pill ${user.estado === 'activo' ? 'status-open' : 'status-closed'}">${user.estado}</span></td><td><div class="table-actions"><button class="table-action" type="button" data-user-edit="${user.id}">Editar</button>${user.id === sesionUsuario.id_usuario || user.estado !== 'activo' ? '' : `<button class="table-action danger-action" type="button" data-user-delete="${user.id}">Desactivar</button>`}</div></td></tr>`).join('');
     };
 
     const cargarUsuarios = () => fetch('api/usuarios.php')
@@ -1615,13 +1676,13 @@ function initializeDashboardByRole() {
       if (editButton) {
         const user = users.find(item => item.id === Number(editButton.dataset.userEdit));
         openPanelForm({
-          title: 'EDITAR USUARIO', help: 'Actualiza los datos básicos y el rol asignado.',
-          fields: [{ name: 'nombre', label: 'Nombre' }, { name: 'apellido', label: 'Apellido' }, { name: 'email', label: 'Correo', type: 'email' }, { name: 'rol', label: 'Rol', type: 'select', options: Object.values(ROL_LABEL), full: true }],
-          values: { ...user, rol: ROL_LABEL[user.rol] || user.rol },
+          title: 'EDITAR USUARIO', help: 'Actualiza los datos básicos y el rol de la cuenta. Los roles por torneo se asignan desde cada torneo.',
+          fields: [{ name: 'nombre', label: 'Nombre' }, { name: 'apellido', label: 'Apellido' }, { name: 'email', label: 'Correo', type: 'email' }, { name: 'rol', label: 'Rol de la cuenta', type: 'select', options: ['ADMIN', 'PUBLICO'].map(code => ({ value: code, label: ROL_LABEL[code] })), full: true }],
+          values: user,
           onSubmit: data => {
             fetch(`api/usuario.php?id=${user.id}`, {
               method: 'PUT', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ nombre: data.nombre, apellido: data.apellido, email: data.email, rol: ROL_LABEL_A_CODIGO[data.rol] || data.rol }),
+              body: JSON.stringify({ nombre: data.nombre, apellido: data.apellido, email: data.email, rol: data.rol }),
             })
               .then(response => response.json())
               .then(result => { showToast(result.success ? 'Usuario actualizado.' : result.error); if (result.success) cargarUsuarios(); });
@@ -1638,16 +1699,17 @@ function initializeDashboardByRole() {
       }
     });
     document.querySelector('[data-panel-form="user"]')?.addEventListener('click', () => openPanelForm({
-      title: 'CREAR USUARIO ADMINISTRATIVO', help: 'Define la cuenta y su nivel de acceso. La contraseña inicial se la comunicás vos a la persona.',
+      title: 'CREAR USUARIO', help: 'Organizador, Árbitro y Participante son roles de un torneo: elegí en cuál. La cuenta queda como Usuario público y el rol se le quita cuando el torneo termina. La contraseña inicial se la comunicás vos a la persona.',
       fields: [
         { name: 'nombre', label: 'Nombre' }, { name: 'apellido', label: 'Apellido' },
         { name: 'email', label: 'Correo', type: 'email' }, { name: 'password', label: 'Contraseña inicial', type: 'password' },
-        { name: 'rol', label: 'Rol', type: 'select', options: ['Administrador general', 'Organizador', 'Árbitro'], full: true },
+        { name: 'rol', label: 'Rol', type: 'select', options: ['ORGANIZADOR', 'ARBITRO', 'PARTICIPANTE', 'ADMIN'].map(code => ({ value: code, label: ROL_LABEL[code] })) },
+        { name: 'idTorneo', label: 'Torneo', type: 'select', required: false, options: [{ value: '', label: 'Ninguno (solo para Administrador)' }, ...torneosReales.filter(t => ['planificado', 'en_curso'].includes(t.estado)).map(t => ({ value: t.id, label: t.nombre }))] },
       ],
       onSubmit: data => {
         fetch('api/usuarios.php', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...data, rol: ROL_LABEL_A_CODIGO[data.rol] || data.rol }),
+          body: JSON.stringify({ ...data, idTorneo: Number(data.idTorneo) || 0 }),
         })
           .then(response => response.json())
           .then(result => { showToast(result.success ? 'Usuario creado.' : result.error); if (result.success) cargarUsuarios(); });
@@ -1669,11 +1731,49 @@ function initializeDashboardByRole() {
     document.getElementById('panelTournamentsBody').innerHTML = visible.map(t => {
       const estadoUi = ESTADO_TORNEO_A_UI[t.estado] || 'cerrado';
       const cupos = t.cupoMaximo ? `${t.inscriptos} / ${t.cupoMaximo}` : `${t.inscriptos}`;
-      return `<tr><td><strong>${t.nombre}</strong></td><td>${t.disciplinaNombre || 'Personalizada'}</td><td>${t.fechaInicio || 'A definir'}</td><td>${cupos}</td><td><span class="status-pill ${statusClass(estadoUi)}">${ESTADO_UI_LABEL[estadoUi]}</span></td><td><a class="table-action" href="detalle-torneo.html?id=${t.id}">Gestionar</a></td></tr>`;
+      return `<tr><td><strong>${escapeHtml(t.nombre)}</strong></td><td>${escapeHtml(t.disciplinaNombre || 'Personalizada')}</td><td>${t.fechaInicio || 'A definir'}</td><td>${cupos}</td><td><span class="status-pill ${statusClass(estadoUi)}">${ESTADO_UI_LABEL[estadoUi]}</span></td><td><a class="table-action" href="detalle-torneo.html?id=${t.id}">Gestionar</a></td></tr>`;
     }).join('');
   };
   document.getElementById('panelTournamentSearch').addEventListener('input', renderTournaments);
-  fetch('api/torneos.php').then(response => response.json()).then(data => { torneosReales = data.success ? data.torneos : []; renderTournaments(); });
+  const cargarTorneos = () => fetch('api/torneos.php').then(response => response.json()).then(data => { torneosReales = data.success ? data.torneos : []; renderTournaments(); });
+  cargarTorneos();
+
+  // Solicitudes pendientes: el Admin ve todas (incluidas las de crear torneo);
+  // el Organizador, las de árbitro/participante de sus torneos.
+  if (allowedModules.includes('requests')) {
+    const TIPO_SOLICITUD = { crear_torneo: 'Crear torneo', arbitrar: 'Arbitrar', participar: 'Participar' };
+    let solicitudes = [];
+    const renderRequests = () => {
+      document.getElementById('requestsCount').textContent = solicitudes.length
+        ? `${solicitudes.length} solicitud${solicitudes.length === 1 ? '' : 'es'} pendiente${solicitudes.length === 1 ? '' : 's'}`
+        : 'No hay solicitudes pendientes.';
+      document.getElementById('requestsTableBody').innerHTML = solicitudes.map(s => {
+        const datos = `data-request-tipo="${s.tipo}" data-request-id="${s.id}"`;
+        return `<tr><td><strong>${TIPO_SOLICITUD[s.tipo]}</strong></td><td>${escapeHtml(s.solicitante)}<br><small>${escapeHtml(s.email)}</small></td><td><a href="detalle-torneo.html?id=${s.idTorneo}">${escapeHtml(s.torneo)}</a></td><td><div class="table-actions"><button class="table-action" type="button" data-request-action="aprobar" ${datos}>Aprobar</button><button class="table-action danger-action" type="button" data-request-action="rechazar" ${datos}>Rechazar</button></div></td></tr>`;
+      }).join('');
+    };
+    const cargarSolicitudes = () => fetch('api/solicitudes.php')
+      .then(response => response.json())
+      .then(data => { solicitudes = data.success ? data.solicitudes : []; renderRequests(); });
+    document.getElementById('requestsTableBody').addEventListener('click', event => {
+      const button = event.target.closest('[data-request-action]');
+      if (!button) return;
+      const { requestAction: accion, requestTipo: tipo, requestId: id } = button.dataset;
+      if (accion === 'rechazar' && !window.confirm('¿Rechazar esta solicitud?')) return;
+      button.disabled = true;
+      fetch('api/solicitudes.php', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo, id: Number(id), accion }),
+      })
+        .then(response => response.json())
+        .then(result => {
+          showToast(result.success ? (accion === 'aprobar' ? 'Solicitud aprobada.' : 'Solicitud rechazada.') : result.error);
+          cargarSolicitudes();
+          if (result.success && tipo === 'crear_torneo') cargarTorneos();
+        });
+    });
+    cargarSolicitudes();
+  }
 
   const firstNames = ['Lucía', 'Mateo', 'Sofía', 'Diego', 'Valentina', 'Joaquín', 'Camila', 'Nicolás', 'Martina', 'Santiago', 'Agustina', 'Bruno', 'Florencia', 'Emiliano', 'Paula', 'Facundo', 'Martín', 'Ana'];
   const lastNames = ['Fernández', 'Rodríguez', 'Martínez', 'Silva', 'Pérez', 'Sosa', 'Torres', 'Méndez', 'López', 'Costa', 'Ramos', 'Cabrera', 'Núñez', 'Díaz'];
@@ -1852,31 +1952,29 @@ function initializeDashboardByRole() {
   renderReports();
 
   if (isAdmin) {
-    const auditActions = [
-      ['admin@lidenskap.com', 'Resultado actualizado', 'Resultados'],
-      ['organizador@lidenskap.com', 'Participante aprobado', 'Participantes'],
-      ['admin@lidenskap.com', 'Torneo publicado', 'Torneos'],
-      ['admin@lidenskap.com', 'Rol modificado', 'Usuarios'],
-      ['organizador@lidenskap.com', 'Ronda cerrada', 'Torneos'],
-      ['admin@lidenskap.com', 'Configuración guardada', 'Configuración']
-    ];
-    const auditRows = Array.from({ length: 48 }, (_, index) => {
-      const base = auditActions[index % auditActions.length];
-      return { date: `${String(23 - Math.floor(index / 8)).padStart(2, '0')}/07/2026 · ${String(22 - (index % 12)).padStart(2, '0')}:${String((index * 7) % 60).padStart(2, '0')}`, user: base[0], action: base[1], module: base[2], detail: `Registro #AUD-${String(1048 - index).padStart(4, '0')}` };
-    });
-    paginate({
-      rows: auditRows,
-      tbody: document.getElementById('auditTableBody'),
-      count: document.getElementById('auditCount'),
-      pageLabel: document.getElementById('auditPage'),
-      prev: document.getElementById('auditPrev'),
-      next: document.getElementById('auditNext'),
-      search: document.getElementById('auditSearch'),
-      pageSize: 12,
-      renderRow: row => `<tr><td>${row.date}</td><td>${row.user}</td><td><strong>${row.action}</strong></td><td>${row.module}</td><td>${row.detail}</td></tr>`
-    });
+    // Registro de auditoría real (api/auditoria.php): lo escriben los
+    // endpoints con App\Auditoria::registrar() en cada acción.
+    const formatDate = value => new Date(value.replace(' ', 'T')).toLocaleString('es-UY', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    let auditRows = [];
+    fetch('api/auditoria.php')
+      .then(response => response.json())
+      .then(data => {
+        auditRows = (data.success ? data.eventos : []).map(evento => ({ date: formatDate(evento.fecha), user: evento.usuario, action: evento.accion, module: evento.tabla, ip: evento.ip || '-' }));
+        paginate({
+          rows: auditRows,
+          tbody: document.getElementById('auditTableBody'),
+          count: document.getElementById('auditCount'),
+          pageLabel: document.getElementById('auditPage'),
+          prev: document.getElementById('auditPrev'),
+          next: document.getElementById('auditNext'),
+          search: document.getElementById('auditSearch'),
+          pageSize: 12,
+          renderRow: row => `<tr><td>${row.date}</td><td>${escapeHtml(row.user)}</td><td><strong>${escapeHtml(row.action)}</strong></td><td>${row.module}</td><td>${escapeHtml(row.ip)}</td></tr>`
+        });
+        document.getElementById('recentActivity').innerHTML = auditRows.slice(0, 4).map(row => `<li><span>${row.date.split(', ')[1] || row.date}</span><p><strong>${escapeHtml(row.action)}</strong><small>${escapeHtml(row.user)}</small></p></li>`).join('') || '<li><p><strong>Sin actividad registrada todavía.</strong></p></li>';
+      });
     document.getElementById('exportAudit').addEventListener('click', () => {
-      downloadCsv('auditoria-lidenskap.csv', ['Fecha y hora', 'Usuario', 'Acción', 'Módulo', 'Detalle'], auditRows.map(row => [row.date, row.user, row.action, row.module, row.detail]));
+      downloadCsv('auditoria-lidenskap.csv', ['Fecha y hora', 'Usuario', 'Acción', 'Tabla', 'IP de origen'], auditRows.map(row => [row.date, row.user, row.action, row.module, row.ip]));
     });
 
     const settingsForm = document.getElementById('systemSettingsForm');
@@ -1922,6 +2020,14 @@ function initializeCreateTournament() {
   const feedback = document.getElementById('formFeedback');
   const submitBtn = document.getElementById('btnSubmitTournament');
 
+  // Solo el Admin publica directo; el resto envía una solicitud que el Admin aprueba.
+  const esSolicitud = !hasPermission('create_tournament');
+  if (esSolicitud) {
+    submitBtn.textContent = 'Enviar solicitud';
+    const intro = document.getElementById('createTournamentIntro');
+    if (intro) intro.textContent = 'Completá los datos del torneo. El Administrador general revisa la solicitud y, si la aprueba, quedás como Organizador de este torneo.';
+  }
+
   disciplineSelect.addEventListener('change', (e) => {
     const val = e.target.value;
     const isCustom = val === 'custom';
@@ -1960,6 +2066,12 @@ function initializeCreateTournament() {
       if (!data.success) {
         feedback.textContent = data.error || 'No se pudo crear el torneo.';
         feedback.style.color = 'var(--danger, #e05252)';
+        return;
+      }
+      if (data.solicitud) {
+        form.reset();
+        feedback.textContent = 'Solicitud enviada. El Administrador general la va a revisar; podés seguir su estado desde tu perfil.';
+        feedback.style.color = '';
         return;
       }
       window.location.href = `detalle-torneo.html?id=${data.id}`;

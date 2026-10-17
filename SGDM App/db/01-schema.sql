@@ -101,6 +101,8 @@ CREATE TABLE modulo_competencia (
 );
 
 -- TORNEO
+-- 'solicitado'/'rechazado': un Usuario público pidió crear el torneo y el
+-- Admin todavía no lo aprobó (o lo rechazó). No se muestra en la consulta pública.
 CREATE TABLE torneo (
     id_torneo             INT AUTO_INCREMENT PRIMARY KEY,
     id_tipo_torneo        INT NOT NULL,
@@ -111,7 +113,7 @@ CREATE TABLE torneo (
     cupo_maximo           INT,
     fecha_inicio          DATE,
     fecha_fin             DATE,
-    estado                ENUM('planificado', 'en_curso', 'finalizado', 'cancelado') NOT NULL DEFAULT 'planificado',
+    estado                ENUM('solicitado', 'rechazado', 'planificado', 'en_curso', 'finalizado', 'cancelado') NOT NULL DEFAULT 'planificado',
     CONSTRAINT fk_torneo_tipo FOREIGN KEY (id_tipo_torneo) REFERENCES tipo_torneo(id_tipo_torneo),
     CONSTRAINT fk_torneo_organizador FOREIGN KEY (id_usuario_organizador) REFERENCES usuario(id_usuario)
 );
@@ -126,6 +128,21 @@ CREATE TABLE torneo_modulo (
     CONSTRAINT fk_tm_torneo FOREIGN KEY (id_torneo) REFERENCES torneo(id_torneo)
         ON DELETE CASCADE,
     CONSTRAINT fk_tm_modulo FOREIGN KEY (id_modulo) REFERENCES modulo_competencia(id_modulo)
+);
+
+-- TORNEO_ARBITRO
+-- Árbitros de cada torneo: la fila nace 'pendiente' cuando un Usuario público
+-- se postula, y el Organizador del torneo (o el Admin) la aprueba o rechaza.
+CREATE TABLE torneo_arbitro (
+    id_torneo_arbitro  INT AUTO_INCREMENT PRIMARY KEY,
+    id_torneo          INT NOT NULL,
+    id_usuario         INT NOT NULL,
+    estado_solicitud   ENUM('pendiente', 'aprobada', 'rechazada') NOT NULL DEFAULT 'pendiente',
+    fecha_solicitud    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_ta_torneo FOREIGN KEY (id_torneo) REFERENCES torneo(id_torneo)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_ta_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario),
+    CONSTRAINT uq_ta_torneo_usuario UNIQUE (id_torneo, id_usuario)
 );
 
 -- RONDA
@@ -159,10 +176,13 @@ CREATE TABLE enfrentamiento (
     id_ronda                 INT NOT NULL,
     id_inscripcion_local      INT NOT NULL,
     id_inscripcion_visitante  INT NOT NULL,
+    id_arbitro               INT NULL,
     fecha_hora               DATETIME,
     estado_partido           ENUM('programado', 'en_curso', 'finalizado', 'suspendido') NOT NULL DEFAULT 'programado',
     CONSTRAINT fk_enfrentamiento_ronda FOREIGN KEY (id_ronda) REFERENCES ronda(id_ronda)
         ON DELETE CASCADE,
+    CONSTRAINT fk_enfrentamiento_arbitro FOREIGN KEY (id_arbitro) REFERENCES usuario(id_usuario)
+        ON DELETE SET NULL,
     CONSTRAINT fk_enfrentamiento_local FOREIGN KEY (id_inscripcion_local) REFERENCES inscripcion(id_inscripcion),
     CONSTRAINT fk_enfrentamiento_visitante FOREIGN KEY (id_inscripcion_visitante) REFERENCES inscripcion(id_inscripcion),
     CONSTRAINT chk_enfrentamiento_rivales CHECK (id_inscripcion_local <> id_inscripcion_visitante)
@@ -235,7 +255,47 @@ JOIN inscripcion i  ON i.id_inscripcion = tp.id_inscripcion
 JOIN torneo t       ON t.id_torneo      = i.id_torneo
 JOIN tipo_torneo tt ON tt.id_tipo_torneo = t.id_tipo_torneo;
 
--- Roles base
+-- Roles por torneo. Globales solo hay ADMIN y PUBLICO (usuario.id_rol);
+-- ORGANIZADOR, ARBITRO y PARTICIPANTE dependen de un torneo y se deducen de
+-- donde ya está el dato: el organizador del torneo, torneo_arbitro y las
+-- inscripciones (participante individual o capitán del equipo). Cada fila es
+-- también la solicitud (id_origen = id de la fila de origen). 'activo' se
+-- apaga solo cuando el torneo pasa a finalizado/cancelado: así se revoca el
+-- rol sin borrar nada y el historial queda.
+CREATE OR REPLACE VIEW vista_rol_torneo AS
+SELECT
+    'ORGANIZADOR' AS rol,
+    t.id_torneo AS id_origen,
+    t.id_usuario_organizador AS id_usuario,
+    t.id_torneo,
+    CASE t.estado WHEN 'solicitado' THEN 'pendiente' WHEN 'rechazado' THEN 'rechazada' ELSE 'aprobada' END AS estado_solicitud,
+    t.estado IN ('planificado', 'en_curso') AS activo
+FROM torneo t
+UNION ALL
+SELECT
+    'ARBITRO',
+    ta.id_torneo_arbitro,
+    ta.id_usuario,
+    ta.id_torneo,
+    ta.estado_solicitud,
+    ta.estado_solicitud = 'aprobada' AND t.estado IN ('planificado', 'en_curso')
+FROM torneo_arbitro ta
+JOIN torneo t ON t.id_torneo = ta.id_torneo
+UNION ALL
+SELECT
+    'PARTICIPANTE',
+    i.id_inscripcion,
+    COALESCE(p.id_usuario, e.id_usuario),
+    i.id_torneo,
+    CASE i.estado_inscripcion WHEN 'confirmada' THEN 'aprobada' WHEN 'rechazada' THEN 'rechazada' ELSE 'pendiente' END,
+    i.estado_inscripcion = 'confirmada' AND t.estado IN ('planificado', 'en_curso')
+FROM inscripcion i
+JOIN torneo t ON t.id_torneo = i.id_torneo
+LEFT JOIN participante p ON p.id_competidor = i.id_competidor
+LEFT JOIN equipo e       ON e.id_competidor = i.id_competidor;
+
+-- Roles: ADMIN y PUBLICO son los únicos globales (usuario.id_rol); los otros
+-- tres son códigos de rol por torneo (ver vista_rol_torneo)
 INSERT INTO rol (nombre_rol) VALUES ('ADMIN'), ('ORGANIZADOR'), ('ARBITRO'), ('PARTICIPANTE'), ('PUBLICO');
 
 -- Catálogo de formatos de torneo, con su regla de puntaje

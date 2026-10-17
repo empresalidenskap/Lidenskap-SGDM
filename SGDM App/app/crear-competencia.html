@@ -36,21 +36,11 @@
 
   <main class="page-shell">
     
-    <section id="unauthorizedBox" class="surface-card empty-state" hidden aria-label="Acceso restringido">
-      <span class="empty-icon">🔒</span>
-      <h2>ACCESO RESTRENGIDO</h2>
-      <p>Solo los usuarios con el rol de <strong>Administrador general</strong> tienen permisos para crear torneos en Lidenskap.</p>
-      <div class="form-actions" style="margin-top: 1.5rem; justify-content: center;">
-        <a href="perfil.html" class="btn-primary">Ver mi Perfil</a>
-        <a href="index.html" class="btn-secondary">Volver al Inicio</a>
-      </div>
-    </section>
-
     <section id="createFormContainer" aria-label="Formulario de creación de competencia">
       <header class="page-hero">
         <p class="section-eyebrow">Panel de Organización</p>
         <h1>CREAR COMPETENCIA CUSTOM</h1>
-        <p>Configura las reglas, parámetros y sube las bases de tu torneo para publicarlo en la plataforma.</p>
+        <p id="createTournamentIntro">Configura las reglas, parámetros y sube las bases de tu torneo para publicarlo en la plataforma.</p>
       </header>
 
       <form id="createTournamentForm" class="surface-card form-grid" enctype="multipart/form-data">
@@ -165,6 +155,6 @@
     </div>
   </footer>
 
-  <script src="assets/js/main.js?v=20260908-1"></script>
+  <script src="assets/js/main.js?v=20261016-1"></script>
 </body>
 </html>

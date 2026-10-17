@@ -31,14 +31,15 @@
       </section>
 
       <section class="module-grid" aria-label="Módulos del sistema">
-        <a class="module-card" data-admin-only data-panel-target="users" href="#panel-users"><span>01</span><div><h2>Usuarios y roles</h2><p>Administradores, organizadores y árbitros.</p></div><b>→</b></a>
-        <a class="module-card" data-panel-target="tournaments" href="#panel-tournaments"><span>02</span><div><h2>Torneos</h2><p>Publicación, formatos, rondas y llaves.</p></div><b>→</b></a>
-        <a class="module-card" data-panel-target="participants" href="#panel-participants"><span>03</span><div><h2>Participantes y equipos</h2><p>Inscripciones, planteles y estados.</p></div><b>→</b></a>
-        <a class="module-card" data-panel-target="results" href="#panel-results"><span>04</span><div><h2>Resultados</h2><p>Carga, corrección y publicación oficial.</p></div><b>→</b></a>
-        <a class="module-card" data-panel-target="rounds" href="#panel-rounds"><span>05</span><div><h2>Rondas y llaves</h2><p>Generación, publicación y cierre de rondas.</p></div><b>→</b></a>
-        <a class="module-card" data-panel-target="reports" href="#panel-reports"><span>06</span><div><h2>Reportes</h2><p>Resumen de participación y competencia.</p></div><b>→</b></a>
-        <a class="module-card" data-admin-only data-panel-target="audit" href="#panel-audit"><span>07</span><div><h2>Auditoría</h2><p>Historial completo de acciones del sistema.</p></div><b>→</b></a>
-        <a class="module-card" data-admin-only data-panel-target="settings" href="#panel-settings"><span>08</span><div><h2>Configuración</h2><p>Módulos habilitados y ajustes generales.</p></div><b>→</b></a>
+        <a class="module-card" data-admin-only data-panel-target="users" href="#panel-users"><span>01</span><div><h2>Usuarios y roles</h2><p>Cuentas y sus roles en cada torneo.</p></div><b>→</b></a>
+        <a class="module-card" data-panel-target="requests" href="#panel-requests"><span>02</span><div><h2>Solicitudes</h2><p>Pedidos para crear, arbitrar o participar en torneos.</p></div><b>→</b></a>
+        <a class="module-card" data-panel-target="tournaments" href="#panel-tournaments"><span>03</span><div><h2>Torneos</h2><p>Publicación, formatos, rondas y llaves.</p></div><b>→</b></a>
+        <a class="module-card" data-panel-target="participants" href="#panel-participants"><span>04</span><div><h2>Participantes y equipos</h2><p>Inscripciones, planteles y estados.</p></div><b>→</b></a>
+        <a class="module-card" data-panel-target="results" href="#panel-results"><span>05</span><div><h2>Resultados</h2><p>Carga, corrección y publicación oficial.</p></div><b>→</b></a>
+        <a class="module-card" data-panel-target="rounds" href="#panel-rounds"><span>06</span><div><h2>Rondas y llaves</h2><p>Generación, publicación y cierre de rondas.</p></div><b>→</b></a>
+        <a class="module-card" data-panel-target="reports" href="#panel-reports"><span>07</span><div><h2>Reportes</h2><p>Resumen de participación y competencia.</p></div><b>→</b></a>
+        <a class="module-card" data-admin-only data-panel-target="audit" href="#panel-audit"><span>08</span><div><h2>Auditoría</h2><p>Historial completo de acciones del sistema.</p></div><b>→</b></a>
+        <a class="module-card" data-admin-only data-panel-target="settings" href="#panel-settings"><span>09</span><div><h2>Configuración</h2><p>Módulos habilitados y ajustes generales.</p></div><b>→</b></a>
       </section>
 
       <div class="dashboard-layout">
@@ -48,16 +49,22 @@
         </section>
         <aside data-admin-only class="surface-card">
           <header class="section-header compact-header"><div><p class="section-eyebrow">Auditoría</p><h2>ACTIVIDAD RECIENTE</h2></div><button class="btn-secondary" type="button" data-panel-target="audit">Ver todo</button></header>
-          <ol class="activity-list"><li><span>22:14</span><p><strong>Resultado actualizado</strong><small>Copa Apertura · Fecha 3</small></p></li><li><span>20:46</span><p><strong>Participante aprobado</strong><small>Suizo de Invierno</small></p></li><li><span>18:05</span><p><strong>Torneo publicado</strong><small>Open Individual</small></p></li><li><span>Ayer</span><p><strong>Rol modificado</strong><small>Usuario a Organizador</small></p></li></ol>
+          <ol class="activity-list" id="recentActivity"></ol>
         </aside>
       </div>
     </section>
 
     <section id="panel-users" class="panel-module surface-card" data-panel-module="users" data-admin-only hidden>
-      <header class="panel-module-header"><div><p class="section-eyebrow">Administración</p><h2>USUARIOS Y ROLES</h2><p>Las cuatro cuentas habilitadas en esta entrega.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
+      <header class="panel-module-header"><div><p class="section-eyebrow">Administración</p><h2>USUARIOS Y ROLES</h2><p>Cada cuenta es Administrador o Usuario público; debajo, sus roles vigentes en cada torneo.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <div class="panel-toolbar"><label class="panel-search">Buscar usuario<input id="usersSearch" type="search" placeholder="Nombre, correo o rol"></label><button class="btn-primary" type="button" data-panel-form="user">+ Crear usuario</button></div>
       <p id="usersCount" class="panel-count"></p>
       <div class="table-scroll"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="usersTableBody"></tbody></table></div>
+    </section>
+
+    <section id="panel-requests" class="panel-module surface-card" data-panel-module="requests" hidden>
+      <header class="panel-module-header"><div><p class="section-eyebrow">Gestión</p><h2>SOLICITUDES PENDIENTES</h2><p>Crear un torneo lo aprueba el Administrador general; arbitrar o participar, el Organizador del torneo o el Administrador.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
+      <p id="requestsCount" class="panel-count"></p>
+      <div class="table-scroll"><table><thead><tr><th>Solicitud</th><th>Solicitante</th><th>Torneo</th><th>Acción</th></tr></thead><tbody id="requestsTableBody"></tbody></table></div>
     </section>
 
     <section id="panel-tournaments" class="panel-module surface-card" data-panel-module="tournaments" hidden>
@@ -109,9 +116,9 @@
 
     <section id="panel-audit" class="panel-module surface-card" data-panel-module="audit" data-admin-only hidden>
       <header class="panel-module-header"><div><p class="section-eyebrow">Seguridad</p><h2>REGISTRO DE AUDITORÍA</h2><p>Historial completo de accesos y modificaciones del sistema.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
-      <div class="panel-toolbar"><label class="panel-search">Buscar evento<input id="auditSearch" type="search" placeholder="Usuario, acción o módulo"></label><button class="btn-secondary" type="button" id="exportAudit">Exportar registro</button></div>
+      <div class="panel-toolbar"><label class="panel-search">Buscar evento<input id="auditSearch" type="search" placeholder="Usuario, acción o tabla"></label><button class="btn-secondary" type="button" id="exportAudit">Exportar registro</button></div>
       <p id="auditCount" class="panel-count"></p>
-      <div class="table-scroll"><table><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Módulo</th><th>Detalle</th></tr></thead><tbody id="auditTableBody"></tbody></table></div>
+      <div class="table-scroll"><table><thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Tabla</th><th>IP de origen</th></tr></thead><tbody id="auditTableBody"></tbody></table></div>
       <div class="panel-pagination"><button class="btn-secondary" id="auditPrev" type="button">← Anterior</button><span id="auditPage"></span><button class="btn-secondary" id="auditNext" type="button">Siguiente →</button></div>
     </section>
 
@@ -147,6 +154,6 @@
   </div>
   <div id="panelToast" class="panel-toast" role="status" aria-live="polite" hidden></div>
   <footer><div class="footer-inner"><ul class="footer-links"><li><a href="privacidad.html">Privacidad</a></li><li><a href="terminos.html">Términos</a></li><li><a href="contacto.html">Contacto</a></li></ul><p class="footer-copy">© 2026 Lidenskap · ITS Arias Balparda · 3ºMK</p></div></footer>
-  <script src="assets/js/main.js?v=20260908-1"></script>
+  <script src="assets/js/main.js?v=20261016-1"></script>
 </body>
 </html>

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/autoload.php';
 
+use App\Auditoria;
 use App\Auth;
 use App\Models\Rol;
 use App\Models\Usuario;
@@ -55,11 +56,20 @@ if ($metodo === 'PUT' || $metodo === 'PATCH') {
         }
         $datos['email'] = $email;
     }
+    // El rol de la cuenta solo puede ser global (Admin o Usuario público);
+    // los roles por torneo se manejan desde el torneo, no desde acá.
     if (isset($input['rol'])) {
-        $rol = Rol::findBy('nombre_rol', (string) $input['rol']);
+        $rol = in_array($input['rol'], ['ADMIN', 'PUBLICO'], true)
+            ? Rol::findBy('nombre_rol', $input['rol'])
+            : null;
         if ($rol === null) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'error' => 'Rol inválido.']);
+            echo json_encode(['success' => false, 'error' => 'Rol inválido: la cuenta solo puede ser Administrador o Usuario público.']);
+            exit;
+        }
+        if ($id === (int) $sesion['id_usuario'] && $input['rol'] !== 'ADMIN') {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'No podés quitarte el rol de Administrador a vos mismo.']);
             exit;
         }
         $datos['id_rol'] = $rol['id_rol'];
@@ -72,6 +82,7 @@ if ($metodo === 'PUT' || $metodo === 'PATCH') {
     }
 
     Usuario::update($id, $datos);
+    Auditoria::registrar("Edición de usuario {$usuario['email']}", 'usuario');
     echo json_encode(['success' => true]);
     exit;
 }
@@ -82,7 +93,8 @@ if ($metodo === 'DELETE') {
         echo json_encode(['success' => false, 'error' => 'No podés desactivar tu propia cuenta.']);
         exit;
     }
-    if (Usuario::find($id) === null) {
+    $usuario = Usuario::find($id);
+    if ($usuario === null) {
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Usuario no encontrado.']);
         exit;
@@ -91,6 +103,7 @@ if ($metodo === 'DELETE') {
     // torneos o dueño de un participante/equipo (FK sin ON DELETE CASCADE
     // a propósito, para no perder historial de competencia).
     Usuario::update($id, ['estado' => 'inactivo']);
+    Auditoria::registrar("Desactivación de usuario {$usuario['email']}", 'usuario');
     echo json_encode(['success' => true]);
     exit;
 }

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/autoload.php';
 
+use App\Auditoria;
 use App\Auth;
 use App\Models\Rol;
 use App\Models\Usuario;
@@ -27,6 +28,7 @@ $password = (string) ($input['password'] ?? '');
 $usuario = $email !== '' ? Usuario::findBy('email', $email) : null;
 
 if ($usuario === null || !password_verify($password, $usuario['password'])) {
+    Auditoria::registrar("Inicio de sesión fallido ($email)", 'usuario', $usuario !== null ? (int) $usuario['id_usuario'] : null);
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Correo o contraseña incorrectos.']);
     exit;
@@ -52,8 +54,9 @@ $usuarioSesion = [
 ];
 
 Auth::login($usuarioSesion);
+Auditoria::registrar('Inicio de sesión', 'usuario');
 
 echo json_encode([
     'success' => true,
-    'user' => $usuarioSesion,
+    'user' => Auth::currentWithRoles(),
 ]);

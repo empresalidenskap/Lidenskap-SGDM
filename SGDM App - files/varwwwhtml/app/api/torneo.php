@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/autoload.php';
 
+use App\Auditoria;
 use App\Auth;
 use App\Catalogos;
 use App\Database;
@@ -19,13 +20,17 @@ if ($id <= 0) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     Auth::requireRole('ADMIN');
-    if (Torneo::find($id) === null) {
+    $torneoBorrar = Torneo::find($id);
+    if ($torneoBorrar === null) {
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Torneo no encontrado.']);
         exit;
     }
-
+    // Las FK de torneo_modulo/torneo_arbitro/ronda/inscripcion (y en cascada
+    // enfrentamiento/resultado/tabla_posiciones) tienen ON DELETE CASCADE:
+    // borrar el torneo se lleva puesto todo lo que dependía de él.
     Torneo::delete($id);
+    Auditoria::registrar("Baja de torneo: {$torneoBorrar['nombre_torneo']}", 'torneo');
     echo json_encode(['success' => true]);
     exit;
 }
@@ -40,7 +45,7 @@ $pdo = Database::getConnection();
 
 $stmt = $pdo->prepare(
     'SELECT t.id_torneo, t.nombre_torneo, t.descripcion, t.sede, t.cupo_maximo,
-            t.fecha_inicio, t.fecha_fin, t.estado,
+            t.fecha_inicio, t.fecha_fin, t.estado, t.id_usuario_organizador,
             tt.nombre_tipo,
             mc.nombre_modulo,
             u.nombre AS organizador_nombre, u.apellido AS organizador_apellido
@@ -54,12 +59,25 @@ $stmt = $pdo->prepare(
 $stmt->execute(['id' => $id]);
 $torneo = $stmt->fetch();
 
+// Una solicitud de torneo (sin aprobar o rechazada) solo la ven el Admin y
+// quien la pidió; para el resto es como si no existiera.
+if ($torneo !== false && in_array($torneo['estado'], ['solicitado', 'rechazado'], true)) {
+    $sesion = Auth::current();
+    $puedeVerla = $sesion !== null
+        && ($sesion['rol'] === 'ADMIN' || $sesion['id_usuario'] === (int) $torneo['id_usuario_organizador']);
+    if (!$puedeVerla) {
+        $torneo = false;
+    }
+}
+
 if ($torneo === false) {
     http_response_code(404);
     echo json_encode(['success' => false, 'error' => 'Torneo no encontrado.']);
     exit;
 }
 
+// Nombre de cada inscripto: si el competidor es un equipo usa
+// nombre_equipo, si es un participante usa nombre_participante.
 $stmtInscriptos = $pdo->prepare(
     'SELECT i.id_inscripcion, i.estado_inscripcion, c.tipo_competidor,
             eq.nombre_equipo, pa.nombre_participante
@@ -96,6 +114,7 @@ echo json_encode([
         'disciplina' => $torneo['nombre_modulo'] !== null ? Catalogos::codigoDisciplina($torneo['nombre_modulo']) : null,
         'disciplinaNombre' => $torneo['nombre_modulo'],
         'organizador' => trim($torneo['organizador_nombre'] . ' ' . $torneo['organizador_apellido']),
+        'organizadorId' => (int) $torneo['id_usuario_organizador'],
         'inscriptos' => $inscriptos,
     ],
 ]);

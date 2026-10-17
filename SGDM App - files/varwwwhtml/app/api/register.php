@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/autoload.php';
 
+use App\Auditoria;
 use App\Auth;
 use App\Models\Rol;
 use App\Models\Usuario;
@@ -50,7 +51,9 @@ if (Usuario::findBy('email', $email) !== null) {
     exit;
 }
 
-
+// El autorregistro siempre crea un Usuario público. Organizador, Árbitro o
+// Participante no son roles de la cuenta sino de un torneo: se piden desde
+// la app (api/solicitudes.php) y los aprueba el Admin o el Organizador.
 $rolPublico = Rol::findBy('nombre_rol', 'PUBLICO');
 if ($rolPublico === null) {
     http_response_code(500);
@@ -78,8 +81,9 @@ $usuarioSesion = [
 ];
 
 Auth::login($usuarioSesion);
+Auditoria::registrar('Registro de cuenta de Usuario público', 'usuario');
 
 echo json_encode([
     'success' => true,
-    'user' => $usuarioSesion,
+    'user' => Auth::currentWithRoles(),
 ]);

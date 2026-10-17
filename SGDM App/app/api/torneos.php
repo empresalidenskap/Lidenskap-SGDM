@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/autoload.php';
 
+use App\Auditoria;
 use App\Auth;
 use App\Catalogos;
 use App\Database;
@@ -35,6 +36,7 @@ function handleList(): void
             JOIN tipo_torneo tt ON tt.id_tipo_torneo = t.id_tipo_torneo
             LEFT JOIN torneo_modulo tm ON tm.id_torneo = t.id_torneo
             LEFT JOIN modulo_competencia mc ON mc.id_modulo = tm.id_modulo
+            WHERE t.estado NOT IN (\'solicitado\', \'rechazado\')
             ORDER BY t.fecha_inicio IS NULL, t.fecha_inicio ASC, t.id_torneo DESC';
 
     $stmt = Database::getConnection()->query($sql);
@@ -87,9 +89,13 @@ function handleList(): void
     echo json_encode(['success' => true, 'torneos' => $torneos]);
 }
 
+// El Admin publica el torneo directo. Un Usuario público solo puede
+// solicitarlo: queda 'solicitado' (oculto al público) hasta que el Admin lo
+// apruebe desde api/solicitudes.php, y ahí pasa a ser su Organizador.
 function handleCreate(): void
 {
-    $usuario = Auth::requireRole('ADMIN');
+    $usuario = Auth::requireLogin();
+    $esSolicitud = $usuario['rol'] !== 'ADMIN';
 
     $input = json_decode(file_get_contents('php://input'), true);
     if (!is_array($input)) {
@@ -147,6 +153,7 @@ function handleCreate(): void
         'sede' => $sede,
         'cupo_maximo' => $cupoMaximo,
         'fecha_inicio' => $fechaInicio,
+        'estado' => $esSolicitud ? 'solicitado' : 'planificado',
     ]);
 
     TorneoModulo::create([
@@ -154,5 +161,7 @@ function handleCreate(): void
         'id_modulo' => $idModulo,
     ]);
 
-    echo json_encode(['success' => true, 'id' => $idTorneo]);
+    Auditoria::registrar(($esSolicitud ? 'Solicitud de torneo: ' : 'Alta de torneo: ') . $nombre, 'torneo');
+
+    echo json_encode(['success' => true, 'id' => $idTorneo, 'solicitud' => $esSolicitud]);
 }

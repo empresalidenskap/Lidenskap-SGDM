@@ -7,6 +7,10 @@ namespace App;
  * Sesión real de servidor (cookie de PHP), independiente del
  * sessionStorage del navegador que usa el front para pintar la UI. Esta
  * es la que de verdad protege los endpoints que escriben datos.
+ *
+ * En la sesión solo vive el rol global (ADMIN o PUBLICO). Los roles por
+ * torneo se consultan siempre en vivo (RolesTorneo), así un rol revocado al
+ * terminar el torneo deja de valer en el próximo request, sin re-login.
  */
 final class Auth
 {
@@ -15,6 +19,14 @@ final class Auth
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
+    }
+
+    private static function deny(int $status, string $error): never
+    {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'error' => $error]);
+        exit;
     }
 
     public static function login(array $usuario): void
@@ -30,23 +42,44 @@ final class Auth
         return $_SESSION['usuario'] ?? null;
     }
 
-    /**
-     * Corta la ejecución con 401/403 si no hay sesión o el rol no matchea.
-     */
-    public static function requireRole(string ...$roles): array
+    /** Usuario de la sesión + sus roles por torneo activos (lo que recibe el front). */
+    public static function currentWithRoles(): ?array
     {
         $usuario = self::current();
         if ($usuario === null) {
-            http_response_code(401);
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(['success' => false, 'error' => 'Necesitás iniciar sesión.']);
-            exit;
+            return null;
         }
+        $usuario['rolesTorneo'] = RolesTorneo::activos($usuario['id_usuario']);
+        return $usuario;
+    }
+
+    public static function requireLogin(): array
+    {
+        return self::current() ?? self::deny(401, 'Necesitás iniciar sesión.');
+    }
+
+    /**
+     * Corta la ejecución con 401/403 si no hay sesión o el rol global no matchea.
+     */
+    public static function requireRole(string ...$roles): array
+    {
+        $usuario = self::requireLogin();
         if (!in_array($usuario['rol'], $roles, true)) {
-            http_response_code(403);
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode(['success' => false, 'error' => 'No tenés permiso para esta acción.']);
-            exit;
+            self::deny(403, 'No tenés permiso para esta acción.');
+        }
+        return $usuario;
+    }
+
+    /**
+     * Igual que requireRole() pero para un torneo puntual: pasa el Admin o
+     * quien tenga alguno de esos roles activos en ESE torneo.
+     */
+    public static function requireTorneoRole(int $idTorneo, string ...$roles): array
+    {
+        $usuario = self::requireLogin();
+        if ($usuario['rol'] !== 'ADMIN'
+            && !RolesTorneo::tiene($usuario['id_usuario'], $idTorneo, $roles)) {
+            self::deny(403, 'No tenés permiso sobre este torneo.');
         }
         return $usuario;
     }
