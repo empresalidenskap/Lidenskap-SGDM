@@ -25,7 +25,7 @@ INSERT INTO usuario (id_rol, nombre, apellido, email, password) VALUES
 INSERT INTO torneo (id_tipo_torneo, id_usuario_organizador, nombre_torneo, descripcion, sede, cupo_maximo, fecha_inicio, estado) VALUES
     ((SELECT id_tipo_torneo FROM tipo_torneo WHERE nombre_tipo = 'Liga'),
      (SELECT id_usuario FROM usuario WHERE email = 'organizador@lidenskap.com'),
-     'Copa Demo Lidenskap', 'Torneo de demostración de roles por torneo.', 'Montevideo', 16, '2026-11-07', 'planificado');
+     'Copa Demo Lidenskap', 'Torneo de demostración de roles por torneo.', 'Montevideo', 16, '2026-11-07', 'inscripcion_abierta');
 SET @torneo_demo = LAST_INSERT_ID();
 INSERT INTO torneo_modulo (id_torneo, id_modulo) VALUES
     (@torneo_demo, (SELECT id_modulo FROM modulo_competencia WHERE nombre_modulo = 'Fútbol'));

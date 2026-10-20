@@ -59,10 +59,12 @@ CREATE TABLE participante (
 );
 
 -- EQUIPO
+-- id_usuario: capitán. Es solo una etiqueta (quien creó el equipo); un
+-- equipo creado por el Organizador del torneo no tiene.
 CREATE TABLE equipo (
     id_equipo        INT AUTO_INCREMENT PRIMARY KEY,
     id_competidor    INT NOT NULL UNIQUE,
-    id_usuario       INT NOT NULL,
+    id_usuario       INT NULL,
     nombre_equipo    VARCHAR(150) NOT NULL,
     perfil_publico   BOOLEAN NOT NULL DEFAULT TRUE,
     fecha_creacion   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -72,10 +74,13 @@ CREATE TABLE equipo (
 );
 
 -- EQUIPO_PARTICIPANTE
+-- estado: 'solicitada' = la persona pidió unirse (resuelve el Organizador del
+-- torneo); 'invitada' = la invitó el Organizador (resuelve la persona).
 CREATE TABLE equipo_participante (
     id_equipo        INT NOT NULL,
     id_participante  INT NOT NULL,
     fecha_ingreso    DATE NOT NULL DEFAULT (CURRENT_DATE),
+    estado           ENUM('solicitada', 'invitada', 'aceptada', 'rechazada') NOT NULL DEFAULT 'aceptada',
     PRIMARY KEY (id_equipo, id_participante),
     CONSTRAINT fk_ep_equipo FOREIGN KEY (id_equipo) REFERENCES equipo(id_equipo)
         ON DELETE CASCADE,
@@ -108,6 +113,7 @@ CREATE TABLE modulo_competencia (
 -- Después las fases van en orden (RF-08): planificado -> inscripcion_abierta
 -- -> inscripcion_cerrada -> en_curso -> finalizado (o cancelado).
 -- marcador_wo_*: marcador que se carga solo en un walkover (RF-12).
+-- max_integrantes_equipo: límite de integrantes por equipo (NULL = sin límite).
 CREATE TABLE torneo (
     id_torneo             INT AUTO_INCREMENT PRIMARY KEY,
     id_tipo_torneo        INT NOT NULL,
@@ -121,6 +127,7 @@ CREATE TABLE torneo (
     estado                ENUM('solicitado', 'rechazado', 'planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso', 'finalizado', 'cancelado') NOT NULL DEFAULT 'planificado',
     marcador_wo_ganador   INT NOT NULL DEFAULT 3,
     marcador_wo_perdedor  INT NOT NULL DEFAULT 0,
+    max_integrantes_equipo INT NULL,
     CONSTRAINT fk_torneo_tipo FOREIGN KEY (id_tipo_torneo) REFERENCES tipo_torneo(id_tipo_torneo),
     CONSTRAINT fk_torneo_organizador FOREIGN KEY (id_usuario_organizador) REFERENCES usuario(id_usuario)
 );
@@ -139,12 +146,13 @@ CREATE TABLE torneo_modulo (
 
 -- TORNEO_ARBITRO
 -- Árbitros de cada torneo: la fila nace 'pendiente' cuando un Usuario público
--- se postula, y el Organizador del torneo (o el Admin) la aprueba o rechaza.
+-- se postula, y el Organizador del torneo (o el Admin) la aprueba o rechaza;
+-- o nace 'invitada' cuando lo invita el Organizador, y la resuelve el invitado.
 CREATE TABLE torneo_arbitro (
     id_torneo_arbitro  INT AUTO_INCREMENT PRIMARY KEY,
     id_torneo          INT NOT NULL,
     id_usuario         INT NOT NULL,
-    estado_solicitud   ENUM('pendiente', 'aprobada', 'rechazada') NOT NULL DEFAULT 'pendiente',
+    estado_solicitud   ENUM('invitada', 'pendiente', 'aprobada', 'rechazada') NOT NULL DEFAULT 'pendiente',
     fecha_solicitud    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_ta_torneo FOREIGN KEY (id_torneo) REFERENCES torneo(id_torneo)
         ON DELETE CASCADE,
@@ -168,12 +176,13 @@ CREATE TABLE ronda (
 -- cabeza_serie: la fija el Organizador para armar las llaves (RF-17).
 -- numero_sorteo: se sortea al cerrar las inscripciones; ordena las llaves y
 -- es el último criterio de desempate de la liga (RF-08, RF-09).
+-- 'invitada': la invitó el Organizador y la resuelve el invitado.
 CREATE TABLE inscripcion (
     id_inscripcion      INT AUTO_INCREMENT PRIMARY KEY,
     id_torneo           INT NOT NULL,
     id_competidor       INT NOT NULL,
     fecha_inscripcion   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    estado_inscripcion  ENUM('pendiente', 'confirmada', 'rechazada') NOT NULL DEFAULT 'pendiente',
+    estado_inscripcion  ENUM('invitada', 'pendiente', 'confirmada', 'rechazada') NOT NULL DEFAULT 'pendiente',
     cabeza_serie        INT NULL,
     numero_sorteo       INT NULL,
     CONSTRAINT fk_inscripcion_torneo FOREIGN KEY (id_torneo) REFERENCES torneo(id_torneo)
@@ -277,12 +286,12 @@ JOIN tipo_torneo tt ON tt.id_tipo_torneo = t.id_tipo_torneo;
 -- Roles por torneo. Globales solo hay ADMIN y PUBLICO (usuario.id_rol);
 -- ORGANIZADOR, ARBITRO y PARTICIPANTE dependen de un torneo y se deducen de
 -- donde ya está el dato: el organizador del torneo, torneo_arbitro y las
--- inscripciones (participante individual, capitán del equipo y, una vez
--- confirmada la inscripción, los integrantes del equipo). Cada fila es
--- también la solicitud (id_origen = id de la fila de origen). 'activo' se
--- apaga solo cuando el torneo pasa a finalizado/cancelado: así se revoca el
--- rol sin borrar nada y el historial queda. El último UNION (sin ALL) quita
--- la fila repetida del capitán que también es integrante de su equipo.
+-- inscripciones. Cada fila es también la solicitud o invitación (id_origen =
+-- id de la fila de origen). En un equipo el rol es de sus integrantes
+-- aceptados una vez confirmada la inscripción; mientras no lo está, la fila
+-- es la solicitud de quien lo anotó (el capitán, que es solo una etiqueta).
+-- 'activo' se apaga solo cuando el torneo pasa a finalizado/cancelado: así
+-- se revoca el rol sin borrar nada y el historial queda.
 CREATE OR REPLACE VIEW vista_rol_torneo AS
 SELECT
     'ORGANIZADOR' AS rol,
@@ -308,13 +317,15 @@ SELECT
     i.id_inscripcion,
     COALESCE(p.id_usuario, e.id_usuario),
     i.id_torneo,
-    CASE i.estado_inscripcion WHEN 'confirmada' THEN 'aprobada' WHEN 'rechazada' THEN 'rechazada' ELSE 'pendiente' END,
+    CASE i.estado_inscripcion WHEN 'confirmada' THEN 'aprobada' WHEN 'rechazada' THEN 'rechazada' WHEN 'invitada' THEN 'invitada' ELSE 'pendiente' END,
     i.estado_inscripcion = 'confirmada' AND t.estado IN ('planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso')
 FROM inscripcion i
 JOIN torneo t ON t.id_torneo = i.id_torneo
 LEFT JOIN participante p ON p.id_competidor = i.id_competidor
 LEFT JOIN equipo e       ON e.id_competidor = i.id_competidor
-UNION
+WHERE p.id_participante IS NOT NULL
+   OR (i.estado_inscripcion <> 'confirmada' AND e.id_usuario IS NOT NULL)
+UNION ALL
 SELECT
     'PARTICIPANTE',
     i.id_inscripcion,
@@ -325,7 +336,7 @@ SELECT
 FROM inscripcion i
 JOIN torneo t               ON t.id_torneo        = i.id_torneo
 JOIN equipo e               ON e.id_competidor    = i.id_competidor
-JOIN equipo_participante ep ON ep.id_equipo       = e.id_equipo
+JOIN equipo_participante ep ON ep.id_equipo       = e.id_equipo AND ep.estado = 'aceptada'
 JOIN participante pm        ON pm.id_participante = ep.id_participante
 WHERE i.estado_inscripcion = 'confirmada';
 

@@ -25,6 +25,12 @@ en el diagrama lista los dominios (ENUM) y los atributos derivados.
 - TABLA_POSICIONES: `GolesAFavor`, `GolesEnContra` y el derivado
   `DiferenciaGoles` (desempate, RF-09).
 - AUDITORIA_REGISTRO: `Detalle` (motivo de la reapertura de una ronda, RF-13).
+- Equipos e invitaciones: TORNEO.`MaxIntegrantesEquipo` (límite de integrantes
+  por equipo en ese torneo); la relación **Integra** (EQUIPO–PARTICIPANTE) suma
+  `Estado` (solicitada, invitada, aceptada, rechazada); EstadoInscripcion y
+  Arbitra.EstadoSolicitud suman `invitada` (invitación del Organizador que el
+  usuario acepta o rechaza). **Capitanea** pasa a ser opcional: el capitán es
+  solo una etiqueta y un equipo creado por el Organizador no tiene.
 - Correcciones del MER anterior: faltaba la relación **Capitanea**
   (USUARIO–EQUIPO, `equipo.id_usuario`) y el atributo `Descripcion` de TORNEO,
   y el atributo `PuntosEmpate` de TIPO_TORNEO figuraba como `PuntosAcumulados`.
