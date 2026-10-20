@@ -6,6 +6,8 @@ require_once __DIR__ . '/../src/autoload.php';
 use App\Auditoria;
 use App\Auth;
 use App\Database;
+use App\Equipos;
+use App\Models\Equipo;
 use App\Models\Inscripcion;
 use App\Models\Torneo;
 use App\Models\TorneoArbitro;
@@ -13,17 +15,26 @@ use App\Models\Usuario;
 use App\RolesTorneo;
 
 /*
- * Solicitudes de rol por torneo. Cada solicitud es una fila de
- * vista_rol_torneo con estado_solicitud = 'pendiente':
- *   crear_torneo -> torneo 'solicitado'          (aprueba solo el Admin)
- *   arbitrar     -> torneo_arbitro 'pendiente'   (aprueba el Organizador o el Admin)
- *   participar   -> inscripcion 'pendiente'      (aprueba el Organizador o el Admin)
- * El id de cada solicitud es el de su fila de origen (vista_rol_torneo.id_origen).
+ * Solicitudes e invitaciones de rol por torneo. Cada una es una fila de
+ * vista_rol_torneo (o de equipo_participante para unirse a un equipo):
+ *   crear_torneo  -> torneo 'solicitado'                (resuelve solo el Admin)
+ *   arbitrar      -> torneo_arbitro 'pendiente'          (resuelve el Organizador o el Admin)
+ *   participar    -> inscripcion 'pendiente'             (resuelve el Organizador o el Admin)
+ *   unirse_equipo -> equipo_participante 'solicitada'    (resuelve el Organizador o el Admin)
+ * Una invitación del Organizador ('invitada') la resuelve el invitado.
+ * El id de cada solicitud es el de su fila de origen (vista_rol_torneo.id_origen;
+ * en unirse_equipo, id_participante + idEquipo).
  */
 
 const TIPO_POR_ROL = ['ORGANIZADOR' => 'crear_torneo', 'ARBITRO' => 'arbitrar', 'PARTICIPANTE' => 'participar'];
-const NOMBRE_TIPO = ['crear_torneo' => 'crear el torneo', 'arbitrar' => 'arbitrar', 'participar' => 'participar'];
-const TABLA_POR_TIPO = ['crear_torneo' => 'torneo', 'arbitrar' => 'torneo_arbitro', 'participar' => 'inscripcion'];
+const NOMBRE_TIPO = ['crear_torneo' => 'crear el torneo', 'arbitrar' => 'arbitrar', 'participar' => 'participar', 'unirse_equipo' => 'unirse a un equipo'];
+const TABLA_POR_TIPO = ['crear_torneo' => 'torneo', 'arbitrar' => 'torneo_arbitro', 'participar' => 'inscripcion', 'unirse_equipo' => 'equipo_participante'];
+
+// Fases del torneo en las que se puede sumar a alguien (RF-08). Un Usuario
+// público pide participar solo con las inscripciones abiertas; el
+// Organizador puede invitar desde antes.
+const FASES_SOLICITUD = ['participar' => ['inscripcion_abierta'], 'arbitrar' => ['planificado', 'inscripcion_abierta', 'inscripcion_cerrada']];
+const FASES_ALTA = ['participar' => ['planificado', 'inscripcion_abierta'], 'arbitrar' => ['planificado', 'inscripcion_abierta', 'inscripcion_cerrada']];
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -53,32 +64,37 @@ function leerInput(): array
 }
 
 /**
- * ?ambito=mias -> todos mis roles y solicitudes (para el perfil).
+ * ?ambito=mias -> todos mis roles, solicitudes e invitaciones (para el perfil).
  * Sin ámbito   -> pendientes que me toca resolver: el Admin ve todas; el
- *                 Organizador, las de árbitro/participante de sus torneos.
+ *                 Organizador, las de árbitro/participante/equipo de sus torneos.
  */
 function handleList(): void
 {
     $usuario = Auth::requireLogin();
 
-    $sql = 'SELECT v.rol, v.id_origen, v.id_torneo, v.estado_solicitud, v.activo,
+    // Si la inscripción es de un equipo, también se devuelve su nombre
+    $sql = "SELECT v.rol, v.id_origen, v.id_torneo, v.estado_solicitud, v.activo,
                    t.nombre_torneo, t.estado AS estado_torneo,
-                   u.nombre, u.apellido, u.email
+                   u.nombre, u.apellido, u.email, e.nombre_equipo
             FROM vista_rol_torneo v
             JOIN torneo t  ON t.id_torneo  = v.id_torneo
-            JOIN usuario u ON u.id_usuario = v.id_usuario';
+            JOIN usuario u ON u.id_usuario = v.id_usuario
+            LEFT JOIN inscripcion i ON v.rol = 'PARTICIPANTE' AND i.id_inscripcion = v.id_origen
+            LEFT JOIN equipo e      ON e.id_competidor = i.id_competidor";
     $params = [];
+    $misTorneos = "SELECT id_torneo FROM vista_rol_torneo WHERE id_usuario = :yo AND rol = 'ORGANIZADOR' AND activo = 1";
 
     if (($_GET['ambito'] ?? '') === 'mias') {
         $sql .= ' WHERE v.id_usuario = :yo';
         $params['yo'] = $usuario['id_usuario'];
+        $equipos = Equipos::solicitudes("u.id_usuario = :yo AND ep.estado <> 'aceptada'", ['yo' => $usuario['id_usuario']]);
     } elseif ($usuario['rol'] === 'ADMIN') {
         $sql .= " WHERE v.estado_solicitud = 'pendiente'";
+        $equipos = Equipos::solicitudes("ep.estado = 'solicitada'", []);
     } else {
-        $sql .= " WHERE v.estado_solicitud = 'pendiente' AND v.rol <> 'ORGANIZADOR'
-                  AND v.id_torneo IN (SELECT id_torneo FROM vista_rol_torneo
-                                      WHERE id_usuario = :yo AND rol = 'ORGANIZADOR' AND activo = 1)";
+        $sql .= " WHERE v.estado_solicitud = 'pendiente' AND v.rol <> 'ORGANIZADOR' AND v.id_torneo IN ($misTorneos)";
         $params['yo'] = $usuario['id_usuario'];
+        $equipos = Equipos::solicitudes("ep.estado = 'solicitada' AND t.id_torneo IN ($misTorneos)", ['yo' => $usuario['id_usuario']]);
     }
     $sql .= ' ORDER BY t.nombre_torneo, v.rol';
 
@@ -88,6 +104,7 @@ function handleList(): void
     $solicitudes = array_map(static fn (array $fila): array => [
         'tipo' => TIPO_POR_ROL[$fila['rol']],
         'id' => (int) $fila['id_origen'],
+        'equipo' => $fila['nombre_equipo'],
         'rol' => $fila['rol'],
         'idTorneo' => (int) $fila['id_torneo'],
         'torneo' => $fila['nombre_torneo'],
@@ -98,44 +115,146 @@ function handleList(): void
         'email' => $fila['email'],
     ], $stmt->fetchAll());
 
-    echo json_encode(['success' => true, 'solicitudes' => $solicitudes]);
+    echo json_encode(['success' => true, 'solicitudes' => array_merge($solicitudes, $equipos)]);
 }
 
-/** Un Usuario público pide arbitrar o participar en un torneo. */
+/**
+ * Un Usuario público pide arbitrar o participar en un torneo (solo, o
+ * anotando un equipo que creó). tipo = 'invitar' es el Organizador/Admin
+ * sumando a otra cuenta.
+ */
 function handleCreate(): void
 {
-    $sesion = Auth::requireRole('PUBLICO');
     $input = leerInput();
     $tipo = (string) ($input['tipo'] ?? '');
+    if ($tipo === 'invitar') {
+        handleInvite($input);
+        return;
+    }
+
+    $sesion = Auth::requireRole('PUBLICO');
     $idTorneo = (int) ($input['idTorneo'] ?? 0);
+    $idEquipo = (int) ($input['idEquipo'] ?? 0);
 
     if (!in_array($tipo, ['arbitrar', 'participar'], true)) {
         fallar(400, 'Tipo de solicitud inválido.');
     }
     $torneo = $idTorneo > 0 ? Torneo::find($idTorneo) : null;
-    if ($torneo === null || !in_array($torneo['estado'], ['planificado', 'inscripcion_abierta'], true)) {
-        fallar(400, 'Este torneo no está recibiendo solicitudes.');
+    if ($torneo === null || !in_array($torneo['estado'], FASES_SOLICITUD[$tipo], true)) {
+        fallar(400, $tipo === 'participar' ? 'Las inscripciones de este torneo no están abiertas.' : 'Este torneo no está recibiendo árbitros.');
+    }
+    if ($tipo === 'participar' && RolesTorneo::cupoLleno($torneo)) {
+        fallar(409, 'El torneo ya completó su cupo.');
     }
     // Cubre también al organizador (ya figura en la vista) y evita que un
     // árbitro participe en el mismo torneo o al revés.
     if (RolesTorneo::yaVinculado($sesion['id_usuario'], $idTorneo)) {
-        fallar(409, 'Ya tenés un rol o una solicitud en este torneo.');
+        fallar(409, 'Ya tenés un rol, una solicitud o una invitación en este torneo.');
     }
 
+    $pdo = Database::getConnection();
+    $que = NOMBRE_TIPO[$tipo];
     if ($tipo === 'arbitrar') {
         RolesTorneo::agregarArbitro($sesion['id_usuario'], $idTorneo, 'pendiente');
+    } elseif ($idEquipo > 0) {
+        $equipo = Equipo::find($idEquipo);
+        if ($equipo === null || (int) $equipo['id_usuario'] !== $sesion['id_usuario']) {
+            fallar(403, 'Solo quien creó el equipo puede anotarlo en un torneo.');
+        }
+        if (Equipos::torneoActivo($idEquipo) !== null) {
+            fallar(409, 'El equipo ya está anotado en otro torneo que no terminó.');
+        }
+        $stmt = $pdo->prepare(
+            "SELECT p.id_usuario, p.nombre_participante FROM equipo_participante ep
+             JOIN participante p ON p.id_participante = ep.id_participante
+             WHERE ep.id_equipo = ? AND ep.estado = 'aceptada'"
+        );
+        $stmt->execute([$idEquipo]);
+        $integrantes = $stmt->fetchAll();
+        if ($torneo['max_integrantes_equipo'] !== null && count($integrantes) > (int) $torneo['max_integrantes_equipo']) {
+            fallar(409, 'El equipo tiene más integrantes de los que permite este torneo.');
+        }
+        foreach ($integrantes as $integrante) {
+            if (RolesTorneo::yaVinculado((int) $integrante['id_usuario'], $idTorneo)) {
+                fallar(409, "{$integrante['nombre_participante']} ya tiene un rol o una solicitud en este torneo.");
+            }
+        }
+        Inscripcion::create([
+            'id_torneo' => $idTorneo,
+            'id_competidor' => $equipo['id_competidor'],
+            'estado_inscripcion' => 'pendiente',
+        ]);
+        $que = "anotar el equipo {$equipo['nombre_equipo']}";
     } else {
-        $pdo = Database::getConnection();
         $pdo->beginTransaction();
         RolesTorneo::inscribirParticipante(Usuario::find($sesion['id_usuario']), $idTorneo, 'pendiente');
         $pdo->commit();
     }
 
-    Auditoria::registrar('Solicitud para ' . NOMBRE_TIPO[$tipo] . ": {$torneo['nombre_torneo']}", TABLA_POR_TIPO[$tipo]);
+    Auditoria::registrar("Solicitud para $que: {$torneo['nombre_torneo']}", TABLA_POR_TIPO[$tipo]);
     echo json_encode(['success' => true]);
 }
 
-/** Aprobar o rechazar una solicitud pendiente. */
+/**
+ * El Organizador invita a una cuenta existente a participar o arbitrar (la
+ * persona acepta o rechaza desde su perfil). El Admin la asigna directo.
+ */
+function handleInvite(array $input): void
+{
+    $sesion = Auth::requireLogin();
+    $rol = (string) ($input['rol'] ?? '');
+    $idTorneo = (int) ($input['idTorneo'] ?? 0);
+    if (!in_array($rol, ['participar', 'arbitrar'], true)) {
+        fallar(400, 'Indicá si es para participar o para arbitrar.');
+    }
+    $torneo = ($idTorneo > 0 ? Torneo::find($idTorneo) : null) ?? fallar(404, 'Torneo no encontrado.');
+    Auth::requireTorneoRole($idTorneo, 'ORGANIZADOR');
+    if (!in_array($torneo['estado'], FASES_ALTA[$rol], true)) {
+        fallar(409, 'En esta fase del torneo ya no se puede sumar a nadie para ' . NOMBRE_TIPO[$rol] . '.');
+    }
+    $invitado = RolesTorneo::cuentaParaSumar((string) ($input['email'] ?? ''), $idTorneo);
+    if (is_string($invitado)) {
+        fallar(409, $invitado);
+    }
+
+    $esAdmin = $sesion['rol'] === 'ADMIN';
+    if ($rol === 'participar') {
+        if (RolesTorneo::cupoLleno($torneo)) {
+            fallar(409, 'El torneo ya completó su cupo.');
+        }
+        $pdo = Database::getConnection();
+        $pdo->beginTransaction();
+        RolesTorneo::inscribirParticipante($invitado, $idTorneo, $esAdmin ? 'confirmada' : 'invitada');
+        $pdo->commit();
+    } else {
+        RolesTorneo::agregarArbitro($invitado['id_usuario'], $idTorneo, $esAdmin ? 'aprobada' : 'invitada');
+    }
+
+    Auditoria::registrar(($esAdmin ? 'Asignó' : 'Invitó') . " a {$invitado['email']} para " . NOMBRE_TIPO[$rol] . ": {$torneo['nombre_torneo']}", TABLA_POR_TIPO[$rol]);
+    echo json_encode(['success' => true, 'asignado' => $esAdmin]);
+}
+
+/**
+ * Una solicitud 'pendiente' la resuelve el Organizador del torneo (o el
+ * Admin); una invitación, solo la persona invitada. Devuelve true si era una
+ * invitación.
+ */
+function autorizarResolucion(string $estado, int $idUsuarioFila, int $idTorneo): bool
+{
+    if ($estado === 'invitada') {
+        if (Auth::requireLogin()['id_usuario'] !== $idUsuarioFila) {
+            fallar(403, 'Esta invitación es para otra persona.');
+        }
+        return true;
+    }
+    if ($estado !== 'pendiente') {
+        fallar(409, 'Esta solicitud ya fue resuelta.');
+    }
+    Auth::requireTorneoRole($idTorneo, 'ORGANIZADOR');
+    return false;
+}
+
+/** Aprobar o rechazar una solicitud pendiente, o aceptar/rechazar una invitación. */
 function handleResolve(): void
 {
     $input = leerInput();
@@ -145,6 +264,7 @@ function handleResolve(): void
     if (!in_array($input['accion'] ?? '', ['aprobar', 'rechazar'], true)) {
         fallar(400, 'Acción inválida.');
     }
+    $esInvitacion = false;
 
     if ($tipo === 'crear_torneo') {
         Auth::requireRole('ADMIN');
@@ -155,36 +275,51 @@ function handleResolve(): void
         Torneo::update($id, ['estado' => $aprobar ? 'planificado' : 'rechazado']);
     } elseif ($tipo === 'arbitrar') {
         $fila = TorneoArbitro::find($id) ?? fallar(404, 'Solicitud no encontrada.');
-        Auth::requireTorneoRole((int) $fila['id_torneo'], 'ORGANIZADOR');
-        if ($fila['estado_solicitud'] !== 'pendiente') {
-            fallar(409, 'Esta solicitud ya fue resuelta.');
+        $esInvitacion = autorizarResolucion($fila['estado_solicitud'], (int) $fila['id_usuario'], (int) $fila['id_torneo']);
+        $torneo = Torneo::find((int) $fila['id_torneo']);
+        if ($aprobar && !in_array($torneo['estado'], FASES_ALTA['arbitrar'], true)) {
+            fallar(409, 'Este torneo ya no suma árbitros.');
         }
         TorneoArbitro::update($id, ['estado_solicitud' => $aprobar ? 'aprobada' : 'rechazada']);
-        $torneo = Torneo::find((int) $fila['id_torneo']);
     } elseif ($tipo === 'participar') {
         $fila = Inscripcion::find($id) ?? fallar(404, 'Solicitud no encontrada.');
-        Auth::requireTorneoRole((int) $fila['id_torneo'], 'ORGANIZADOR');
-        if ($fila['estado_inscripcion'] !== 'pendiente') {
-            fallar(409, 'Esta solicitud ya fue resuelta.');
-        }
+        // Dueño de la inscripción: el participante, o quien anotó al equipo
+        $stmt = Database::getConnection()->prepare(
+            'SELECT COALESCE(p.id_usuario, e.id_usuario) FROM inscripcion i
+             LEFT JOIN participante p ON p.id_competidor = i.id_competidor
+             LEFT JOIN equipo e       ON e.id_competidor = i.id_competidor
+             WHERE i.id_inscripcion = ?'
+        );
+        $stmt->execute([$id]);
+        $esInvitacion = autorizarResolucion($fila['estado_inscripcion'], (int) $stmt->fetchColumn(), (int) $fila['id_torneo']);
         $torneo = Torneo::find((int) $fila['id_torneo']);
-        if ($aprobar && $torneo['cupo_maximo'] !== null && confirmados((int) $torneo['id_torneo']) >= (int) $torneo['cupo_maximo']) {
+        if ($aprobar && !in_array($torneo['estado'], FASES_ALTA['participar'], true)) {
+            fallar(409, 'Las inscripciones de este torneo ya están cerradas.');
+        }
+        if ($aprobar && RolesTorneo::cupoLleno($torneo)) {
             fallar(409, 'El torneo ya completó su cupo.');
         }
         Inscripcion::update($id, ['estado_inscripcion' => $aprobar ? 'confirmada' : 'rechazada']);
+    } elseif ($tipo === 'unirse_equipo') {
+        $idEquipo = (int) ($input['idEquipo'] ?? 0);
+        $fila = Equipos::integrante($idEquipo, $id) ?? fallar(404, 'Solicitud no encontrada.');
+        $torneo = Equipos::torneoActivo($idEquipo) ?? fallar(409, 'El equipo no está anotado en un torneo activo.');
+        $estado = ['solicitada' => 'pendiente', 'invitada' => 'invitada'][$fila['estado']] ?? 'resuelta';
+        $esInvitacion = autorizarResolucion($estado, (int) $fila['id_usuario'], (int) $torneo['id_torneo']);
+        if ($aprobar && !in_array($torneo['estado'], FASES_ALTA['participar'], true)) {
+            fallar(409, 'Las inscripciones de este torneo ya están cerradas.');
+        }
+        if ($aprobar && Equipos::lleno($idEquipo, $torneo)) {
+            fallar(409, 'El equipo ya está completo.');
+        }
+        Equipos::cambiarEstado($idEquipo, $id, $aprobar ? 'aceptada' : 'rechazada');
     } else {
         fallar(400, 'Tipo de solicitud inválido.');
     }
 
-    Auditoria::registrar(($aprobar ? 'Aprobó' : 'Rechazó') . ' solicitud para ' . NOMBRE_TIPO[$tipo] . ": {$torneo['nombre_torneo']}", TABLA_POR_TIPO[$tipo]);
+    $accion = $esInvitacion
+        ? ($aprobar ? 'Aceptó la invitación para ' : 'Rechazó la invitación para ')
+        : ($aprobar ? 'Aprobó solicitud para ' : 'Rechazó solicitud para ');
+    Auditoria::registrar($accion . NOMBRE_TIPO[$tipo] . ": {$torneo['nombre_torneo']}", TABLA_POR_TIPO[$tipo]);
     echo json_encode(['success' => true]);
-}
-
-function confirmados(int $idTorneo): int
-{
-    $stmt = Database::getConnection()->prepare(
-        "SELECT COUNT(*) FROM inscripcion WHERE id_torneo = ? AND estado_inscripcion = 'confirmada'"
-    );
-    $stmt->execute([$idTorneo]);
-    return (int) $stmt->fetchColumn();
 }

@@ -68,6 +68,25 @@
         </aside>
       </div>
 
+      <section id="profileTeams" class="surface-card profile-teams" hidden aria-label="Mis equipos">
+        <header class="section-header compact-header">
+          <div>
+            <p class="section-eyebrow">Equipos</p>
+            <h2>MIS EQUIPOS</h2>
+          </div>
+        </header>
+        <p class="helper-text">Quien crea el equipo queda como capitán (es solo una etiqueta) y lo anota en un torneo desde el detalle del torneo. Quién entra a un equipo lo decide el Organizador del torneo donde juega.</p>
+        <form id="teamCreateForm" class="team-create">
+          <div class="field">
+            <label for="teamCreateName">Nombre del nuevo equipo</label>
+            <input id="teamCreateName" maxlength="150" required>
+          </div>
+          <button class="btn-primary" type="submit">Crear equipo</button>
+        </form>
+        <p id="teamsFeedback" class="form-feedback" aria-live="polite"></p>
+        <div id="profileTeamsList" class="profile-tournaments"></div>
+      </section>
+
       <section id="profileEditor" class="inline-editor surface-card" hidden aria-label="Editar perfil">
         <h2>Editar perfil</h2>
         <form id="profileForm" class="form-grid">

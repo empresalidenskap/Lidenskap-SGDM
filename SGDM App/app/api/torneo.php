@@ -35,6 +35,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     exit;
 }
 
+// Fases de inscripción (RF-08), en orden y solo hacia adelante:
+// planificado -> inscripcion_abierta -> inscripcion_cerrada. Al cerrar, lo
+// que quedó sin resolver (solicitudes e invitaciones de participantes y de
+// integrantes de equipos) se rechaza solo, y se sortea el orden de los
+// confirmados (numero_sorteo: llaves y último criterio de desempate).
+if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
+    $accion = $_GET['accion'] ?? '';
+    $torneoFase = Torneo::find($id);
+    if ($torneoFase === null) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => 'Torneo no encontrado.']);
+        exit;
+    }
+    Auth::requireTorneoRole($id, 'ORGANIZADOR');
+
+    $fases = [
+        'abrir_inscripciones' => ['planificado', 'inscripcion_abierta', 'Abrió las inscripciones'],
+        'cerrar_inscripciones' => ['inscripcion_abierta', 'inscripcion_cerrada', 'Cerró las inscripciones'],
+    ];
+    if (!isset($fases[$accion])) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Acción inválida.']);
+        exit;
+    }
+    [$desde, $hacia, $texto] = $fases[$accion];
+    if ($torneoFase['estado'] !== $desde) {
+        http_response_code(409);
+        echo json_encode(['success' => false, 'error' => 'El torneo no está en la fase anterior a esta.']);
+        exit;
+    }
+
+    $pdo = Database::getConnection();
+    $pdo->beginTransaction();
+    $detalle = null;
+    if ($accion === 'cerrar_inscripciones') {
+        $stmt = $pdo->prepare(
+            "UPDATE inscripcion SET estado_inscripcion = 'rechazada'
+             WHERE id_torneo = ? AND estado_inscripcion IN ('pendiente', 'invitada')"
+        );
+        $stmt->execute([$id]);
+        $rechazadas = $stmt->rowCount();
+
+        $stmt = $pdo->prepare(
+            "UPDATE equipo_participante ep
+             JOIN equipo e      ON e.id_equipo     = ep.id_equipo
+             JOIN inscripcion i ON i.id_competidor = e.id_competidor AND i.id_torneo = ?
+             SET ep.estado = 'rechazada'
+             WHERE ep.estado IN ('solicitada', 'invitada')"
+        );
+        $stmt->execute([$id]);
+        $rechazadas += $stmt->rowCount();
+
+        $stmt = $pdo->prepare("SELECT id_inscripcion FROM inscripcion WHERE id_torneo = ? AND estado_inscripcion = 'confirmada'");
+        $stmt->execute([$id]);
+        $confirmadas = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        shuffle($confirmadas);
+        $sorteo = $pdo->prepare('UPDATE inscripcion SET numero_sorteo = ? WHERE id_inscripcion = ?');
+        foreach ($confirmadas as $posicion => $idInscripcion) {
+            $sorteo->execute([$posicion + 1, $idInscripcion]);
+        }
+        $detalle = "Rechazadas automáticamente: $rechazadas. Sorteo entre " . count($confirmadas) . ' confirmados.';
+    }
+    Torneo::update($id, ['estado' => $hacia]);
+    $pdo->commit();
+
+    Auditoria::registrar("$texto: {$torneoFase['nombre_torneo']}", 'torneo', null, $detalle);
+    echo json_encode(['success' => true, 'estado' => $hacia]);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Método no permitido.']);
@@ -46,6 +116,7 @@ $pdo = Database::getConnection();
 $stmt = $pdo->prepare(
     'SELECT t.id_torneo, t.nombre_torneo, t.descripcion, t.sede, t.cupo_maximo,
             t.fecha_inicio, t.fecha_fin, t.estado, t.id_usuario_organizador,
+            t.max_integrantes_equipo,
             tt.nombre_tipo,
             mc.nombre_modulo,
             u.nombre AS organizador_nombre, u.apellido AS organizador_apellido
@@ -106,6 +177,7 @@ echo json_encode([
         'descripcion' => $torneo['descripcion'],
         'sede' => $torneo['sede'],
         'cupoMaximo' => $torneo['cupo_maximo'] !== null ? (int) $torneo['cupo_maximo'] : null,
+        'maxIntegrantesEquipo' => $torneo['max_integrantes_equipo'] !== null ? (int) $torneo['max_integrantes_equipo'] : null,
         'fechaInicio' => $torneo['fecha_inicio'],
         'fechaFin' => $torneo['fecha_fin'],
         'estado' => $torneo['estado'],

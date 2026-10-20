@@ -31,7 +31,7 @@ function handleList(): void
                    t.id_usuario_organizador,
                    tt.nombre_tipo,
                    mc.nombre_modulo,
-                   (SELECT COUNT(*) FROM inscripcion i WHERE i.id_torneo = t.id_torneo) AS inscriptos
+                   (SELECT COUNT(*) FROM inscripcion i WHERE i.id_torneo = t.id_torneo AND i.estado_inscripcion = \'confirmada\') AS inscriptos
             FROM torneo t
             JOIN tipo_torneo tt ON tt.id_tipo_torneo = t.id_tipo_torneo
             LEFT JOIN torneo_modulo tm ON tm.id_torneo = t.id_torneo
@@ -110,6 +110,8 @@ function handleCreate(): void
     $cupoMaximo = (int) ($input['cupoMaximo'] ?? 0);
     $fechaInicio = trim((string) ($input['fechaInicio'] ?? ''));
     $sede = trim((string) ($input['sede'] ?? ''));
+    // Solo para torneos de equipos; vacío = sin límite de integrantes
+    $maxIntegrantes = (int) ($input['maxIntegrantesEquipo'] ?? 0);
 
     if ($nombre === '' || $descripcion === '' || $disciplinaCodigo === ''
         || $formatoCodigo === '' || $cupoMaximo < 2 || $fechaInicio === '' || $sede === '') {
@@ -153,6 +155,7 @@ function handleCreate(): void
         'sede' => $sede,
         'cupo_maximo' => $cupoMaximo,
         'fecha_inicio' => $fechaInicio,
+        'max_integrantes_equipo' => $maxIntegrantes > 0 ? $maxIntegrantes : null,
         'estado' => $esSolicitud ? 'solicitado' : 'planificado',
     ]);
 

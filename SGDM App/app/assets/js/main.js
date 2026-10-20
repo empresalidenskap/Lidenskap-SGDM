@@ -1127,18 +1127,18 @@ const SGDM_SCHEDULE = SGDM_TOURNAMENTS.flatMap(tournament => {
 }).sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
 
 function statusClass(status) {
-  return status === 'abierto' ? 'status-open' : status === 'curso' ? 'status-progress' : 'status-closed';
+  return status === 'abierto' ? 'status-open' : ['proximo', 'cerradas', 'curso'].includes(status) ? 'status-progress' : 'status-closed';
 }
 
 const ESTADO_TORNEO_A_UI = {
-  planificado: 'abierto',
+  planificado: 'proximo',
   inscripcion_abierta: 'abierto',
-  inscripcion_cerrada: 'curso',
+  inscripcion_cerrada: 'cerradas',
   en_curso: 'curso',
   finalizado: 'cerrado',
   cancelado: 'cerrado',
 };
-const ESTADO_UI_LABEL = { abierto: 'Inscripciones abiertas', curso: 'En curso', cerrado: 'Finalizado' };
+const ESTADO_UI_LABEL = { proximo: 'Próximamente', abierto: 'Inscripciones abiertas', cerradas: 'Inscripciones cerradas', curso: 'En curso', cerrado: 'Finalizado' };
 const FORMATO_LABEL = { liga: 'Liga', eliminacion: 'Eliminación Directa', suizo: 'Sistema Suizo' };
 
 function initializeTournamentSearch() {
@@ -1350,7 +1350,7 @@ function initializeTournamentDetail() {
 
   if (!id) { showNotFound(); return; }
 
-  const ESTADOS = { solicitado: 'Solicitud pendiente', rechazado: 'Solicitud rechazada', planificado: 'Inscripciones Abiertas', inscripcion_abierta: 'Inscripciones Abiertas', inscripcion_cerrada: 'Inscripciones Cerradas', en_curso: 'En Curso', finalizado: 'Finalizado', cancelado: 'Cancelado' };
+  const ESTADOS = { solicitado: 'Solicitud pendiente', rechazado: 'Solicitud rechazada', planificado: 'Próximamente', inscripcion_abierta: 'Inscripciones Abiertas', inscripcion_cerrada: 'Inscripciones Cerradas', en_curso: 'En Curso', finalizado: 'Finalizado', cancelado: 'Cancelado' };
   const FORMATOS = { liga: 'Liga', eliminacion: 'Eliminación Directa', suizo: 'Sistema Suizo' };
   const set = (elementId, value) => { const el = document.getElementById(elementId); if (el) el.textContent = value; };
 
@@ -1376,53 +1376,122 @@ function initializeTournamentDetail() {
       const confirmados = t.inscriptos.filter(i => i.estado === 'confirmada');
       set('currentTeamsCount', String(confirmados.length));
       set('maxTeamsCount', t.cupoMaximo !== null ? String(t.cupoMaximo) : '—');
+      set('detailTeamSize', t.maxIntegrantesEquipo ? `Hasta ${t.maxIntegrantesEquipo}` : 'Sin límite');
 
+      const miRol = sesionUsuario?.rolesTorneo?.find(item => item.idTorneo === t.id);
+      const abiertas = t.estado === 'inscripcion_abierta';
+      const cupoLleno = t.cupoMaximo !== null && confirmados.length >= t.cupoMaximo;
+      const gestiona = Boolean(sesionUsuario) && (sesionUsuario.rol === 'ADMIN' || hasTorneoRole(t.id, 'ORGANIZADOR'));
+      const puedePedir = sesionUsuario?.rol === 'PUBLICO' && !miRol;
+
+      // Inscriptos confirmados: los participantes individuales y los equipos
+      // (con cuántos integrantes tienen). Un Usuario público puede pedir
+      // unirse a un equipo que no está completo; lo resuelve el Organizador.
       const teamsList = document.getElementById('teamsList');
-      if (teamsList) {
-        teamsList.innerHTML = confirmados.length
-          ? confirmados.map(i => `<li><span class="team-bullet">🛡️</span> ${escapeHtml(i.nombre)}</li>`).join('')
-          : '<li>Todavía no hay inscriptos confirmados.</li>';
-      }
+      const renderInscriptos = equipos => {
+        if (!teamsList) return;
+        const individuales = confirmados.filter(i => i.tipo === 'participante')
+          .map(i => `<li><span class="team-bullet">👤</span> ${escapeHtml(i.nombre)}</li>`);
+        const deEquipo = equipos.map(e => {
+          const completo = t.maxIntegrantesEquipo !== null && e.integrantes >= t.maxIntegrantesEquipo;
+          const unirse = puedePedir && abiertas && !completo
+            ? ` <button class="table-action" type="button" data-join-team="${e.id}">Solicitar unirme</button>` : '';
+          return `<li><span class="team-bullet">🛡️</span> ${escapeHtml(e.nombre)} <small>${e.integrantes}${t.maxIntegrantesEquipo ? ` / ${t.maxIntegrantesEquipo}` : ''} integrantes</small>${unirse}</li>`;
+        });
+        teamsList.innerHTML = [...deEquipo, ...individuales].join('') || '<li>Todavía no hay inscriptos confirmados.</li>';
+      };
+      renderInscriptos([]);
+      fetch(`api/equipos.php?idTorneo=${t.id}`)
+        .then(response => response.json())
+        .then(data => renderInscriptos(data.success ? data.equipos : []));
+      teamsList?.addEventListener('click', async event => {
+        const button = event.target.closest('[data-join-team]');
+        if (!button) return;
+        button.disabled = true;
+        const response = await fetch('api/equipos.php', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accion: 'unirse', idEquipo: Number(button.dataset.joinTeam) }),
+        });
+        const data = await response.json();
+        if (!data.success) { alert(data.error || 'No se pudo enviar la solicitud.'); button.disabled = false; return; }
+        teamsList.querySelectorAll('[data-join-team]').forEach(item => { item.disabled = true; });
+        button.textContent = 'Solicitud enviada';
+      });
 
       const registerBtn = document.getElementById('btnRegisterInDetail');
       const refereeBtn = document.getElementById('btnRefereeInDetail');
+      const registerAs = document.getElementById('registerAs');
       const solicitar = async (tipo, button) => {
         button.disabled = true;
+        const idEquipo = tipo === 'participar' ? Number(registerAs.value) || 0 : 0;
         try {
           const response = await fetch('api/solicitudes.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tipo, idTorneo: t.id }),
+            body: JSON.stringify({ tipo, idTorneo: t.id, idEquipo }),
           });
           const data = await response.json();
           if (!data.success) { alert(data.error || 'No se pudo enviar la solicitud.'); button.disabled = false; return; }
-          registerBtn.textContent = 'Solicitud enviada';
+          button.textContent = 'Solicitud enviada';
           registerBtn.disabled = true;
-          refereeBtn.hidden = true;
+          refereeBtn.disabled = true;
+          document.getElementById('registerAsField').hidden = true;
         } catch {
           alert('No se pudo conectar con el servidor. Intentá de nuevo.');
           button.disabled = false;
         }
       };
-      const miRol = sesionUsuario?.rolesTorneo?.find(item => item.idTorneo === t.id);
       if (registerBtn) {
         if (!sesionUsuario) {
           registerBtn.textContent = 'Iniciar sesión para inscribirme';
           registerBtn.addEventListener('click', () => openAuthModal('login', `detalle-torneo.html?id=${t.id}`));
-        } else if (sesionUsuario.rol === 'ADMIN' || hasTorneoRole(t.id, 'ORGANIZADOR')) {
+        } else if (gestiona) {
           registerBtn.textContent = 'Gestionar solicitudes';
           registerBtn.addEventListener('click', () => { window.location.href = 'panel.html#panel-requests'; });
         } else if (miRol) {
           registerBtn.textContent = `Sos ${ROL_LABEL[miRol.rol]} de este torneo`;
           registerBtn.disabled = true;
-        } else if (!['planificado', 'inscripcion_abierta'].includes(t.estado)) {
-          registerBtn.hidden = true;
         } else {
-          registerBtn.textContent = 'Solicitar participar';
-          registerBtn.addEventListener('click', () => solicitar('participar', registerBtn));
-          refereeBtn.hidden = false;
+          registerBtn.hidden = !abiertas;
+          if (abiertas && cupoLleno) {
+            registerBtn.textContent = 'Cupo completo';
+            registerBtn.disabled = true;
+          } else if (abiertas) {
+            registerBtn.textContent = 'Solicitar participar';
+            registerBtn.addEventListener('click', () => solicitar('participar', registerBtn));
+            // Equipos que creé y no están jugando otro torneo: puedo anotarlos
+            fetch('api/equipos.php?mios=1')
+              .then(response => response.json())
+              .then(data => {
+                const libres = (data.success ? data.equipos : []).filter(e => e.soyCapitan && !e.torneo);
+                if (!libres.length) return;
+                registerAs.innerHTML = '<option value="">Yo (individual)</option>' + libres.map(e => `<option value="${e.id}">Equipo ${escapeHtml(e.nombre)}</option>`).join('');
+                document.getElementById('registerAsField').hidden = false;
+              });
+          }
+          refereeBtn.hidden = !['planificado', 'inscripcion_abierta', 'inscripcion_cerrada'].includes(t.estado);
           refereeBtn.addEventListener('click', () => solicitar('arbitrar', refereeBtn));
         }
+      }
+
+      // Fases de inscripción (RF-08): el Organizador las abre y las cierra.
+      const phaseBtn = document.getElementById('btnPhaseInDetail');
+      const FASES = {
+        planificado: ['abrir_inscripciones', 'Abrir inscripciones', '¿Abrir las inscripciones? Desde ahora los usuarios pueden pedir participar.'],
+        inscripcion_abierta: ['cerrar_inscripciones', 'Cerrar inscripciones', '¿Cerrar las inscripciones? Las solicitudes e invitaciones sin resolver se rechazan solas y se sortea el orden de los confirmados.'],
+      };
+      if (phaseBtn && gestiona && FASES[t.estado]) {
+        const [accion, texto, pregunta] = FASES[t.estado];
+        phaseBtn.textContent = texto;
+        phaseBtn.hidden = false;
+        phaseBtn.addEventListener('click', async () => {
+          if (!window.confirm(pregunta)) return;
+          phaseBtn.disabled = true;
+          const response = await fetch(`api/torneo.php?id=${t.id}&accion=${accion}`, { method: 'PATCH' });
+          const data = await response.json();
+          if (!data.success) { alert(data.error || 'No se pudo cambiar la fase.'); phaseBtn.disabled = false; return; }
+          window.location.reload();
+        });
       }
 
       const deleteBtn = document.getElementById('btnDeleteTournament');
@@ -1503,21 +1572,89 @@ function initializeProfileEditor() {
   const rolesTorneo = sesionUsuario.rolesTorneo || [];
   document.getElementById('profileRoleDetail').textContent = [sesionUsuario.rolNombre, ...rolesTorneo.map(item => `${ROL_LABEL[item.rol]} de ${item.torneo}`)].join(' · ');
 
-  // Usuario público: sus roles por torneo y el estado de cada solicitud.
-  // Un rol aprobado de un torneo que ya terminó figura como "Finalizado".
+  // Usuario público: sus roles por torneo, el estado de cada solicitud y las
+  // invitaciones del Organizador (las acepta o rechaza desde acá). Un rol
+  // aprobado de un torneo que ya terminó figura como "Finalizado".
   if (sesionUsuario.rol !== 'ADMIN') {
-    const ESTADO_SOLICITUD = { pendiente: ['status-progress', 'Pendiente'], aprobada: ['status-open', 'Vigente'], rechazada: ['status-closed', 'Rechazada'] };
-    fetch('api/solicitudes.php?ambito=mias')
+    const ESTADO_SOLICITUD = { pendiente: ['status-progress', 'Pendiente'], invitada: ['status-progress', 'Invitación'], aprobada: ['status-open', 'Vigente'], rechazada: ['status-closed', 'Rechazada'] };
+    const activity = document.getElementById('profileActivity');
+    const cargarSolicitudes = () => fetch('api/solicitudes.php?ambito=mias')
       .then(response => response.json())
       .then(data => {
         const filas = data.success ? data.solicitudes : [];
-        document.getElementById('profileActivity').innerHTML = filas.length
+        activity.innerHTML = filas.length
           ? filas.map(s => {
             const [pill, label] = s.estado === 'aprobada' && !s.activo ? ['status-closed', 'Finalizado'] : ESTADO_SOLICITUD[s.estado];
-            return `<a href="detalle-torneo.html?id=${s.idTorneo}"><span class="status-pill ${pill}">${label}</span><div><strong>${escapeHtml(s.torneo)}</strong><small>${ROL_LABEL[s.rol]}</small></div><span>→</span></a>`;
+            const detalle = `${ROL_LABEL[s.rol]}${s.equipo ? ` · equipo ${escapeHtml(s.equipo)}` : ''}`;
+            const textos = `<span class="status-pill ${pill}">${label}</span><div><strong>${escapeHtml(s.torneo)}</strong><small>${detalle}</small></div>`;
+            if (s.estado !== 'invitada') return `<a href="detalle-torneo.html?id=${s.idTorneo}">${textos}<span>→</span></a>`;
+            const datos = `data-invite-tipo="${s.tipo}" data-invite-id="${s.id}" data-invite-equipo="${s.idEquipo || 0}"`;
+            return `<article class="profile-row">${textos}<span class="table-actions"><button class="table-action" type="button" data-invite-action="aprobar" ${datos}>Aceptar</button><button class="table-action danger-action" type="button" data-invite-action="rechazar" ${datos}>Rechazar</button></span></article>`;
           }).join('')
           : '<p>Todavía no tenés roles ni solicitudes. Buscá un torneo para participar o arbitrar, o solicitá crear el tuyo.</p>';
       });
+    activity.addEventListener('click', async event => {
+      const button = event.target.closest('[data-invite-action]');
+      if (!button) return;
+      const { inviteAction: accion, inviteTipo: tipo, inviteId: id, inviteEquipo: idEquipo } = button.dataset;
+      if (accion === 'rechazar' && !window.confirm('¿Rechazar esta invitación?')) return;
+      button.disabled = true;
+      const response = await fetch('api/solicitudes.php', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo, id: Number(id), idEquipo: Number(idEquipo), accion }),
+      });
+      const result = await response.json();
+      if (!result.success) { alert(result.error || 'No se pudo responder la invitación.'); button.disabled = false; return; }
+      // Aceptar cambia los roles de la sesión: se recarga para traerlos
+      if (accion === 'aprobar') window.location.reload(); else cargarSolicitudes();
+    });
+    cargarSolicitudes();
+
+    // Mis equipos: crear uno, ver su plantel y salir de un equipo
+    const teamsSection = document.getElementById('profileTeams');
+    const teamsList = document.getElementById('profileTeamsList');
+    const teamsFeedback = document.getElementById('teamsFeedback');
+    const ESTADO_INTEGRANTE = { solicitada: ' (pidió unirse)', invitada: ' (invitado/a)', aceptada: '' };
+    const cargarEquipos = () => fetch('api/equipos.php?mios=1')
+      .then(response => response.json())
+      .then(data => {
+        const equipos = data.success ? data.equipos : [];
+        teamsList.innerHTML = equipos.length
+          ? equipos.map(e => {
+            const [pill, label] = e.torneo ? ['status-open', 'En torneo'] : ['status-closed', 'Sin torneo'];
+            const torneo = e.torneo
+              ? `Juega ${escapeHtml(e.torneo.nombre)}${e.torneo.inscripcion === 'pendiente' ? ' (inscripción pendiente)' : ''}${e.torneo.maxIntegrantes ? ` · hasta ${e.torneo.maxIntegrantes} integrantes` : ''}`
+              : (e.soyCapitan ? 'Anotalo desde el detalle de un torneo con las inscripciones abiertas.' : 'Todavía no está anotado en un torneo.');
+            const integrantes = e.integrantes.map(i => `${escapeHtml(i.nombre)}${i.esCapitan ? ' (capitán/a)' : ''}${ESTADO_INTEGRANTE[i.estado]}`).join(', ');
+            const yo = e.integrantes.find(i => i.soyYo && i.estado === 'aceptada');
+            const plantelAbierto = !e.torneo || ['planificado', 'inscripcion_abierta'].includes(e.torneo.estado);
+            const salir = yo && plantelAbierto ? `<button class="table-action danger-action" type="button" data-leave-team="${e.id}" data-leave-participant="${yo.idParticipante}">Salir</button>` : '';
+            return `<article class="profile-row"><span class="status-pill ${pill}">${label}</span><div><strong>${escapeHtml(e.nombre)}${e.soyCapitan ? ' · Capitán/a' : ''}</strong><small>${torneo}</small><small>Integrantes: ${integrantes || '—'}</small></div><span class="table-actions">${salir}</span></article>`;
+          }).join('')
+          : '<p>Todavía no estás en ningún equipo. Creá uno, o pedí unirte a un equipo desde el detalle de un torneo.</p>';
+      });
+    teamsSection.hidden = false;
+    document.getElementById('teamCreateForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const input = document.getElementById('teamCreateName');
+      const response = await fetch('api/equipos.php', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accion: 'crear', nombre: input.value.trim() }),
+      });
+      const result = await response.json();
+      teamsFeedback.textContent = result.success ? 'Equipo creado.' : (result.error || 'No se pudo crear el equipo.');
+      if (result.success) { input.value = ''; cargarEquipos(); }
+    });
+    teamsList.addEventListener('click', async event => {
+      const button = event.target.closest('[data-leave-team]');
+      if (!button || !window.confirm('¿Salir de este equipo?')) return;
+      button.disabled = true;
+      const response = await fetch(`api/equipos.php?idEquipo=${button.dataset.leaveTeam}&idParticipante=${button.dataset.leaveParticipant}`, { method: 'DELETE' });
+      const result = await response.json();
+      teamsFeedback.textContent = result.success ? 'Saliste del equipo.' : (result.error || 'No se pudo salir del equipo.');
+      cargarEquipos();
+    });
+    cargarEquipos();
   }
 
   const editor = document.getElementById('profileEditor');
@@ -1701,17 +1838,18 @@ function initializeDashboardByRole() {
       }
     });
     document.querySelector('[data-panel-form="user"]')?.addEventListener('click', () => openPanelForm({
-      title: 'CREAR USUARIO', help: 'Organizador, Árbitro y Participante son roles de un torneo: elegí en cuál. La cuenta queda como Usuario público y el rol se le quita cuando el torneo termina. La contraseña inicial se la comunicás vos a la persona.',
+      title: 'CREAR USUARIO', help: 'Organizador, Árbitro y Participante son roles de un torneo: elegí en cuál (un Participante también puede ir directo a un equipo; el torneo es el del equipo). La cuenta queda como Usuario público y el rol se le quita cuando el torneo termina. La contraseña inicial se la comunicás vos a la persona.',
       fields: [
         { name: 'nombre', label: 'Nombre' }, { name: 'apellido', label: 'Apellido' },
         { name: 'email', label: 'Correo', type: 'email' }, { name: 'password', label: 'Contraseña inicial', type: 'password' },
         { name: 'rol', label: 'Rol', type: 'select', options: ['ORGANIZADOR', 'ARBITRO', 'PARTICIPANTE', 'ADMIN'].map(code => ({ value: code, label: ROL_LABEL[code] })) },
-        { name: 'idTorneo', label: 'Torneo', type: 'select', required: false, options: [{ value: '', label: 'Ninguno (solo para Administrador)' }, ...torneosReales.filter(t => ['planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso'].includes(t.estado)).map(t => ({ value: t.id, label: t.nombre }))] },
+        { name: 'idTorneo', label: 'Torneo', type: 'select', required: false, options: [{ value: '', label: 'Ninguno (solo para Administrador)' }, ...torneosReales.filter(t => ['planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso'].includes(t.estado)).map(t => ({ value: t.id, label: escapeHtml(t.nombre) }))] },
+        { name: 'idEquipo', label: 'Equipo (solo Participante)', type: 'select', required: false, options: [{ value: '', label: 'Ninguno' }, ...inscripciones.filter(i => i.tipo === 'equipo' && ['pendiente', 'confirmada'].includes(i.estado) && ['planificado', 'inscripcion_abierta'].includes(i.estadoTorneo)).map(i => ({ value: i.idEquipo, label: `${escapeHtml(i.nombre)} (${escapeHtml(i.torneo)})` }))] },
       ],
       onSubmit: data => {
         fetch('api/usuarios.php', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...data, idTorneo: Number(data.idTorneo) || 0 }),
+          body: JSON.stringify({ ...data, idTorneo: Number(data.idTorneo) || 0, idEquipo: Number(data.idEquipo) || 0 }),
         })
           .then(response => response.json())
           .then(result => { showToast(result.success ? 'Usuario creado.' : result.error); if (result.success) cargarUsuarios(); });
@@ -1743,15 +1881,16 @@ function initializeDashboardByRole() {
   // Solicitudes pendientes: el Admin ve todas (incluidas las de crear torneo);
   // el Organizador, las de árbitro/participante de sus torneos.
   if (allowedModules.includes('requests')) {
-    const TIPO_SOLICITUD = { crear_torneo: 'Crear torneo', arbitrar: 'Arbitrar', participar: 'Participar' };
+    const TIPO_SOLICITUD = { crear_torneo: 'Crear torneo', arbitrar: 'Arbitrar', participar: 'Participar', unirse_equipo: 'Unirse a equipo' };
     let solicitudes = [];
     const renderRequests = () => {
       document.getElementById('requestsCount').textContent = solicitudes.length
         ? `${solicitudes.length} solicitud${solicitudes.length === 1 ? '' : 'es'} pendiente${solicitudes.length === 1 ? '' : 's'}`
         : 'No hay solicitudes pendientes.';
       document.getElementById('requestsTableBody').innerHTML = solicitudes.map(s => {
-        const datos = `data-request-tipo="${s.tipo}" data-request-id="${s.id}"`;
-        return `<tr><td><strong>${TIPO_SOLICITUD[s.tipo]}</strong></td><td>${escapeHtml(s.solicitante)}<br><small>${escapeHtml(s.email)}</small></td><td><a href="detalle-torneo.html?id=${s.idTorneo}">${escapeHtml(s.torneo)}</a></td><td><div class="table-actions"><button class="table-action" type="button" data-request-action="aprobar" ${datos}>Aprobar</button><button class="table-action danger-action" type="button" data-request-action="rechazar" ${datos}>Rechazar</button></div></td></tr>`;
+        const datos = `data-request-tipo="${s.tipo}" data-request-id="${s.id}" data-request-equipo="${s.idEquipo || 0}"`;
+        const equipo = s.equipo ? `<br><small>Equipo ${escapeHtml(s.equipo)}</small>` : '';
+        return `<tr><td><strong>${TIPO_SOLICITUD[s.tipo]}</strong></td><td>${escapeHtml(s.solicitante)}<br><small>${escapeHtml(s.email)}</small></td><td><a href="detalle-torneo.html?id=${s.idTorneo}">${escapeHtml(s.torneo)}</a>${equipo}</td><td><div class="table-actions"><button class="table-action" type="button" data-request-action="aprobar" ${datos}>Aprobar</button><button class="table-action danger-action" type="button" data-request-action="rechazar" ${datos}>Rechazar</button></div></td></tr>`;
       }).join('');
     };
     const cargarSolicitudes = () => fetch('api/solicitudes.php')
@@ -1760,80 +1899,117 @@ function initializeDashboardByRole() {
     document.getElementById('requestsTableBody').addEventListener('click', event => {
       const button = event.target.closest('[data-request-action]');
       if (!button) return;
-      const { requestAction: accion, requestTipo: tipo, requestId: id } = button.dataset;
+      const { requestAction: accion, requestTipo: tipo, requestId: id, requestEquipo: idEquipo } = button.dataset;
       if (accion === 'rechazar' && !window.confirm('¿Rechazar esta solicitud?')) return;
       button.disabled = true;
       fetch('api/solicitudes.php', {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tipo, id: Number(id), accion }),
+        body: JSON.stringify({ tipo, id: Number(id), idEquipo: Number(idEquipo), accion }),
       })
         .then(response => response.json())
         .then(result => {
           showToast(result.success ? (accion === 'aprobar' ? 'Solicitud aprobada.' : 'Solicitud rechazada.') : result.error);
           cargarSolicitudes();
+          if (result.success && tipo !== 'crear_torneo' && allowedModules.includes('participants')) cargarInscripciones();
           if (result.success && tipo === 'crear_torneo') cargarTorneos();
         });
     });
     cargarSolicitudes();
   }
 
-  const firstNames = ['Lucía', 'Mateo', 'Sofía', 'Diego', 'Valentina', 'Joaquín', 'Camila', 'Nicolás', 'Martina', 'Santiago', 'Agustina', 'Bruno', 'Florencia', 'Emiliano', 'Paula', 'Facundo', 'Martín', 'Ana'];
-  const lastNames = ['Fernández', 'Rodríguez', 'Martínez', 'Silva', 'Pérez', 'Sosa', 'Torres', 'Méndez', 'López', 'Costa', 'Ramos', 'Cabrera', 'Núñez', 'Díaz'];
-  const teamNames = ['Unión Central', 'Club del Parque', 'Atlético Sur', 'Deportivo Norte', 'Racing Juvenil', 'Fénix Futsal', 'Barrio Sur', 'Los Halcones', 'Aguada U18', 'Malvín U18', 'Ruby Wolves', 'Southern Byte', 'Carrasco Polo', 'Old Christians', 'Trébol de Paysandú', 'Sin equipo'];
-  const participants = Array.from({ length: isAdmin ? 246 : 74 }, (_, index) => ({
-    name: `${firstNames[index % firstNames.length]} ${lastNames[(index * 5) % lastNames.length]}`,
-    team: teamNames[(index * 3) % teamNames.length],
-    tournament: dashboardTournaments[index % dashboardTournaments.length].name,
-    role: index % 9 === 0 ? 'Capitán/a' : 'Jugador/a',
-    status: index % 11 === 0 ? 'Pendiente' : 'Confirmada'
-  }));
+  // Participantes y equipos: inscripciones reales de mis torneos (Admin:
+  // todos), desde api/inscripciones.php. El Organizador invita y el Admin
+  // asigna directo; los equipos los crea un Usuario público o el Organizador.
+  const ESTADO_INSCRIPCION = { invitada: 'Invitada', pendiente: 'Pendiente', confirmada: 'Confirmada', rechazada: 'Rechazada' };
+  const ESTADO_INTEGRANTE = { solicitada: 'Pidió unirse', invitada: 'Invitado/a', aceptada: 'Aceptado/a' };
+  const pillDeEstado = label => ['Confirmada', 'Aceptado/a'].includes(label) ? 'status-open' : label === 'Rechazada' ? 'status-closed' : 'status-progress';
+  let inscripciones = [];
+  const participantRows = [];
+  const teamRows = [];
+  const cargarInscripciones = () => fetch('api/inscripciones.php')
+    .then(response => response.json())
+    .then(data => {
+      inscripciones = data.success ? data.inscripciones : [];
+      participantRows.splice(0, participantRows.length, ...inscripciones.flatMap(i => i.tipo === 'equipo'
+        ? i.integrantes.map(m => ({ name: m.nombre, team: i.nombre, tournament: i.torneo, role: m.esCapitan ? 'Capitán/a' : 'Integrante', status: ESTADO_INTEGRANTE[m.estado] }))
+        : [{ name: i.nombre, team: '—', tournament: i.torneo, role: 'Individual', status: ESTADO_INSCRIPCION[i.estado] }]));
+      teamRows.splice(0, teamRows.length, ...inscripciones.filter(i => i.tipo === 'equipo').map(i => {
+        const aceptados = i.integrantes.filter(m => m.estado === 'aceptada').length;
+        return { name: i.nombre, captain: i.capitan || '—', tournament: i.torneo, members: `${aceptados}${i.maxIntegrantes ? ` / ${i.maxIntegrantes}` : ''}`, status: ESTADO_INSCRIPCION[i.estado] };
+      }));
+      document.getElementById('participantsTabCount').textContent = participantRows.length;
+      document.getElementById('teamsTabCount').textContent = teamRows.length;
+      document.getElementById('participantsSearch').dispatchEvent(new Event('input'));
+      document.getElementById('teamsSearch').dispatchEvent(new Event('input'));
+    });
   paginate({
-    rows: participants,
+    rows: participantRows,
     tbody: document.getElementById('participantsTableBody'),
     count: document.getElementById('participantsCount'),
     pageLabel: document.getElementById('participantsPage'),
     prev: document.getElementById('participantsPrev'),
     next: document.getElementById('participantsNext'),
     search: document.getElementById('participantsSearch'),
-    renderRow: row => `<tr><td><strong>${row.name}</strong></td><td>${row.team}</td><td>${row.tournament}</td><td>${row.role}</td><td><span class="status-pill ${row.status === 'Confirmada' ? 'status-open' : 'status-progress'}">${row.status}</span></td></tr>`
+    renderRow: row => `<tr><td><strong>${escapeHtml(row.name)}</strong></td><td>${escapeHtml(row.team)}</td><td>${escapeHtml(row.tournament)}</td><td>${row.role}</td><td><span class="status-pill ${pillDeEstado(row.status)}">${row.status}</span></td></tr>`
   });
-  document.querySelector('[data-panel-form="participant"]')?.addEventListener('click', () => openPanelForm({
-    title: 'INSCRIBIR PARTICIPANTE', help: 'Registra a una persona en un torneo dentro de tu ámbito.',
-    fields: [{ name: 'name', label: 'Nombre completo' }, { name: 'team', label: 'Equipo' }, { name: 'tournament', label: 'Torneo', type: 'select', options: dashboardTournaments.map(tournament => tournament.name), full: true }],
-    onSubmit: data => {
-      participants.unshift({ ...data, role: 'Jugador/a', status: 'Pendiente' });
-      document.getElementById('participantsSearch').dispatchEvent(new Event('input'));
-      showToast('Participante agregado con estado pendiente.');
-    }
-  }));
-
-  const disciplines = ['Fútbol', 'Futsal', 'Básquetbol', 'Ajedrez', 'Tenis', 'Esports', 'Voleibol', 'Rugby'];
-  const teams = Array.from({ length: isAdmin ? 38 : 12 }, (_, index) => ({
-    name: index < teamNames.length - 1 ? teamNames[index] : `${disciplines[index % disciplines.length]} Club ${index + 1}`,
-    captain: `${firstNames[(index * 2) % firstNames.length]} ${lastNames[(index * 3) % lastNames.length]}`,
-    discipline: disciplines[index % disciplines.length],
-    members: 5 + ((index * 7) % 14),
-    status: index % 10 === 0 ? 'En revisión' : 'Habilitado'
-  }));
   paginate({
-    rows: teams,
+    rows: teamRows,
     tbody: document.getElementById('teamsTableBody'),
     count: document.getElementById('teamsCount'),
     pageLabel: document.getElementById('teamsPage'),
     prev: document.getElementById('teamsPrev'),
     next: document.getElementById('teamsNext'),
     search: document.getElementById('teamsSearch'),
-    renderRow: row => `<tr><td><strong>${row.name}</strong></td><td>${row.captain}</td><td>${row.discipline}</td><td>${row.members}</td><td><span class="status-pill ${row.status === 'Habilitado' ? 'status-open' : 'status-progress'}">${row.status}</span></td></tr>`
+    renderRow: row => `<tr><td><strong>${escapeHtml(row.name)}</strong></td><td>${escapeHtml(row.captain)}</td><td>${escapeHtml(row.tournament)}</td><td>${row.members}</td><td><span class="status-pill ${pillDeEstado(row.status)}">${row.status}</span></td></tr>`
   });
-  document.querySelector('[data-panel-form="team"]')?.addEventListener('click', () => openPanelForm({
-    title: 'REGISTRAR EQUIPO', help: 'Carga los datos básicos del nuevo plantel.',
-    fields: [{ name: 'name', label: 'Nombre del equipo' }, { name: 'captain', label: 'Capitán/a' }, { name: 'discipline', label: 'Disciplina', type: 'select', options: disciplines }, { name: 'members', label: 'Integrantes', type: 'number' }],
-    onSubmit: data => {
-      teams.unshift({ ...data, members: Number(data.members), status: 'En revisión' });
-      document.getElementById('teamsSearch').dispatchEvent(new Event('input'));
-      showToast('Equipo agregado con estado en revisión.');
-    }
-  }));
+  if (allowedModules.includes('participants')) cargarInscripciones();
+
+  // Torneos que gestiono y en qué fase admiten sumar gente (RF-08)
+  const misTorneosEn = estados => (isAdmin ? torneosReales : torneosReales.filter(t => t.organizadorId === sesionUsuario.id_usuario))
+    .filter(t => estados.includes(t.estado));
+  const PLANTEL_ABIERTO = ['planificado', 'inscripcion_abierta'];
+  const enviar = (url, body) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(response => response.json());
+
+  document.querySelector('[data-panel-form="participant"]')?.addEventListener('click', () => {
+    const torneosAbiertos = misTorneosEn(PLANTEL_ABIERTO);
+    const idsAbiertos = torneosAbiertos.map(t => t.id);
+    const destinos = [
+      ...torneosAbiertos.map(t => ({ value: `participar:${t.id}`, label: `Participante de ${escapeHtml(t.nombre)}` })),
+      ...misTorneosEn([...PLANTEL_ABIERTO, 'inscripcion_cerrada']).map(t => ({ value: `arbitrar:${t.id}`, label: `Árbitro de ${escapeHtml(t.nombre)}` })),
+      ...inscripciones.filter(i => i.tipo === 'equipo' && ['pendiente', 'confirmada'].includes(i.estado) && idsAbiertos.includes(i.idTorneo))
+        .map(i => ({ value: `equipo:${i.idEquipo}`, label: `Integrante de ${escapeHtml(i.nombre)} (${escapeHtml(i.torneo)})` })),
+    ];
+    if (!destinos.length) { showToast('No tenés torneos que estén sumando gente en esta fase.'); return; }
+    openPanelForm({
+      title: isAdmin ? 'ASIGNAR A UN TORNEO' : 'INVITAR A UN TORNEO',
+      help: isAdmin
+        ? 'La cuenta (ya registrada) queda asignada directamente. Para una cuenta nueva usá Usuarios y roles.'
+        : 'La persona tiene que tener una cuenta. Recibe la invitación en su perfil y la acepta o la rechaza.',
+      fields: [{ name: 'email', label: 'Correo de la cuenta', type: 'email' }, { name: 'destino', label: 'Para', type: 'select', options: destinos, full: true }],
+      submitLabel: isAdmin ? 'Asignar' : 'Enviar invitación',
+      onSubmit: data => {
+        const [que, id] = data.destino.split(':');
+        const pedido = que === 'equipo'
+          ? enviar('api/equipos.php', { accion: 'invitar', idEquipo: Number(id), email: data.email })
+          : enviar('api/solicitudes.php', { tipo: 'invitar', rol: que, idTorneo: Number(id), email: data.email });
+        pedido.then(result => {
+          showToast(result.success ? (result.asignado ? 'Cuenta asignada.' : 'Invitación enviada.') : result.error);
+          if (result.success) cargarInscripciones();
+        });
+      }
+    });
+  });
+  document.querySelector('[data-panel-form="team"]')?.addEventListener('click', () => {
+    const torneos = misTorneosEn(PLANTEL_ABIERTO);
+    if (!torneos.length) { showToast('No tenés torneos con las inscripciones abiertas.'); return; }
+    openPanelForm({
+      title: 'CREAR EQUIPO', help: 'El equipo queda inscripto y confirmado en el torneo, sin capitán. Después sumás a sus integrantes con "+ Agregar participante".',
+      fields: [{ name: 'nombre', label: 'Nombre del equipo' }, { name: 'idTorneo', label: 'Torneo', type: 'select', options: torneos.map(t => ({ value: t.id, label: escapeHtml(t.nombre) })) }],
+      submitLabel: 'Crear equipo',
+      onSubmit: data => enviar('api/equipos.php', { accion: 'crear', nombre: data.nombre, idTorneo: Number(data.idTorneo) })
+        .then(result => { showToast(result.success ? 'Equipo creado.' : result.error); if (result.success) { cargarInscripciones(); cargarTorneos(); } })
+    });
+  });
   document.querySelectorAll('[data-roster-tab]').forEach(tab => tab.addEventListener('click', () => {
     document.querySelectorAll('[data-roster-tab]').forEach(item => item.classList.toggle('active', item === tab));
     document.getElementById('participantsRoster').hidden = tab.dataset.rosterTab !== 'participants';
@@ -2053,6 +2229,7 @@ function initializeCreateTournament() {
       disciplinaCustom: customDisciplineInput.value.trim(),
       formato: formatSelect.value,
       cupoMaximo: document.getElementById('maxTeams').value,
+      maxIntegrantesEquipo: document.getElementById('maxTeamMembers').value,
       fechaInicio: document.getElementById('startDate').value,
       sede: document.getElementById('venueName').value.trim(),
     };

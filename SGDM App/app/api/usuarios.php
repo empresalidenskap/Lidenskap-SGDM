@@ -6,6 +6,7 @@ require_once __DIR__ . '/../src/autoload.php';
 use App\Auditoria;
 use App\Auth;
 use App\Database;
+use App\Equipos;
 use App\Models\Rol;
 use App\Models\Torneo;
 use App\Models\Usuario;
@@ -93,12 +94,37 @@ function handleCreate(): void
         return;
     }
 
+    // Participante de un equipo: el torneo es el del equipo
+    $idEquipo = (int) ($input['idEquipo'] ?? 0);
+    if ($rolCodigo === 'PARTICIPANTE' && $idEquipo > 0) {
+        $torneoEquipo = Equipos::torneoActivo($idEquipo);
+        if ($torneoEquipo === null || !in_array($torneoEquipo['estado'], ['planificado', 'inscripcion_abierta'], true)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => 'Ese equipo no está anotado en un torneo con las inscripciones abiertas.']);
+            return;
+        }
+        if (Equipos::lleno($idEquipo, $torneoEquipo)) {
+            http_response_code(409);
+            echo json_encode(['success' => false, 'error' => 'El equipo ya está completo.']);
+            return;
+        }
+        $idTorneo = (int) $torneoEquipo['id_torneo'];
+    } else {
+        $idEquipo = 0;
+    }
+
     $torneo = null;
     if ($rolCodigo !== 'ADMIN') {
         $torneo = $idTorneo > 0 ? Torneo::find($idTorneo) : null;
         if ($torneo === null || !in_array($torneo['estado'], ['planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso'], true)) {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => 'Elegí un torneo vigente para asignarle el rol.']);
+            return;
+        }
+        if ($rolCodigo === 'PARTICIPANTE' && $idEquipo === 0
+            && (!in_array($torneo['estado'], ['planificado', 'inscripcion_abierta'], true) || RolesTorneo::cupoLleno($torneo))) {
+            http_response_code(409);
+            echo json_encode(['success' => false, 'error' => 'Ese torneo ya no suma participantes (inscripciones cerradas o cupo completo).']);
             return;
         }
     }
@@ -144,6 +170,9 @@ function handleCreate(): void
         Torneo::update($idTorneo, ['id_usuario_organizador' => $id]);
     } elseif ($rolCodigo === 'ARBITRO') {
         RolesTorneo::agregarArbitro($id, $idTorneo, 'aprobada');
+    } elseif ($rolCodigo === 'PARTICIPANTE' && $idEquipo > 0) {
+        $participante = RolesTorneo::participanteDe(['id_usuario' => $id] + $datosUsuario);
+        Equipos::ponerIntegrante($idEquipo, (int) $participante['id_participante'], 'aceptada');
     } elseif ($rolCodigo === 'PARTICIPANTE') {
         RolesTorneo::inscribirParticipante(['id_usuario' => $id] + $datosUsuario, $idTorneo, 'confirmada');
     }

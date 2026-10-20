@@ -1021,6 +1021,14 @@ th { color: var(--text-muted); font-size: 0.65rem; letter-spacing: 0.08em; text-
 .profile-tournaments a:last-child { border-bottom: 0; }
 .profile-tournaments div { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
 .profile-tournaments small { color: var(--text-muted); }
+/* Filas del perfil con botones (invitaciones, equipos) */
+.profile-tournaments .profile-row { display: grid; grid-template-columns: auto 1fr auto; gap: 0.75rem; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border); }
+.profile-tournaments .profile-row:last-child { border-bottom: 0; }
+.profile-teams { margin-top: 1rem; }
+.team-create { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: end; margin: 1rem 0 0.5rem; }
+.team-create .field { flex: 1 1 220px; }
+/* "Anotarme como" (individual o un equipo) en el detalle del torneo */
+.sidebar-actions .field { margin: 0.75rem 0 0.5rem; }
 .inline-editor { margin-top: 1rem; }
 
 .form-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }

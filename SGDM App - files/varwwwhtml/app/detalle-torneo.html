@@ -88,7 +88,7 @@
         </article>
 
         <article class="surface-card detail-card">
-          <h2 style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.5px;">Equipos Inscriptos (<span id="currentTeamsCount">12</span>/<span id="maxTeamsCount">16</span>)</h2>
+          <h2 style="font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.5px;">Inscriptos (<span id="currentTeamsCount">0</span>/<span id="maxTeamsCount">—</span>)</h2>
           <ul class="teams-list" id="teamsList">
             <li><span class="team-bullet">🛡️</span> Los Magos FC</li>
             <li><span class="team-bullet">🛡️</span> Deportivo Norte</li>
@@ -119,11 +119,20 @@
               <span>Cupo Máximo:</span>
               <strong id="detailCapacity">16 Equipos</strong>
             </li>
+            <li>
+              <span>Integrantes por equipo:</span>
+              <strong id="detailTeamSize">Sin límite</strong>
+            </li>
           </ul>
 
           <div class="sidebar-actions">
+            <div class="field" id="registerAsField" hidden>
+              <label for="registerAs">Anotarme como</label>
+              <select id="registerAs"></select>
+            </div>
             <button class="btn-primary full-width" id="btnRegisterInDetail">Inscribir mi Equipo</button>
             <button class="btn-secondary full-width" id="btnRefereeInDetail" hidden>Postularme como árbitro</button>
+            <button class="btn-secondary full-width" id="btnPhaseInDetail" hidden></button>
             <button class="btn-secondary full-width danger-action" id="btnDeleteTournament" hidden>Eliminar torneo</button>
           </div>
         </div>

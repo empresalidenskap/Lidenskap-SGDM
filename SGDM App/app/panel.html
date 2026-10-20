@@ -32,7 +32,7 @@
 
       <section class="module-grid" aria-label="Módulos del sistema">
         <a class="module-card" data-admin-only data-panel-target="users" href="#panel-users"><span>01</span><div><h2>Usuarios y roles</h2><p>Cuentas y sus roles en cada torneo.</p></div><b>→</b></a>
-        <a class="module-card" data-panel-target="requests" href="#panel-requests"><span>02</span><div><h2>Solicitudes</h2><p>Pedidos para crear, arbitrar o participar en torneos.</p></div><b>→</b></a>
+        <a class="module-card" data-panel-target="requests" href="#panel-requests"><span>02</span><div><h2>Solicitudes</h2><p>Pedidos para crear, arbitrar, participar o unirse a un equipo.</p></div><b>→</b></a>
         <a class="module-card" data-panel-target="tournaments" href="#panel-tournaments"><span>03</span><div><h2>Torneos</h2><p>Publicación, formatos, rondas y llaves.</p></div><b>→</b></a>
         <a class="module-card" data-panel-target="participants" href="#panel-participants"><span>04</span><div><h2>Participantes y equipos</h2><p>Inscripciones, planteles y estados.</p></div><b>→</b></a>
         <a class="module-card" data-panel-target="results" href="#panel-results"><span>05</span><div><h2>Resultados</h2><p>Carga, corrección y publicación oficial.</p></div><b>→</b></a>
@@ -62,7 +62,7 @@
     </section>
 
     <section id="panel-requests" class="panel-module surface-card" data-panel-module="requests" hidden>
-      <header class="panel-module-header"><div><p class="section-eyebrow">Gestión</p><h2>SOLICITUDES PENDIENTES</h2><p>Crear un torneo lo aprueba el Administrador general; arbitrar o participar, el Organizador del torneo o el Administrador.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
+      <header class="panel-module-header"><div><p class="section-eyebrow">Gestión</p><h2>SOLICITUDES PENDIENTES</h2><p>Crear un torneo lo aprueba el Administrador general; arbitrar, participar o unirse a un equipo, el Organizador del torneo o el Administrador.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <p id="requestsCount" class="panel-count"></p>
       <div class="table-scroll"><table><thead><tr><th>Solicitud</th><th>Solicitante</th><th>Torneo</th><th>Acción</th></tr></thead><tbody id="requestsTableBody"></tbody></table></div>
     </section>
@@ -76,7 +76,7 @@
 
     <section id="panel-participants" class="panel-module surface-card" data-panel-module="participants" hidden>
       <header class="panel-module-header"><div><p class="section-eyebrow">Gestión</p><h2>PARTICIPANTES Y EQUIPOS</h2><p>Consulta todas las inscripciones y los planteles registrados.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
-      <div class="panel-tabs" role="tablist"><button class="active" type="button" data-roster-tab="participants">Participantes <span>246</span></button><button type="button" data-roster-tab="teams">Equipos <span>38</span></button></div>
+      <div class="panel-tabs" role="tablist"><button class="active" type="button" data-roster-tab="participants">Participantes <span id="participantsTabCount">0</span></button><button type="button" data-roster-tab="teams">Equipos <span id="teamsTabCount">0</span></button></div>
       <section id="participantsRoster" aria-label="Participantes">
         <div class="panel-toolbar"><label class="panel-search">Buscar participante<input id="participantsSearch" type="search" placeholder="Nombre, equipo o torneo"></label><button class="btn-primary" type="button" data-panel-form="participant">+ Agregar participante</button></div>
         <p id="participantsCount" class="panel-count"></p>
@@ -86,7 +86,7 @@
       <section id="teamsRoster" hidden aria-label="Equipos">
         <div class="panel-toolbar"><label class="panel-search">Buscar equipo<input id="teamsSearch" type="search" placeholder="Equipo, capitán o disciplina"></label><button class="btn-primary" type="button" data-panel-form="team">+ Agregar equipo</button></div>
         <p id="teamsCount" class="panel-count"></p>
-        <div class="table-scroll"><table><thead><tr><th>Equipo</th><th>Capitán/a</th><th>Disciplina</th><th>Integrantes</th><th>Estado</th></tr></thead><tbody id="teamsTableBody"></tbody></table></div>
+        <div class="table-scroll"><table><thead><tr><th>Equipo</th><th>Capitán/a</th><th>Torneo</th><th>Integrantes</th><th>Estado</th></tr></thead><tbody id="teamsTableBody"></tbody></table></div>
         <div class="panel-pagination"><button class="btn-secondary" id="teamsPrev" type="button">← Anterior</button><span id="teamsPage"></span><button class="btn-secondary" id="teamsNext" type="button">Siguiente →</button></div>
       </section>
     </section>

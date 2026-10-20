@@ -11,8 +11,11 @@ use App\Models\AuditoriaRegistro;
  */
 final class Auditoria
 {
-    /** $idUsuario null = el usuario de la sesión actual (si hay). */
-    public static function registrar(string $accion, string $tabla, ?int $idUsuario = null): void
+    /**
+     * $idUsuario null = el usuario de la sesión actual (si hay).
+     * $detalle: dato extra de la acción (p. ej. cuántas solicitudes se rechazaron).
+     */
+    public static function registrar(string $accion, string $tabla, ?int $idUsuario = null, ?string $detalle = null): void
     {
         $idUsuario ??= Auth::current()['id_usuario'] ?? null;
 
@@ -20,6 +23,7 @@ final class Auditoria
             'id_usuario' => $idUsuario,
             'accion_realizada' => mb_substr($accion, 0, 100),
             'tabla_afectada' => $tabla,
+            'detalle' => $detalle !== null ? mb_substr($detalle, 0, 255) : null,
             'ip_origen' => $_SERVER['REMOTE_ADDR'] ?? null,
         ]);
     }
