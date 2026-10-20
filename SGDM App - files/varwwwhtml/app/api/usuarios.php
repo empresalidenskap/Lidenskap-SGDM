@@ -96,7 +96,7 @@ function handleCreate(): void
     $torneo = null;
     if ($rolCodigo !== 'ADMIN') {
         $torneo = $idTorneo > 0 ? Torneo::find($idTorneo) : null;
-        if ($torneo === null || !in_array($torneo['estado'], ['planificado', 'en_curso'], true)) {
+        if ($torneo === null || !in_array($torneo['estado'], ['planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso'], true)) {
             http_response_code(400);
             echo json_encode(['success' => false, 'error' => 'Elegí un torneo vigente para asignarle el rol.']);
             return;

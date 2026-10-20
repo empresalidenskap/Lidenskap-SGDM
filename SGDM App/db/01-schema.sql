@@ -25,11 +25,13 @@ CREATE TABLE usuario (
 );
 
 -- AUDITORIA_REGISTRo
+-- 'detalle': dato extra de la acción, p. ej. el motivo de reabrir una ronda (RF-13)
 CREATE TABLE auditoria_registro (
     id_auditoria      INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario        INT NULL,
     accion_realizada  VARCHAR(100) NOT NULL,
     tabla_afectada    VARCHAR(100) NOT NULL,
+    detalle           VARCHAR(255) NULL,
     fecha_hora        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ip_origen         VARCHAR(45),
     CONSTRAINT fk_auditoria_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
@@ -103,6 +105,9 @@ CREATE TABLE modulo_competencia (
 -- TORNEO
 -- 'solicitado'/'rechazado': un Usuario público pidió crear el torneo y el
 -- Admin todavía no lo aprobó (o lo rechazó). No se muestra en la consulta pública.
+-- Después las fases van en orden (RF-08): planificado -> inscripcion_abierta
+-- -> inscripcion_cerrada -> en_curso -> finalizado (o cancelado).
+-- marcador_wo_*: marcador que se carga solo en un walkover (RF-12).
 CREATE TABLE torneo (
     id_torneo             INT AUTO_INCREMENT PRIMARY KEY,
     id_tipo_torneo        INT NOT NULL,
@@ -113,7 +118,9 @@ CREATE TABLE torneo (
     cupo_maximo           INT,
     fecha_inicio          DATE,
     fecha_fin             DATE,
-    estado                ENUM('solicitado', 'rechazado', 'planificado', 'en_curso', 'finalizado', 'cancelado') NOT NULL DEFAULT 'planificado',
+    estado                ENUM('solicitado', 'rechazado', 'planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso', 'finalizado', 'cancelado') NOT NULL DEFAULT 'planificado',
+    marcador_wo_ganador   INT NOT NULL DEFAULT 3,
+    marcador_wo_perdedor  INT NOT NULL DEFAULT 0,
     CONSTRAINT fk_torneo_tipo FOREIGN KEY (id_tipo_torneo) REFERENCES tipo_torneo(id_tipo_torneo),
     CONSTRAINT fk_torneo_organizador FOREIGN KEY (id_usuario_organizador) REFERENCES usuario(id_usuario)
 );
@@ -158,12 +165,17 @@ CREATE TABLE ronda (
 );
 
 -- INSCRIPCION
+-- cabeza_serie: la fija el Organizador para armar las llaves (RF-17).
+-- numero_sorteo: se sortea al cerrar las inscripciones; ordena las llaves y
+-- es el último criterio de desempate de la liga (RF-08, RF-09).
 CREATE TABLE inscripcion (
     id_inscripcion      INT AUTO_INCREMENT PRIMARY KEY,
     id_torneo           INT NOT NULL,
     id_competidor       INT NOT NULL,
     fecha_inscripcion   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     estado_inscripcion  ENUM('pendiente', 'confirmada', 'rechazada') NOT NULL DEFAULT 'pendiente',
+    cabeza_serie        INT NULL,
+    numero_sorteo       INT NULL,
     CONSTRAINT fk_inscripcion_torneo FOREIGN KEY (id_torneo) REFERENCES torneo(id_torneo)
         ON DELETE CASCADE,
     CONSTRAINT fk_inscripcion_competidor FOREIGN KEY (id_competidor) REFERENCES competidor(id_competidor),
@@ -171,6 +183,7 @@ CREATE TABLE inscripcion (
 );
 
 -- ENFRENTAMIENTO
+-- 'walkover': no se jugó; el resultado es el marcador_wo_* del torneo (RF-12)
 CREATE TABLE enfrentamiento (
     id_enfrentamiento        INT AUTO_INCREMENT PRIMARY KEY,
     id_ronda                 INT NOT NULL,
@@ -178,7 +191,7 @@ CREATE TABLE enfrentamiento (
     id_inscripcion_visitante  INT NOT NULL,
     id_arbitro               INT NULL,
     fecha_hora               DATETIME,
-    estado_partido           ENUM('programado', 'en_curso', 'finalizado', 'suspendido') NOT NULL DEFAULT 'programado',
+    estado_partido           ENUM('programado', 'en_curso', 'finalizado', 'suspendido', 'walkover') NOT NULL DEFAULT 'programado',
     CONSTRAINT fk_enfrentamiento_ronda FOREIGN KEY (id_ronda) REFERENCES ronda(id_ronda)
         ON DELETE CASCADE,
     CONSTRAINT fk_enfrentamiento_arbitro FOREIGN KEY (id_arbitro) REFERENCES usuario(id_usuario)
@@ -205,13 +218,16 @@ CREATE TABLE resultado (
 -- TABLA_POSICIONES
 -- 3FN: 'partidos_jugados' (= victorias + empates + derrotas) y
 -- 'puntos_acumulados' (según el puntaje del formato) NO se almacenan porque
--- son atributos derivados. Se exponen en vista_tabla_posiciones.
+-- son atributos derivados. Se exponen en vista_tabla_posiciones, igual que
+-- 'diferencia_goles' (= goles_a_favor - goles_en_contra, desempate RF-09).
 CREATE TABLE tabla_posiciones (
     id_posicion         INT AUTO_INCREMENT PRIMARY KEY,
     id_inscripcion      INT NOT NULL UNIQUE,
     victorias           INT NOT NULL DEFAULT 0,
     empates             INT NOT NULL DEFAULT 0,
     derrotas            INT NOT NULL DEFAULT 0,
+    goles_a_favor       INT NOT NULL DEFAULT 0,
+    goles_en_contra     INT NOT NULL DEFAULT 0,
     CONSTRAINT fk_posiciones_inscripcion FOREIGN KEY (id_inscripcion) REFERENCES inscripcion(id_inscripcion)
         ON DELETE CASCADE
 );
@@ -246,6 +262,9 @@ SELECT
     tp.victorias,
     tp.empates,
     tp.derrotas,
+    tp.goles_a_favor,
+    tp.goles_en_contra,
+    (tp.goles_a_favor - tp.goles_en_contra) AS diferencia_goles,
     (tp.victorias + tp.empates + tp.derrotas) AS partidos_jugados,
     (tp.victorias * tt.puntos_victoria
    + tp.empates   * tt.puntos_empate
@@ -258,10 +277,12 @@ JOIN tipo_torneo tt ON tt.id_tipo_torneo = t.id_tipo_torneo;
 -- Roles por torneo. Globales solo hay ADMIN y PUBLICO (usuario.id_rol);
 -- ORGANIZADOR, ARBITRO y PARTICIPANTE dependen de un torneo y se deducen de
 -- donde ya está el dato: el organizador del torneo, torneo_arbitro y las
--- inscripciones (participante individual o capitán del equipo). Cada fila es
+-- inscripciones (participante individual, capitán del equipo y, una vez
+-- confirmada la inscripción, los integrantes del equipo). Cada fila es
 -- también la solicitud (id_origen = id de la fila de origen). 'activo' se
 -- apaga solo cuando el torneo pasa a finalizado/cancelado: así se revoca el
--- rol sin borrar nada y el historial queda.
+-- rol sin borrar nada y el historial queda. El último UNION (sin ALL) quita
+-- la fila repetida del capitán que también es integrante de su equipo.
 CREATE OR REPLACE VIEW vista_rol_torneo AS
 SELECT
     'ORGANIZADOR' AS rol,
@@ -269,7 +290,7 @@ SELECT
     t.id_usuario_organizador AS id_usuario,
     t.id_torneo,
     CASE t.estado WHEN 'solicitado' THEN 'pendiente' WHEN 'rechazado' THEN 'rechazada' ELSE 'aprobada' END AS estado_solicitud,
-    t.estado IN ('planificado', 'en_curso') AS activo
+    t.estado IN ('planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso') AS activo
 FROM torneo t
 UNION ALL
 SELECT
@@ -278,7 +299,7 @@ SELECT
     ta.id_usuario,
     ta.id_torneo,
     ta.estado_solicitud,
-    ta.estado_solicitud = 'aprobada' AND t.estado IN ('planificado', 'en_curso')
+    ta.estado_solicitud = 'aprobada' AND t.estado IN ('planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso')
 FROM torneo_arbitro ta
 JOIN torneo t ON t.id_torneo = ta.id_torneo
 UNION ALL
@@ -288,11 +309,25 @@ SELECT
     COALESCE(p.id_usuario, e.id_usuario),
     i.id_torneo,
     CASE i.estado_inscripcion WHEN 'confirmada' THEN 'aprobada' WHEN 'rechazada' THEN 'rechazada' ELSE 'pendiente' END,
-    i.estado_inscripcion = 'confirmada' AND t.estado IN ('planificado', 'en_curso')
+    i.estado_inscripcion = 'confirmada' AND t.estado IN ('planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso')
 FROM inscripcion i
 JOIN torneo t ON t.id_torneo = i.id_torneo
 LEFT JOIN participante p ON p.id_competidor = i.id_competidor
-LEFT JOIN equipo e       ON e.id_competidor = i.id_competidor;
+LEFT JOIN equipo e       ON e.id_competidor = i.id_competidor
+UNION
+SELECT
+    'PARTICIPANTE',
+    i.id_inscripcion,
+    pm.id_usuario,
+    i.id_torneo,
+    'aprobada',
+    t.estado IN ('planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso')
+FROM inscripcion i
+JOIN torneo t               ON t.id_torneo        = i.id_torneo
+JOIN equipo e               ON e.id_competidor    = i.id_competidor
+JOIN equipo_participante ep ON ep.id_equipo       = e.id_equipo
+JOIN participante pm        ON pm.id_participante = ep.id_participante
+WHERE i.estado_inscripcion = 'confirmada';
 
 -- Roles: ADMIN y PUBLICO son los únicos globales (usuario.id_rol); los otros
 -- tres son códigos de rol por torneo (ver vista_rol_torneo)

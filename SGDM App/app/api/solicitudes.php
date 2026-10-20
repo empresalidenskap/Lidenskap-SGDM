@@ -113,7 +113,7 @@ function handleCreate(): void
         fallar(400, 'Tipo de solicitud inválido.');
     }
     $torneo = $idTorneo > 0 ? Torneo::find($idTorneo) : null;
-    if ($torneo === null || $torneo['estado'] !== 'planificado') {
+    if ($torneo === null || !in_array($torneo['estado'], ['planificado', 'inscripcion_abierta'], true)) {
         fallar(400, 'Este torneo no está recibiendo solicitudes.');
     }
     // Cubre también al organizador (ya figura en la vista) y evita que un

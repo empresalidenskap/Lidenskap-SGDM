@@ -1132,6 +1132,8 @@ function statusClass(status) {
 
 const ESTADO_TORNEO_A_UI = {
   planificado: 'abierto',
+  inscripcion_abierta: 'abierto',
+  inscripcion_cerrada: 'curso',
   en_curso: 'curso',
   finalizado: 'cerrado',
   cancelado: 'cerrado',
@@ -1348,7 +1350,7 @@ function initializeTournamentDetail() {
 
   if (!id) { showNotFound(); return; }
 
-  const ESTADOS = { solicitado: 'Solicitud pendiente', rechazado: 'Solicitud rechazada', planificado: 'Inscripciones Abiertas', en_curso: 'En Curso', finalizado: 'Finalizado', cancelado: 'Cancelado' };
+  const ESTADOS = { solicitado: 'Solicitud pendiente', rechazado: 'Solicitud rechazada', planificado: 'Inscripciones Abiertas', inscripcion_abierta: 'Inscripciones Abiertas', inscripcion_cerrada: 'Inscripciones Cerradas', en_curso: 'En Curso', finalizado: 'Finalizado', cancelado: 'Cancelado' };
   const FORMATOS = { liga: 'Liga', eliminacion: 'Eliminación Directa', suizo: 'Sistema Suizo' };
   const set = (elementId, value) => { const el = document.getElementById(elementId); if (el) el.textContent = value; };
 
@@ -1413,7 +1415,7 @@ function initializeTournamentDetail() {
         } else if (miRol) {
           registerBtn.textContent = `Sos ${ROL_LABEL[miRol.rol]} de este torneo`;
           registerBtn.disabled = true;
-        } else if (t.estado !== 'planificado') {
+        } else if (!['planificado', 'inscripcion_abierta'].includes(t.estado)) {
           registerBtn.hidden = true;
         } else {
           registerBtn.textContent = 'Solicitar participar';
@@ -1704,7 +1706,7 @@ function initializeDashboardByRole() {
         { name: 'nombre', label: 'Nombre' }, { name: 'apellido', label: 'Apellido' },
         { name: 'email', label: 'Correo', type: 'email' }, { name: 'password', label: 'Contraseña inicial', type: 'password' },
         { name: 'rol', label: 'Rol', type: 'select', options: ['ORGANIZADOR', 'ARBITRO', 'PARTICIPANTE', 'ADMIN'].map(code => ({ value: code, label: ROL_LABEL[code] })) },
-        { name: 'idTorneo', label: 'Torneo', type: 'select', required: false, options: [{ value: '', label: 'Ninguno (solo para Administrador)' }, ...torneosReales.filter(t => ['planificado', 'en_curso'].includes(t.estado)).map(t => ({ value: t.id, label: t.nombre }))] },
+        { name: 'idTorneo', label: 'Torneo', type: 'select', required: false, options: [{ value: '', label: 'Ninguno (solo para Administrador)' }, ...torneosReales.filter(t => ['planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso'].includes(t.estado)).map(t => ({ value: t.id, label: t.nombre }))] },
       ],
       onSubmit: data => {
         fetch('api/usuarios.php', {
