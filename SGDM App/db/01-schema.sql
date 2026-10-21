@@ -1,5 +1,7 @@
 -- Creacion de la base de datos y las tablas.
--- Normalizado hasta 3FN. Justificaciones en "Programación Fullstack-Ventura-Federico/Segunda Entrega/NORMALIZACION.md".
+-- Normalizado hasta 3FN. Justificaciones en "Programación Fullstack-Ventura-Federico/Segunda Entrega/
+-- Programación Fullstack Segunda entrega.pdf" y, para los cambios de la tercera
+-- entrega, en "Programación Fullstack-Ventura-Federico/Tercera Entrega/NORMALIZACION.md".
 
 SET NAMES utf8mb4;
 
@@ -90,7 +92,7 @@ CREATE TABLE equipo_participante (
 
 -- TIPO_TORNEO (formato: liga, eliminación directa, sistema suizo)
 -- El puntaje es un hecho del formato (id_tipo_torneo -> puntos_*), por eso vive
--- acá y no en tabla_posiciones: ver NORMALIZACION.md, punto 5.5.
+-- acá y no en tabla_posiciones (justificación de normalización, punto 5.5).
 CREATE TABLE tipo_torneo (
     id_tipo_torneo  INT AUTO_INCREMENT PRIMARY KEY,
     nombre_tipo     VARCHAR(50) NOT NULL UNIQUE,
@@ -246,7 +248,7 @@ CREATE TABLE tabla_posiciones (
 -- ---------------------------------------------------------------------------
 -- VISTAS DE ATRIBUTOS DERIVADOS
 -- No almacenan datos: reponen la información que se quitó de las tablas base
--- para cumplir 3FN. Ver NORMALIZACION.md, puntos 5.4 y 5.5.
+-- para cumplir 3FN (justificación de normalización, puntos 5.4 y 5.5).
 -- ---------------------------------------------------------------------------
 
 CREATE OR REPLACE VIEW vista_resultado AS

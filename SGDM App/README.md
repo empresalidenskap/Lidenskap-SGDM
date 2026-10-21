@@ -26,8 +26,8 @@ Para bajarlo:
 docker compose down
 ```
 
-Para reiniciar todo desde cero (borra los datos y vuelve a cargar solo las
-cuentas de demostración):
+Para reiniciar todo desde cero (borra los datos y vuelve a cargar los datos
+de demostración):
 
 ```bash
 docker compose down -v
@@ -36,16 +36,24 @@ docker compose up -d
 
 ## Cuentas de demostración
 
-Ya están cargadas en la base al levantar el proyecto (ver "Iniciar
-sesión" en el sitio):
+Ya están cargadas en la base al levantar el proyecto (también en "Iniciar
+sesión" → "Ver cuentas de demostración"). Solo el Administrador tiene un rol
+global; los demás son Usuarios públicos con roles **dentro de cada torneo**:
 
-| Rol | Correo | Contraseña |
+| Cuenta | Correo | Contraseña |
 |---|---|---|
 | Administrador general | `admin@lidenskap.com` | `admin123` |
-| Organizador de torneo | `organizador@lidenskap.com` | `org123` |
-| Árbitro | `arbitro@lidenskap.com` | `arb123` |
-| Participante | `atleta@lidenskap.com` | `user123` |
-| Usuario público | `publico@lidenskap.com` | `guest123` |
+| Organizador de 4 torneos | `organizador@lidenskap.com` | `org123` |
+| Árbitro de Copa Demo | `arbitro@lidenskap.com` | `arb123` |
+| Participante de Copa Demo (equipo Halcones del Sur) | `atleta@lidenskap.com` | `user123` |
+| Usuario público (con una invitación para arbitrar) | `publico@lidenskap.com` | `guest123` |
+| Otros jugadores | `lucia@`, `mateo@`, `sofia@`, `camila@`… (`@lidenskap.com`) | `demo1234` |
+
+Los datos de demostración incluyen un torneo de cada formato y en cada fase:
+una liga en curso (con un walkover y un resultado sin validar), una
+eliminación directa finalizada con campeona, un sistema suizo con partido
+libre, una liga con inscripciones abiertas y pedidos pendientes, un torneo
+planificado y una solicitud de torneo para el Administrador.
 
 ## Estructura
 
@@ -53,9 +61,9 @@ sesión" en el sitio):
 SGDM App/
 ├── app/                  Código de la aplicación (ver app/README.md)
 ├── db/
-│   ├── 01-schema.sql      Modelo relacional (16 tablas)
+│   ├── 01-schema.sql      Modelo relacional (17 tablas y 3 vistas)
 │   ├── 02-users.sh        DCL: usuarios de la base y sus permisos
-│   └── 03-seed-demo.sql   Cuentas de demostración
+│   └── 03-seed-demo.sql   Datos de demostración
 ├── Dockerfile             Apache + PHP 8.3
 ├── docker-compose.yml
 ├── .env                   Credenciales locales (no se sube al repo)
@@ -78,8 +86,20 @@ solo hace falta cambiarlos para un despliegue real:
 
 ## Estado
 
-Conectado a la base real: autenticación (login/registro con sesión de
-servidor), torneos (crear/listar/ver detalle/eliminar) y el módulo de
-usuarios y roles del panel de administración. Todavía con datos de
-muestra: calendario, participantes/equipos, resultados, rondas, reportes
-y auditoría del panel, y las estadísticas de perfil.
+Todo funciona sobre la base real, sin datos de muestra en el código:
+
+- Cuentas y roles por torneo, con solicitudes (crear torneo, participar,
+  arbitrar, unirse a un equipo), invitaciones del Organizador y asignación
+  directa del Administrador.
+- Torneos con sus fases (inscripciones abiertas → cerradas → en curso →
+  finalizado), equipos e inscripciones.
+- Fixture por formato (liga, eliminación directa, sistema suizo), carga de
+  resultados por el árbitro asignado, validación del Organizador, walkover,
+  tabla de posiciones con desempate, cierre y reapertura de rondas.
+- Consulta pública: torneos, fixture, tabla, llaves y calendario.
+- Panel: reportes, auditoría y estadísticas reales; perfil con historial.
+
+Pendiente, por ahora fuera de alcance: cambiar o recuperar la contraseña,
+contraseñas temporales con envío por correo, subir el reglamento de cada
+torneo (la tarjeta del detalle muestra un archivo de ejemplo) y el filtro por
+videojuego del calendario (los torneos no guardan el juego).

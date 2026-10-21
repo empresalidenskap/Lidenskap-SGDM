@@ -58,13 +58,27 @@ resumen() {
     consulta "Registros por tabla" "
         SELECT 'Usuarios' AS tabla, COUNT(*) AS total FROM usuario
         UNION ALL SELECT 'Torneos', COUNT(*) FROM torneo
+        UNION ALL SELECT 'Equipos', COUNT(*) FROM equipo
         UNION ALL SELECT 'Inscripciones', COUNT(*) FROM inscripcion
+        UNION ALL SELECT 'Rondas', COUNT(*) FROM ronda
         UNION ALL SELECT 'Enfrentamientos', COUNT(*) FROM enfrentamiento
         UNION ALL SELECT 'Resultados', COUNT(*) FROM resultado"
-    consulta "Usuarios por rol" "
-        SELECT r.nombre_rol AS rol, COUNT(u.id_usuario) AS usuarios
-        FROM rol r LEFT JOIN usuario u ON u.id_rol = r.id_rol
+    # Rol de la cuenta: solo ADMIN o PUBLICO. Organizador, Árbitro y
+    # Participante dependen de cada torneo (vista_rol_torneo) y se apagan
+    # solos cuando el torneo termina.
+    consulta "Cuentas por rol global" "
+        SELECT r.nombre_rol AS rol, COUNT(u.id_usuario) AS cuentas
+        FROM usuario u JOIN rol r ON r.id_rol = u.id_rol
         GROUP BY r.id_rol, r.nombre_rol"
+    consulta "Roles activos por torneo" "
+        SELECT t.nombre_torneo AS torneo, t.estado,
+               SUM(v.rol = 'ORGANIZADOR') AS organizadores,
+               SUM(v.rol = 'ARBITRO') AS arbitros,
+               SUM(v.rol = 'PARTICIPANTE') AS participantes
+        FROM vista_rol_torneo v JOIN torneo t ON t.id_torneo = v.id_torneo
+        WHERE v.activo = 1
+        GROUP BY t.id_torneo, t.nombre_torneo, t.estado
+        ORDER BY t.nombre_torneo"
     log "Consulta: resumen."
 }
 
@@ -77,40 +91,63 @@ torneos() {
     log "Consulta: torneos."
 }
 
+# Orden de RF-09: puntos, diferencia de goles y goles a favor (el
+# enfrentamiento directo y el sorteo los aplica la aplicación)
 posiciones() {
     pedir_torneo || return
     consulta "Tabla de posiciones del torneo $id" "
         SELECT COALESCE(e.nombre_equipo, p.nombre_participante) AS competidor,
                v.partidos_jugados AS pj, v.victorias AS g, v.empates AS e,
-               v.derrotas AS p, v.puntos_acumulados AS pts
+               v.derrotas AS p, v.goles_a_favor AS gf, v.goles_en_contra AS gc,
+               v.diferencia_goles AS dg, v.puntos_acumulados AS pts
         FROM vista_tabla_posiciones v
         LEFT JOIN participante p ON p.id_competidor = v.id_competidor
         LEFT JOIN equipo e       ON e.id_competidor = v.id_competidor
         WHERE v.id_torneo = $id
-        ORDER BY pts DESC, g DESC"
+        ORDER BY pts DESC, dg DESC, gf DESC"
     log "Consulta: posiciones del torneo $id."
+}
+
+# Nombre del competidor de una inscripción (equipo o participante)
+nombre_de() {
+    echo "(SELECT COALESCE(eq.nombre_equipo, pa.nombre_participante) FROM inscripcion i
+             LEFT JOIN equipo eq ON eq.id_competidor = i.id_competidor
+             LEFT JOIN participante pa ON pa.id_competidor = i.id_competidor
+             WHERE i.id_inscripcion = $1)"
 }
 
 partidos() {
     pedir_torneo || return
     consulta "Partidos del torneo $id" "
-        SELECT r.numero_ronda AS ronda, en.fecha_hora, en.estado_partido AS estado,
-               IFNULL(CONCAT(vr.puntuacion_local, ' - ', vr.puntuacion_visitante), '-') AS marcador,
-               IFNULL(vr.ganador, '-') AS ganador
+        SELECT r.numero_ronda AS ronda, en.fecha_hora,
+               $(nombre_de en.id_inscripcion_local) AS local,
+               IFNULL($(nombre_de en.id_inscripcion_visitante), '(libre)') AS visitante,
+               en.estado_partido AS estado,
+               IFNULL(CONCAT(vr.puntuacion_local, ' - ', vr.puntuacion_visitante,
+                             IF(vr.validado, '', ' (sin validar)')), '-') AS marcador
         FROM enfrentamiento en
         JOIN ronda r ON r.id_ronda = en.id_ronda
         LEFT JOIN vista_resultado vr ON vr.id_enfrentamiento = en.id_enfrentamiento
         WHERE r.id_torneo = $id
-        ORDER BY r.numero_ronda, en.fecha_hora"
+        ORDER BY r.numero_ronda, en.id_enfrentamiento"
     log "Consulta: partidos del torneo $id."
 }
 
 pendientes() {
-    consulta "Inscripciones sin confirmar" "
-        SELECT i.id_inscripcion AS id, t.nombre_torneo AS torneo, i.fecha_inscripcion
-        FROM inscripcion i JOIN torneo t ON t.id_torneo = i.id_torneo
-        WHERE i.estado_inscripcion = 'pendiente'
-        ORDER BY i.fecha_inscripcion"
+    consulta "Solicitudes e invitaciones sin resolver" "
+        SELECT v.estado_solicitud AS estado, v.rol, u.email AS usuario, t.nombre_torneo AS torneo
+        FROM vista_rol_torneo v
+        JOIN usuario u ON u.id_usuario = v.id_usuario
+        JOIN torneo t  ON t.id_torneo  = v.id_torneo
+        WHERE v.estado_solicitud IN ('pendiente', 'invitada')
+        ORDER BY t.nombre_torneo, v.rol"
+    consulta "Pedidos e invitaciones para unirse a equipos" "
+        SELECT ep.estado, e.nombre_equipo AS equipo, p.nombre_participante AS persona
+        FROM equipo_participante ep
+        JOIN equipo e       ON e.id_equipo       = ep.id_equipo
+        JOIN participante p ON p.id_participante = ep.id_participante
+        WHERE ep.estado IN ('solicitada', 'invitada')
+        ORDER BY e.nombre_equipo"
     consulta "Resultados sin validar" "
         SELECT id_resultado AS id, id_enfrentamiento AS partido,
                CONCAT(puntuacion_local, ' - ', puntuacion_visitante) AS marcador, fecha_carga
@@ -123,7 +160,7 @@ pendientes() {
 auditoria() {
     consulta "Últimas 20 acciones registradas" "
         SELECT a.fecha_hora, IFNULL(u.email, '-') AS usuario, a.accion_realizada AS accion,
-               a.tabla_afectada AS tabla, IFNULL(a.ip_origen, '-') AS ip
+               a.tabla_afectada AS tabla, IFNULL(a.detalle, '-') AS detalle, IFNULL(a.ip_origen, '-') AS ip
         FROM auditoria_registro a LEFT JOIN usuario u ON u.id_usuario = a.id_usuario
         ORDER BY a.fecha_hora DESC
         LIMIT 20"
@@ -237,7 +274,7 @@ while true; do
     echo "  2) Torneos"
     echo "  3) Tabla de posiciones de un torneo"
     echo "  4) Partidos de un torneo"
-    echo "  5) Pendientes (inscripciones y resultados)"
+    echo "  5) Pendientes (solicitudes, invitaciones y resultados)"
     echo "  6) Auditoría"
     echo " Monitoreo"
     echo "  7) Estado del motor"

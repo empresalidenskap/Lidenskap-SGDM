@@ -8,13 +8,18 @@ Implementación del Sistema de Gestión Deportiva Modular: frontend
 ```
 app/
 ├── *.html                  Vistas del sistema
-├── api/                     Endpoints PHP (login, registro, torneos, usuarios...)
+├── api/                     Endpoints PHP, uno por recurso (login, torneos,
+│                            solicitudes, equipos, rondas, resultados, reportes...)
 ├── src/
 │   ├── Database.php         Conexión PDO (usuario sgdm_app)
 │   ├── Model.php             CRUD base compartido
-│   ├── Auth.php               Sesión de servidor y verificación de rol
+│   ├── Auth.php               Sesión de servidor; requireRole() y requireTorneoRole()
+│   ├── RolesTorneo.php         Roles por torneo (vista_rol_torneo) y altas en un torneo
+│   ├── Equipos.php             Planteles y torneo activo de cada equipo
+│   ├── Competencia.php         Fixture por formato, llaves, suizo y tabla de posiciones
+│   ├── Auditoria.php           Registro de auditoría
 │   ├── Catalogos.php           Traducción código↔nombre (disciplina/formato)
-│   └── Models/                Una clase por tabla (16 en total)
+│   └── Models/                Una clase por tabla (17 en total)
 └── assets/
     ├── css/styles.css      Hoja de estilos (mobile first, Flexbox/Grid)
     ├── js/main.js          Lógica de interfaz
@@ -34,7 +39,7 @@ docker compose up -d
 
 Abrir <http://localhost>. Levanta Apache+PHP sirviendo `app/` y una base
 MariaDB con el esquema, el DCL (usuarios `sgdm_admin`/`sgdm_app`/
-`sgdm_consulta`) y las 4 cuentas de demostración ya cargadas. Para bajarlo:
+`sgdm_consulta`) y los datos de demostración ya cargados. Para bajarlo:
 `docker compose down` (agregar `-v` para reiniciar la base desde cero).
 
 Más detalle de las variables de entorno en `../README.md` (la carpeta

@@ -18,6 +18,16 @@ Requisitos de la letra de proyecto para esta entrega:
   - [x] Aplicado en el servidor real (firewall, fail2ban, SSH, actualizaciones y kernel verificados).
   - [ ] Falta probar el antivirus con el archivo EICAR (ver SEGURIDAD.md).
 - [x] Script de consultas y monitoreo de base de datos dentro del servidor
+  (`consultas_monitoreo_bd_sgdm.sh`)
+  - Consultas: resumen (cuentas por rol global y **roles activos por
+    torneo**, desde `vista_rol_torneo`), torneos, tabla de posiciones (con
+    goles y diferencia), partidos de un torneo (con partidos libres y
+    walkover), pendientes (solicitudes, invitaciones, pedidos para unirse a
+    equipos y resultados sin validar) y auditoría (con el detalle de cada
+    acción).
+  - Monitoreo: estado del motor, tamaño de las tablas, consultas en ejecución
+    y chequeo rápido (servicio, conexión, disco y último respaldo), que
+    también sirve para cron (`consultas_monitoreo_bd_sgdm.sh chequeo`).
 - [x] Script general de gestión del servidor (`gestion_servidor_sgdm.sh`)
   - Menú único que reúne todos los scripts instalados en `/usr/local/sbin`:
     servicios (`gestionar_servicio.sh`), usuarios del sistema
