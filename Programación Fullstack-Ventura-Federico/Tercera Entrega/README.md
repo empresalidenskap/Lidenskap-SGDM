@@ -80,21 +80,21 @@ nueva, y se actualizó la copia del servidor (`SGDM App - files/`).
 
 | Fase | Fecha y hora | Commit | Qué se hizo |
 |---|---|---|---|
-| F1 Esquema | 16/10/2026 22:01 | `cd30807` | Tabla `torneo_arbitro`, árbitro por partido (`enfrentamiento.id_arbitro`), estados `solicitado`/`rechazado` y la vista `vista_rol_torneo`. |
-| F2 Roles por torneo | 16/10/2026 22:01 | `cd30807` | Globales solo Administrador y Usuario público; Organizador, Árbitro y Participante dependen de cada torneo (`requireTorneoRole()`, `api/sesion.php`). |
-| F3 Solicitudes | 16/10/2026 22:01 | `cd30807` | Pedir crear un torneo (aprueba el Admin), participar o arbitrar (aprueba el Organizador); módulo Solicitudes del panel. |
-| F4 Auditoría | 16/10/2026 22:01 | `cd30807` | Cada acción queda registrada; el panel muestra la auditoría real. |
-| MER y BD | 20/10/2026 18:58 | `fd3e8d6` | MER de la tercera entrega y columnas para las fases siguientes (fases de inscripción, walkover, goles, cabezas de serie y sorteo, detalle de auditoría). |
-| MER y BD | 20/10/2026 19:54 | `a351cba` | Equipos e invitaciones: límite de integrantes por torneo, estado de cada integrante, estado `invitada`, capitán opcional. |
-| F5 Inscripciones | 20/10/2026 20:57 | `689bb14` | Abrir y cerrar inscripciones (RF-08), "Mis equipos", pedidos para unirse a un equipo, invitaciones del Organizador, asignación del Admin, cupo; plantel real en el panel. |
-| MER y BD | 20/10/2026 21:46 | `7625b19` | Partido libre (bye): enfrentamiento sin visitante. |
-| F6 Rondas y resultados | 20/10/2026 21:57 | `d9a3cc3` | Fixture de liga, llaves y sistema suizo; resultados del árbitro asignado con validación del Organizador; walkover; tabla con desempate; cierre y reapertura de rondas; fixture, tabla y llaves públicos. |
-| F7 Finalizar torneo | 20/10/2026 22:09 | `e8f2e5a` | Solo con todos los resultados validados; los roles del torneo terminan solos y el historial queda. |
-| F8 Calendario | 20/10/2026 22:20 | `4058d22` | El calendario muestra los partidos reales (`api/calendario.php`). |
-| F9 Reportes y perfil | 20/10/2026 22:29 | `e82b4dc` | Reportes, tarjetas del panel y estadísticas del perfil reales; se borraron los datos de ejemplo del código. |
-| F10 Datos de demostración | 20/10/2026 22:41 | `5901edf` | Seed chico y realista (no los 50 registros); corrección del emparejamiento suizo para no repetir rivales. |
-| F11 Documentación | 20/10/2026 22:47 | `940b516` | [`NORMALIZACION.md`](./NORMALIZACION.md), consultas de la BD de ASO con roles por torneo, README al día y copia del servidor verificada. |
-| F12 Prueba final | 20/10/2026 ≈23:00 | — | Recorrido completo sobre una base nueva, haciendo clic en la interfaz: pedir un torneo, aprobarlo, inscripciones, fixture, resultados, walkover, finalizar y revocación de roles. Todo OK, sin cambios de código. |
+| F1 Esquema | `cd30807` | Tabla `torneo_arbitro`, árbitro por partido (`enfrentamiento.id_arbitro`), estados `solicitado`/`rechazado` y la vista `vista_rol_torneo`. |
+| F2 Roles por torneo | `cd30807` | Globales solo Administrador y Usuario público; Organizador, Árbitro y Participante dependen de cada torneo (`requireTorneoRole()`, `api/sesion.php`). |
+| F3 Solicitudes | `cd30807` | Pedir crear un torneo (aprueba el Admin), participar o arbitrar (aprueba el Organizador); módulo Solicitudes del panel. |
+| F4 Auditoría | `cd30807` | Cada acción queda registrada; el panel muestra la auditoría real. |
+| MER y BD |`fd3e8d6` | MER de la tercera entrega y columnas para las fases siguientes (fases de inscripción, walkover, goles, cabezas de serie y sorteo, detalle de auditoría). |
+| MER y BD |`a351cba` | Equipos e invitaciones: límite de integrantes por torneo, estado de cada integrante, estado `invitada`, capitán opcional. |
+| F5 Inscripciones |`689bb14` | Abrir y cerrar inscripciones (RF-08), "Mis equipos", pedidos para unirse a un equipo, invitaciones del Organizador, asignación del Admin, cupo; plantel real en el panel. |
+| MER y BD | `7625b19` | Partido libre (bye): enfrentamiento sin visitante. |
+| F6 Rondas y resultados | `d9a3cc3` | Fixture de liga, llaves y sistema suizo; resultados del árbitro asignado con validación del Organizador; walkover; tabla con desempate; cierre y reapertura de rondas; fixture, tabla y llaves públicos. |
+| F7 Finalizar torneo |  `e8f2e5a` | Solo con todos los resultados validados; los roles del torneo terminan solos y el historial queda. |
+| F8 Calendario |`4058d22` | El calendario muestra los partidos reales (`api/calendario.php`). |
+| F9 Reportes y perfil | `e82b4dc` | Reportes, tarjetas del panel y estadísticas del perfil reales; se borraron los datos de ejemplo del código. |
+| F10 Datos de demostración |`5901edf` | Seed chico y realista (no los 50 registros); corrección del emparejamiento suizo para no repetir rivales. |
+| F11 Documentación | `940b516` | [`NORMALIZACION.md`](./NORMALIZACION.md), consultas de la BD de ASO con roles por torneo, README al día y copia del servidor verificada. |
+| F12 Prueba final | — | Recorrido completo sobre una base nueva, haciendo clic en la interfaz: pedir un torneo, aprobarlo, inscripciones, fixture, resultados, walkover, finalizar y revocación de roles. Todo OK, sin cambios de código. |
 | Llaves y suizo esports | 21/10/2026 | (este cambio) | Vista de llaves aportada por el equipo (`bracket.js`/`bracket.css`): árbol de eliminación directa con camino del ganador y campeón, y etapa suiza por récord, en la página del torneo y en el panel. Formatos: eliminación directa al mejor de 1; suizo como en los esports, series al mejor de 3, se clasifica con N victorias y queda eliminado con N derrotas (N según la cantidad de inscriptos). |
 
 Fuera de alcance por ahora: los 50 registros por componente, cambiar o
