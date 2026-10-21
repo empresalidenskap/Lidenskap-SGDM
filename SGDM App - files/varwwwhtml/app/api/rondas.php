@@ -122,6 +122,11 @@ function handleList(): void
         }
     }
 
+    // Liga y suizo: al finalizar, el campeón es el primero de la tabla
+    if ($torneo['estado'] === 'finalizado' && $torneo['formato'] !== 'eliminacion' && $rondas) {
+        $campeon = Competencia::tabla($idTorneo)[0]['nombre'] ?? null;
+    }
+
     // Árbitros aprobados del torneo, para que el Organizador los asigne
     $arbitros = [];
     if ($gestiona) {

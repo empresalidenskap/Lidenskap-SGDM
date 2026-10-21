@@ -6,6 +6,7 @@ require_once __DIR__ . '/../src/autoload.php';
 use App\Auditoria;
 use App\Auth;
 use App\Catalogos;
+use App\Competencia;
 use App\Database;
 use App\Models\Torneo;
 
@@ -40,6 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 // que quedó sin resolver (solicitudes e invitaciones de participantes y de
 // integrantes de equipos) se rechaza solo, y se sortea el orden de los
 // confirmados (numero_sorteo: llaves y último criterio de desempate).
+// en_curso empieza al generar el fixture (api/rondas.php); 'finalizar' lo
+// cierra: en_curso -> finalizado.
 if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
     $accion = $_GET['accion'] ?? '';
     $torneoFase = Torneo::find($id);
@@ -53,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
     $fases = [
         'abrir_inscripciones' => ['planificado', 'inscripcion_abierta', 'Abrió las inscripciones'],
         'cerrar_inscripciones' => ['inscripcion_abierta', 'inscripcion_cerrada', 'Cerró las inscripciones'],
+        'finalizar' => ['en_curso', 'finalizado', 'Finalizó el torneo'],
     ];
     if (!isset($fases[$accion])) {
         http_response_code(400);
@@ -67,8 +71,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
     }
 
     $pdo = Database::getConnection();
-    $pdo->beginTransaction();
     $detalle = null;
+
+    // Finalizar (F7): solo con todos los resultados validados ("resultados
+    // publicados") y, en llaves, con campeón. Al pasar a 'finalizado',
+    // vista_rol_torneo apaga los roles del torneo: organizador, árbitros y
+    // participantes vuelven a ser solo Usuarios públicos (misma cuenta) y el
+    // historial queda.
+    if ($accion === 'finalizar') {
+        $stmt = $pdo->prepare('SELECT id_ronda, numero_ronda FROM ronda WHERE id_torneo = ? ORDER BY numero_ronda');
+        $stmt->execute([$id]);
+        $rondas = $stmt->fetchAll();
+        if (!$rondas) {
+            http_response_code(409);
+            echo json_encode(['success' => false, 'error' => 'El torneo todavía no tiene fixture.']);
+            exit;
+        }
+        foreach ($rondas as $ronda) {
+            if (!Competencia::rondaCompleta((int) $ronda['id_ronda'])) {
+                http_response_code(409);
+                echo json_encode(['success' => false, 'error' => "Faltan resultados por validar en la ronda {$ronda['numero_ronda']}."]);
+                exit;
+            }
+        }
+        $formato = Competencia::torneo($id)['formato'];
+        $final = Competencia::partidos((int) end($rondas)['id_ronda']);
+        if ($formato === 'eliminacion' && count($final) !== 1) {
+            http_response_code(409);
+            echo json_encode(['success' => false, 'error' => 'La llave todavía no tiene campeón.']);
+            exit;
+        }
+        if ($formato === 'eliminacion') {
+            $stmt = $pdo->prepare('SELECT ' . Competencia::nombreSql('i') . ' FROM inscripcion i WHERE i.id_inscripcion = ?');
+            $stmt->execute([Competencia::ganador($final[0])]);
+            $campeon = $stmt->fetchColumn();
+        } else {
+            $campeon = Competencia::tabla($id)[0]['nombre'] ?? null;
+        }
+        $detalle = $campeon ? "Campeón: $campeon" : null;
+    }
+
+    $pdo->beginTransaction();
+    if ($accion === 'finalizar') {
+        $pdo->prepare("UPDATE ronda SET estado_ronda = 'finalizada' WHERE id_torneo = ?")->execute([$id]);
+    }
     if ($accion === 'cerrar_inscripciones') {
         $stmt = $pdo->prepare(
             "UPDATE inscripcion SET estado_inscripcion = 'rechazada'

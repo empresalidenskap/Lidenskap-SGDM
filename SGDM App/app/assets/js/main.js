@@ -1141,6 +1141,9 @@ const ESTADO_TORNEO_A_UI = {
 const ESTADO_UI_LABEL = { proximo: 'Próximamente', abierto: 'Inscripciones abiertas', cerradas: 'Inscripciones cerradas', curso: 'En curso', cerrado: 'Finalizado' };
 const FORMATO_LABEL = { liga: 'Liga', eliminacion: 'Eliminación Directa', suizo: 'Sistema Suizo' };
 
+// Finalizar un torneo (F7): lo mismo desde el detalle y desde el panel
+const FINALIZAR_PREGUNTA = '¿Finalizar el torneo? Tienen que estar validados todos los resultados. Los roles de este torneo (organizador, árbitros y participantes) terminan: vuelven a ser Usuarios públicos con la misma cuenta, y el historial queda.';
+
 // Partidos (F6): tarjeta de un partido para el panel y el detalle del torneo.
 // Un resultado sin validar (solo lo ven el Organizador y el árbitro) va con *.
 function fechaHoraCorta(valor) {
@@ -1507,6 +1510,7 @@ function initializeTournamentDetail() {
       const FASES = {
         planificado: ['abrir_inscripciones', 'Abrir inscripciones', '¿Abrir las inscripciones? Desde ahora los usuarios pueden pedir participar.'],
         inscripcion_abierta: ['cerrar_inscripciones', 'Cerrar inscripciones', '¿Cerrar las inscripciones? Las solicitudes e invitaciones sin resolver se rechazan solas y se sortea el orden de los confirmados.'],
+        en_curso: ['finalizar', 'Finalizar torneo', FINALIZAR_PREGUNTA],
       };
       if (phaseBtn && gestiona && FASES[t.estado]) {
         const [accion, texto, pregunta] = FASES[t.estado];
@@ -2159,12 +2163,14 @@ function initializeDashboardByRole() {
   const generateRound = document.getElementById('generateRound');
   const roundSeeds = document.getElementById('roundSeeds');
   const roundBracket = document.getElementById('roundBracket');
+  const finishTournament = document.getElementById('finishTournament');
   const ESTADO_RONDA = { pendiente: 'Pendiente', en_curso: 'En juego', finalizada: 'Cerrada' };
   let competencia = null;
   const renderRondas = () => {
     const t = torneosReales.find(item => item.id === Number(roundSelect.value));
     roundSeeds.hidden = true;
     generateRound.hidden = true;
+    finishTournament.hidden = true;
     if (!t || !competencia) {
       ['roundFormat', 'roundCurrent', 'roundStatus'].forEach(id => { document.getElementById(id).textContent = '-'; });
       roundBracket.innerHTML = '<p>No tenés torneos con las inscripciones cerradas o en curso.</p>';
@@ -2185,7 +2191,9 @@ function initializeDashboardByRole() {
           + confirmadas.map(i => `<label>${escapeHtml(i.nombre)}<input type="number" min="1" data-seed="${i.id}" value="${i.cabezaSerie ?? ''}" placeholder="—"></label>`).join('');
         roundSeeds.hidden = false;
       }
-    } else if (datos.formato === 'suizo' && t.estado === 'en_curso' && !competencia.campeon) {
+    }
+    finishTournament.hidden = !(competencia.gestiona && t.estado === 'en_curso' && rondas.length);
+    if (rondas.length && datos.formato === 'suizo' && t.estado === 'en_curso') {
       generateRound.textContent = '+ Generar siguiente ronda';
       generateRound.hidden = false;
     }
@@ -2222,6 +2230,9 @@ function initializeDashboardByRole() {
       if (result.success) { cargarTorneos().then(llenarSelectRondas); if (allowedModules.includes('results')) cargarResultados(); }
     });
   roundSelect.addEventListener('change', cargarRondas);
+  finishTournament.addEventListener('click', () => {
+    if (window.confirm(FINALIZAR_PREGUNTA)) accionRonda(`api/torneo.php?id=${roundSelect.value}&accion=finalizar`, 'PATCH', {}, 'Torneo finalizado: los roles de este torneo terminaron.');
+  });
   generateRound.addEventListener('click', () => {
     const primera = !competencia.rondas.length;
     if (primera && !window.confirm('¿Generar el fixture? El torneo pasa a estar en curso y ya no se puede cambiar quiénes juegan.')) return;
