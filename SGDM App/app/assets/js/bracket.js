@@ -181,7 +181,7 @@
         <div class="bk-round-body">
           <div class="bk-slot${champion ? ' is-fed' : ''}">
             <div class="bk-champion${champion ? ' is-crowned' : ''}">
-              <span aria-hidden="true">🏆</span>
+              <span aria-hidden="true"><img class="ui-icon" src="assets/icons/trophy.svg" alt=""></span>
               <strong>${esc(champion ? champion.name : 'Por definir')}</strong>
             </div>
           </div>

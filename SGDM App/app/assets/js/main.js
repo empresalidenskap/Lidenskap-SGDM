@@ -117,14 +117,14 @@ function toggleTheme() {
 
   if (nextTheme === 'light') {
     if (themeBtn) {
-      themeBtn.textContent = '🌙';
+      themeBtn.innerHTML = '<img class="ui-icon" src="assets/icons/moon.svg" alt="">';
       themeBtn.setAttribute('aria-label', 'Activar modo oscuro');
     }
     if (logoImg) logoImg.src = 'assets/img/logo.png';
     if (ilustracion) ilustracion.src = 'assets/img/ilustracion.png';
   } else {
     if (themeBtn) {
-      themeBtn.textContent = '☀';
+      themeBtn.innerHTML = '<img class="ui-icon" src="assets/icons/sun.svg" alt="">';
       themeBtn.setAttribute('aria-label', 'Activar modo claro');
     }
     if (logoImg) logoImg.src = 'assets/img/logodark.png';
@@ -143,7 +143,7 @@ function initializeTheme() {
   document.documentElement.dataset.theme = initialTheme;
   if (themeBtn) {
     themeBtn.type = 'button';
-    themeBtn.textContent = initialTheme === 'dark' ? '☀' : '🌙';
+    themeBtn.innerHTML = `<img class="ui-icon" src="assets/icons/${initialTheme === 'dark' ? 'sun' : 'moon'}.svg" alt="">`;
     themeBtn.setAttribute('aria-label', initialTheme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro');
     themeBtn.addEventListener('click', toggleTheme);
   }
@@ -1348,12 +1348,12 @@ function initializeTournamentDetail() {
       const renderInscriptos = equipos => {
         if (!teamsList) return;
         const individuales = confirmados.filter(i => i.tipo === 'participante')
-          .map(i => `<li><span class="team-bullet">👤</span> ${escapeHtml(i.nombre)}</li>`);
+          .map(i => `<li><span class="team-bullet"><img class="ui-icon" src="assets/icons/user.svg" alt=""></span> ${escapeHtml(i.nombre)}</li>`);
         const deEquipo = equipos.map(e => {
           const completo = t.maxIntegrantesEquipo !== null && e.integrantes >= t.maxIntegrantesEquipo;
           const unirse = puedePedir && abiertas && !completo
             ? ` <button class="table-action" type="button" data-join-team="${e.id}">Solicitar unirme</button>` : '';
-          return `<li><span class="team-bullet">🛡️</span> ${escapeHtml(e.nombre)} <small>${e.integrantes}${t.maxIntegrantesEquipo ? ` / ${t.maxIntegrantesEquipo}` : ''} integrantes</small>${unirse}</li>`;
+          return `<li><span class="team-bullet"><img class="ui-icon" src="assets/icons/shield.svg" alt=""></span> ${escapeHtml(e.nombre)} <small>${e.integrantes}${t.maxIntegrantesEquipo ? ` / ${t.maxIntegrantesEquipo}` : ''} integrantes</small>${unirse}</li>`;
         });
         teamsList.innerHTML = [...deEquipo, ...individuales].join('') || '<li>Todavía no hay inscriptos confirmados.</li>';
       };
@@ -1461,7 +1461,7 @@ function initializeTournamentDetail() {
           document.getElementById('detailFixtureCard').hidden = false;
           const campeon = document.getElementById('detailChampion');
           if (data.campeon) {
-            campeon.innerHTML = `<span class="champion-banner">🏆 Campeón: ${escapeHtml(data.campeon)}</span>`;
+            campeon.innerHTML = `<span class="champion-banner"><img class="ui-icon" src="assets/icons/trophy.svg" alt=""> Campeón: ${escapeHtml(data.campeon)}</span>`;
             campeon.hidden = false;
           }
           document.getElementById('detailStandings').innerHTML = data.tabla.length ? tablaPosicionesHtml(data.tabla) : '';

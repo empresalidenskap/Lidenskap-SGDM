@@ -2102,3 +2102,11 @@ nav .btn-outline:hover {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+/* Íconos de la interfaz (assets/icons, en negro): blancos en el tema oscuro */
+.ui-icon { display: inline-block; width: 1.1em; height: 1.1em; vertical-align: -0.2em; }
+[data-theme="dark"] .ui-icon { filter: invert(1); }
+.theme-toggle .ui-icon { width: 18px; height: 18px; vertical-align: middle; }
+.rules-icon .ui-icon { width: 2rem; height: 2rem; }
+.file-icon .ui-icon { width: 1.6rem; height: 1.6rem; }
+.team-bullet .ui-icon { width: 1rem; height: 1rem; opacity: 0.75; }
+.champion-banner .ui-icon { margin-right: 0.25rem; }
