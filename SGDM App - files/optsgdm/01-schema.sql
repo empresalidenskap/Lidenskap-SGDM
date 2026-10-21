@@ -193,11 +193,13 @@ CREATE TABLE inscripcion (
 
 -- ENFRENTAMIENTO
 -- 'walkover': no se jugó; el resultado es el marcador_wo_* del torneo (RF-12)
+-- id_inscripcion_visitante NULL: partido libre (bye), lo gana el local sin
+-- jugar (Sistema Suizo impar, llaves que no son potencia de 2).
 CREATE TABLE enfrentamiento (
     id_enfrentamiento        INT AUTO_INCREMENT PRIMARY KEY,
     id_ronda                 INT NOT NULL,
     id_inscripcion_local      INT NOT NULL,
-    id_inscripcion_visitante  INT NOT NULL,
+    id_inscripcion_visitante  INT NULL,
     id_arbitro               INT NULL,
     fecha_hora               DATETIME,
     estado_partido           ENUM('programado', 'en_curso', 'finalizado', 'suspendido', 'walkover') NOT NULL DEFAULT 'programado',

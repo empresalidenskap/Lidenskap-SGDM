@@ -31,6 +31,9 @@ en el diagrama lista los dominios (ENUM) y los atributos derivados.
   Arbitra.EstadoSolicitud suman `invitada` (invitación del Organizador que el
   usuario acepta o rechaza). **Capitanea** pasa a ser opcional: el capitán es
   solo una etiqueta y un equipo creado por el Organizador no tiene.
+- Rondas y resultados: la relación **Juega_Visitante** pasa a ser opcional;
+  un enfrentamiento sin visitante es un partido libre (bye) que gana el local
+  sin jugar (número impar en Sistema Suizo, llaves que no son potencia de 2).
 - Correcciones del MER anterior: faltaba la relación **Capitanea**
   (USUARIO–EQUIPO, `equipo.id_usuario`) y el atributo `Descripcion` de TORNEO,
   y el atributo `PuntosEmpate` de TIPO_TORNEO figuraba como `PuntosAcumulados`.
