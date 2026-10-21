@@ -24,10 +24,10 @@
 
     <section id="dashboardOverview" aria-label="Resumen del sistema">
       <section class="stat-grid">
-        <article><span>Torneos activos</span><strong>10</strong></article>
-        <article><span>Participantes</span><strong>246</strong></article>
-        <article><span>Equipos</span><strong>38</strong></article>
-        <article><span>Resultados pendientes</span><strong>6</strong></article>
+        <article><span>Torneos activos</span><strong>–</strong></article>
+        <article><span>Participantes</span><strong>–</strong></article>
+        <article><span>Equipos</span><strong>–</strong></article>
+        <article><span>Resultados sin validar</span><strong>–</strong></article>
       </section>
 
       <section class="module-grid" aria-label="Módulos del sistema">
@@ -45,7 +45,7 @@
       <div class="dashboard-layout">
         <section class="surface-card">
           <header class="section-header compact-header"><div><p class="section-eyebrow">Gestión</p><h2>PARTICIPANTES RECIENTES</h2></div><button class="btn-secondary" type="button" data-panel-target="participants">Ver todos</button></header>
-          <div class="table-scroll"><table><thead><tr><th>Participante</th><th>Equipo</th><th>Torneo</th><th>Estado</th></tr></thead><tbody><tr><td>Lucía Fernández</td><td>Unión Central</td><td>Copa Apertura</td><td><span class="status-pill status-open">Confirmada</span></td></tr><tr><td>Mateo Rodríguez</td><td>Club del Parque</td><td>Copa Apertura</td><td><span class="status-pill status-progress">Pendiente</span></td></tr><tr><td>Sofía Martínez</td><td>Sin equipo</td><td>Suizo de Invierno</td><td><span class="status-pill status-open">Confirmada</span></td></tr></tbody></table></div>
+          <div class="table-scroll"><table><thead><tr><th>Participante</th><th>Equipo</th><th>Torneo</th><th>Estado</th></tr></thead><tbody id="recentParticipants"><tr><td colspan="4">Todavía no hay inscripciones.</td></tr></tbody></table></div>
         </section>
         <aside data-admin-only class="surface-card">
           <header class="section-header compact-header"><div><p class="section-eyebrow">Auditoría</p><h2>ACTIVIDAD RECIENTE</h2></div><button class="btn-secondary" type="button" data-panel-target="audit">Ver todo</button></header>
@@ -112,7 +112,7 @@
       <header class="panel-module-header"><div><p class="section-eyebrow">Análisis</p><h2>REPORTES DE TORNEOS</h2><p>Consulta indicadores de los torneos dentro de tu ámbito de administración.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
       <div class="panel-toolbar"><label class="panel-search">Torneo<select id="reportTournament"><option value="">Todos los torneos</option></select></label><button class="btn-secondary" id="exportReport" type="button">Descargar CSV</button></div>
       <section class="report-grid" aria-label="Indicadores del reporte"><article><span>Inscripciones</span><strong id="reportRegistrations">-</strong></article><article><span>Ocupación promedio</span><strong id="reportOccupancy">-</strong></article><article><span>Partidos registrados</span><strong id="reportMatches">-</strong></article><article><span>Resultados oficiales</span><strong id="reportOfficial">-</strong></article></section>
-      <div class="table-scroll"><table><thead><tr><th>Torneo</th><th>Disciplina</th><th>Inscripciones</th><th>Cupo</th><th>Partidos</th><th>Estado</th></tr></thead><tbody id="reportsTableBody"></tbody></table></div>
+      <div class="table-scroll"><table><thead><tr><th>Torneo</th><th>Disciplina</th><th>Inscripciones</th><th>Cupo</th><th>Partidos</th><th>Oficiales</th><th>Walkover</th><th>Estado</th></tr></thead><tbody id="reportsTableBody"></tbody></table></div>
     </section>
 
     <section id="panel-audit" class="panel-module surface-card" data-panel-module="audit" data-admin-only hidden>

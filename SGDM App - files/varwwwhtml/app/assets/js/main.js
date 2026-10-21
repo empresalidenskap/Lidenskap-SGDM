@@ -988,108 +988,6 @@ initializeAuthentication();
 applyRouteGuard();
 refreshSession();
 
-const SGDM_TOURNAMENTS = [
-  { id: 'copa-apertura', name: 'Copa Apertura 2026', discipline: 'futbol', disciplineLabel: 'Fútbol', format: 'liga', formatLabel: 'Liga', status: 'abierto', statusLabel: 'Inscripciones abiertas', date: '3 Ago 2026', venue: 'Montevideo', slots: '10 / 16', description: 'Competencia abierta para clubes y equipos amateur de Montevideo.' },
-  { id: 'futsal-relampago', name: 'Torneo Relámpago Futsal', discipline: 'futbol', disciplineLabel: 'Fútbol', format: 'eliminacion', formatLabel: 'Eliminación directa', status: 'curso', statusLabel: 'En curso', date: '20 Jul 2026', venue: 'Canelones', slots: '16 / 16', description: 'Llaves rápidas de futsal con definición durante una sola jornada.' },
-  { id: 'suizo-invierno', name: 'Suizo Clásico de Invierno', discipline: 'ajedrez', disciplineLabel: 'Ajedrez', format: 'suizo', formatLabel: 'Sistema suizo', status: 'abierto', statusLabel: 'Inscripciones abiertas', date: '5 Ago 2026', venue: 'Montevideo', slots: '24 / 40', description: 'Siete rondas con emparejamiento por rendimiento y desempate Buchholz.' },
-  { id: 'liga-juvenil', name: 'Liga Juvenil U18', discipline: 'basquet', disciplineLabel: 'Básquetbol', format: 'liga', formatLabel: 'Liga', status: 'curso', statusLabel: 'En curso', date: '1 Jul 2026', venue: 'Montevideo', slots: '10 / 10', description: 'Liga formativa para equipos juveniles con fase regular y playoffs.' },
-  { id: 'open-tenis', name: 'Open Individual de Verano', discipline: 'tenis', disciplineLabel: 'Tenis', format: 'eliminacion', formatLabel: 'Eliminación directa', status: 'abierto', statusLabel: 'Inscripciones abiertas', date: '12 Ago 2026', venue: 'Carrasco', slots: '18 / 32', description: 'Torneo individual abierto, disputado al mejor de tres sets.' },
-  { id: 'copa-esports', name: 'Copa Lidenskap VALORANT', discipline: 'esports', disciplineLabel: 'Esports', game: 'VALORANT', gameSlug: 'valorant', format: 'eliminacion', formatLabel: 'Eliminación directa', status: 'abierto', statusLabel: 'Inscripciones abiertas', date: '8 Ago 2026', venue: 'Online', slots: '12 / 16', description: 'Shooter táctico 5 contra 5 con veto de mapas y series al mejor de tres.' },
-  { id: 'lol-rift-league', name: 'Liga de la Grieta LoL', discipline: 'esports', disciplineLabel: 'Esports', game: 'League of Legends', gameSlug: 'lol', format: 'liga', formatLabel: 'Liga + playoffs', status: 'curso', statusLabel: 'En curso', date: '10 Ago 2026', venue: 'Online', slots: '8 / 8', description: 'Liga de League of Legends con fase regular, playoffs y series Bo3.' },
-  { id: 'cs2-open', name: 'Open Oriental CS2', discipline: 'esports', disciplineLabel: 'Esports', game: 'Counter-Strike 2', gameSlug: 'cs2', format: 'eliminacion', formatLabel: 'Eliminación directa', status: 'abierto', statusLabel: 'Inscripciones abiertas', date: '15 Ago 2026', venue: 'Online', slots: '12 / 16', description: 'Torneo de Counter-Strike 2 con veto competitivo y series Bo3.' },
-  { id: 'tft-masters', name: 'Masters Tácticos TFT', discipline: 'esports', disciplineLabel: 'Esports', game: 'Teamfight Tactics', gameSlug: 'tft', format: 'suizo', formatLabel: 'Sistema suizo', status: 'abierto', statusLabel: 'Inscripciones abiertas', date: '18 Ago 2026', venue: 'Online', slots: '24 / 32', description: 'Competencia individual de TFT con lobbies suizos y puntos por posición.' },
-  { id: 'voley-playa', name: 'Torneo Playa Ramírez', discipline: 'voleibol', disciplineLabel: 'Voleibol', format: 'eliminacion', formatLabel: 'Eliminación directa', status: 'abierto', statusLabel: 'Inscripciones abiertas', date: '16 Ago 2026', venue: 'Montevideo', slots: '9 / 16', description: 'Voleibol playa por parejas con fase de grupos y eliminación.' },
-  { id: 'sevens-verano', name: 'Sevens de Verano', discipline: 'rugby', disciplineLabel: 'Rugby', format: 'eliminacion', formatLabel: 'Eliminación directa', status: 'cerrado', statusLabel: 'Finalizado', date: '2 Jul 2026', venue: 'Carrasco', slots: '16 / 16', description: 'Jornada de rugby seven con copa de oro y copa de plata.' }
-];
-
-torneosPorDisciplina = SGDM_TOURNAMENTS.reduce((groups, tournament) => {
-  const card = {
-    id: tournament.id,
-    nombre: tournament.name,
-    formato: tournament.formatLabel,
-    estado: tournament.statusLabel,
-    fecha: tournament.date,
-    cupos: tournament.slots,
-    sede: tournament.venue
-  };
-  if (!groups[tournament.discipline]) groups[tournament.discipline] = [];
-  groups[tournament.discipline].push(card);
-  return groups;
-}, {});
-
-const SGDM_TOURNAMENT_DETAILS = {
-  'copa-apertura': {
-    organizer: 'Lidenskap Club', mode: 'Todos contra todos', scoring: '3 victoria · 1 empate', duration: '2 tiempos de 45 min.', tiebreak: 'Diferencia de goles', participantLabel: 'Equipos destacados', standingLabel: 'Equipo',
-    participants: [['Atlético Sur', 'Capitán: Diego Silva · 18 jugadores'], ['Deportivo Norte', 'Capitán: Bruno Sosa · 17 jugadores'], ['Unión Central', 'Capitana: Lucía Fernández · 18 jugadores'], ['Racing Juvenil', 'Capitán: Mateo Rodríguez · 16 jugadores']],
-    matches: [['03 AGO · 18:00', 'Atlético Sur', 'Deportivo Norte', null, 'Cancha principal · Próximo'], ['03 AGO · 20:00', 'Unión Central', 'Racing Juvenil', null, 'Cancha principal · Próximo'], ['04 AGO · 19:00', 'Estrella Roja', 'Club del Parque', null, 'Cancha auxiliar · Próximo']],
-    standings: [['Atlético Sur', 3, 3, 0, 0, 9], ['Unión Central', 3, 2, 1, 0, 7], ['Deportivo Norte', 3, 1, 1, 1, 4], ['Racing Juvenil', 3, 1, 0, 2, 3]]
-  },
-  'futsal-relampago': {
-    organizer: 'Liga Canaria de Futsal', mode: 'Eliminación directa', scoring: 'Victoria por partido', duration: '2 tiempos de 20 min.', tiebreak: 'Penales', participantLabel: 'Equipos destacados', standingLabel: 'Equipo',
-    participants: [['Fénix Futsal', 'Capitán: Joaquín Pérez · 10 jugadores'], ['Barrio Sur', 'Capitán: Emiliano Costa · 10 jugadores'], ['Los Halcones', 'Capitana: Valentina Ruiz · 9 jugadores'], ['Unión Canaria', 'Capitán: Santiago Lima · 10 jugadores']],
-    matches: [['20 JUL · 16:00', 'Fénix Futsal', 'Barrio Sur', '5 – 3', 'Cuartos de final · Finalizado'], ['20 JUL · 17:30', 'Los Halcones', 'Unión Canaria', '2 – 2 (4–3 pen.)', 'Cuartos de final · Finalizado'], ['20 JUL · 20:00', 'Fénix Futsal', 'Los Halcones', null, 'Semifinal · Próximo']],
-    standings: [['Fénix Futsal', 1, 1, 0, 0, 3], ['Los Halcones', 1, 1, 0, 0, 3], ['Unión Canaria', 1, 0, 1, 0, 1], ['Barrio Sur', 1, 0, 0, 1, 0]]
-  },
-  'suizo-invierno': {
-    organizer: 'Club Uruguayo de Ajedrez', mode: 'Sistema suizo · 7 rondas', scoring: '1 victoria · ½ tablas', duration: '60 min. + 30 seg.', tiebreak: 'Buchholz', participantLabel: 'Jugadores destacados', standingLabel: 'Jugador',
-    participants: [['Camila Torres', 'ELO 1842'], ['Nicolás Méndez', 'ELO 1798'], ['Martín Suárez', 'ELO 1765'], ['Agustina Ramos', 'ELO 1731']],
-    matches: [['05 AGO · 18:00', 'Camila Torres', 'Nicolás Méndez', null, 'Mesa 1 · Ronda 1'], ['05 AGO · 18:00', 'Martín Suárez', 'Agustina Ramos', null, 'Mesa 2 · Ronda 1'], ['05 AGO · 18:00', 'Federico Silva', 'Paula Acosta', null, 'Mesa 3 · Ronda 1']],
-    standings: [['Camila Torres', 3, 3, 0, 0, 3], ['Nicolás Méndez', 3, 2, 1, 0, 2.5], ['Martín Suárez', 3, 2, 0, 1, 2], ['Agustina Ramos', 3, 1, 1, 1, 1.5]]
-  },
-  'liga-juvenil': {
-    organizer: 'Federación Juvenil Metropolitana', mode: 'Liga + playoffs', scoring: '2 victoria · 1 derrota', duration: '4 cuartos de 10 min.', tiebreak: 'Diferencia de puntos', participantLabel: 'Equipos destacados', standingLabel: 'Equipo',
-    participants: [['Aguada U18', 'Entrenador: Pablo Gómez · 12 jugadores'], ['Malvín U18', 'Entrenadora: Laura Díaz · 12 jugadores'], ['Welcome U18', 'Entrenador: Andrés Pérez · 11 jugadores'], ['Bohemios U18', 'Entrenador: Martín Castro · 12 jugadores']],
-    matches: [['18 JUL · 19:00', 'Aguada U18', 'Malvín U18', '78 – 72', 'Fecha 4 · Finalizado'], ['19 JUL · 18:30', 'Welcome U18', 'Bohemios U18', '64 – 69', 'Fecha 4 · Finalizado'], ['25 JUL · 20:00', 'Malvín U18', 'Welcome U18', null, 'Fecha 5 · Próximo']],
-    standings: [['Aguada U18', 5, 5, 0, 0, 10], ['Malvín U18', 5, 4, 0, 1, 9], ['Bohemios U18', 5, 3, 0, 2, 8], ['Welcome U18', 5, 2, 0, 3, 7]]
-  },
-  'open-tenis': {
-    organizer: 'Carrasco Lawn Tennis', mode: 'Eliminación individual', scoring: 'Sets al mejor de 3', duration: 'Sin límite de tiempo', tiebreak: 'Tie-break a 7', participantLabel: 'Jugadores destacados', standingLabel: 'Jugador',
-    participants: [['Sofía Cabrera', 'Ranking local #4'], ['Martina López', 'Ranking local #7'], ['Valentina Núñez', 'Ranking local #11'], ['Florencia Silva', 'Ranking local #15']],
-    matches: [['12 AGO · 10:00', 'Sofía Cabrera', 'Florencia Silva', null, 'Cancha 1 · Primera ronda'], ['12 AGO · 11:30', 'Martina López', 'Valentina Núñez', null, 'Cancha 2 · Primera ronda'], ['12 AGO · 13:00', 'Paula Méndez', 'Ana Rodríguez', null, 'Cancha 1 · Primera ronda']],
-    standings: [['Sofía Cabrera', 0, 0, 0, 0, 0], ['Martina López', 0, 0, 0, 0, 0], ['Valentina Núñez', 0, 0, 0, 0, 0], ['Florencia Silva', 0, 0, 0, 0, 0]]
-  },
-  'copa-esports': {
-    organizer: 'Lidenskap Gaming', mode: 'VALORANT · Llave de eliminación', scoring: 'Series Bo3', duration: 'Hasta 3 mapas', tiebreak: 'Mapa decisivo', participantLabel: 'Equipos de VALORANT', standingLabel: 'Equipo',
-    participants: [['Ruby Wolves', 'Capitán: RBL Wolf · 5 jugadores'], ['Southern Byte', 'Capitana: SB Luna · 5 jugadores'], ['Montevideo Core', 'Capitán: MVC Zero · 5 jugadores'], ['Atlantic Five', 'Capitán: AF Neo · 5 jugadores']],
-    matches: [['08 AGO · 18:00', 'Ruby Wolves', 'Atlantic Five', null, 'VALORANT · Grupo A · Bo3'], ['08 AGO · 20:30', 'Southern Byte', 'Montevideo Core', null, 'VALORANT · Grupo B · Bo3'], ['09 AGO · 19:00', 'Ganador llave A', 'Ganador llave B', null, 'VALORANT · Semifinal · Bo3']],
-    standings: [['Ruby Wolves', 0, 0, 0, 0, 0], ['Southern Byte', 0, 0, 0, 0, 0], ['Montevideo Core', 0, 0, 0, 0, 0], ['Atlantic Five', 0, 0, 0, 0, 0]]
-  },
-  'lol-rift-league': {
-    organizer: 'Liga Digital del Sur', mode: 'League of Legends · Liga + playoffs', scoring: '1 victoria por serie', duration: 'Series Bo3', tiebreak: 'Diferencia de partidas', participantLabel: 'Equipos de League of Legends', standingLabel: 'Equipo',
-    participants: [['Nexus del Sur', 'Top · Jungle · Mid · ADC · Support'], ['River Plate Gaming', 'Plantel principal · 5 titulares'], ['Montevideo Titans', 'Plantel principal · 5 titulares'], ['Pampa Esports', 'Plantel principal · 5 titulares']],
-    matches: [['10 AGO · 18:00', 'Nexus del Sur', 'Pampa Esports', '2 – 0', 'LoL · Fecha 1 · Finalizado'], ['10 AGO · 21:00', 'River Plate Gaming', 'Montevideo Titans', null, 'LoL · Fecha 1 · Próximo'], ['12 AGO · 20:00', 'Nexus del Sur', 'Montevideo Titans', null, 'LoL · Fecha 2 · Próximo']],
-    standings: [['Nexus del Sur', 1, 1, 0, 0, 3], ['River Plate Gaming', 0, 0, 0, 0, 0], ['Montevideo Titans', 0, 0, 0, 0, 0], ['Pampa Esports', 1, 0, 0, 1, 0]]
-  },
-  'cs2-open': {
-    organizer: 'Oriental Gaming League', mode: 'Counter-Strike 2 · Eliminación directa', scoring: 'Series Bo3', duration: 'Hasta 3 mapas', tiebreak: 'Overtime MR3', participantLabel: 'Equipos de Counter-Strike 2', standingLabel: 'Equipo',
-    participants: [['Carbon Five', 'Roster CS2 · 5 titulares'], ['Delta Force UY', 'Roster CS2 · 5 titulares'], ['Aguada Gaming', 'Roster CS2 · 5 titulares'], ['Mate Club', 'Roster CS2 · 5 titulares']],
-    matches: [['15 AGO · 17:00', 'Carbon Five', 'Mate Club', null, 'CS2 · Cuartos de final · Bo3'], ['15 AGO · 20:00', 'Delta Force UY', 'Aguada Gaming', null, 'CS2 · Cuartos de final · Bo3'], ['16 AGO · 19:00', 'Ganador cuarto 1', 'Ganador cuarto 2', null, 'CS2 · Semifinal · Bo3']],
-    standings: [['Carbon Five', 0, 0, 0, 0, 0], ['Delta Force UY', 0, 0, 0, 0, 0], ['Aguada Gaming', 0, 0, 0, 0, 0], ['Mate Club', 0, 0, 0, 0, 0]]
-  },
-  'tft-masters': {
-    organizer: 'Lidenskap Tactics', mode: 'Teamfight Tactics · Sistema suizo', scoring: '8 a 1 puntos por posición', duration: '3 partidas por ronda', tiebreak: 'Promedio de posición', participantLabel: 'Jugadores de Teamfight Tactics', standingLabel: 'Jugador',
-    participants: [['LunaUY', 'Riot ID · TFT Challenger'], ['MateTáctico', 'Riot ID · TFT Grandmaster'], ['PampaRoll', 'Riot ID · TFT Master'], ['NeoComp', 'Riot ID · TFT Master']],
-    matches: [['18 AGO · 18:00', 'Lobby A · 8 jugadores', '3 partidas', null, 'TFT · Ronda suiza 1'], ['18 AGO · 20:30', 'Lobby B · 8 jugadores', '3 partidas', null, 'TFT · Ronda suiza 1'], ['19 AGO · 19:00', 'Top 8 acumulado', 'Lobby final', null, 'TFT · Final']],
-    standings: [['LunaUY', 3, 2, 1, 0, 22], ['MateTáctico', 3, 1, 2, 0, 19], ['PampaRoll', 3, 1, 1, 1, 16], ['NeoComp', 3, 1, 0, 2, 13]]
-  },
-  'voley-playa': {
-    organizer: 'Intendencia de Montevideo', mode: 'Grupos + eliminación', scoring: 'Partidos al mejor de 3 sets', duration: 'Sets a 21 puntos', tiebreak: 'Diferencia de sets', participantLabel: 'Parejas destacadas', standingLabel: 'Pareja',
-    participants: [['Pereira / Silva', 'Pareja #1'], ['Ramos / Costa', 'Pareja #2'], ['López / Méndez', 'Pareja #3'], ['Torres / Díaz', 'Pareja #4']],
-    matches: [['16 AGO · 09:00', 'Pereira / Silva', 'Torres / Díaz', null, 'Cancha 1 · Grupo A'], ['16 AGO · 09:45', 'Ramos / Costa', 'López / Méndez', null, 'Cancha 2 · Grupo A'], ['16 AGO · 11:00', 'Pareja 1.ª Grupo A', 'Pareja 2.ª Grupo B', null, 'Semifinal']],
-    standings: [['Pereira / Silva', 0, 0, 0, 0, 0], ['Ramos / Costa', 0, 0, 0, 0, 0], ['López / Méndez', 0, 0, 0, 0, 0], ['Torres / Díaz', 0, 0, 0, 0, 0]]
-  },
-  'sevens-verano': {
-    organizer: 'Carrasco Polo Club', mode: 'Grupos + Copa de Oro/Plata', scoring: '3 victoria · 1 empate', duration: '2 tiempos de 7 min.', tiebreak: 'Diferencia de tantos', participantLabel: '16 equipos y sus planteles', standingLabel: 'Equipo',
-    participants: [['Old Christians', 'Capitán: Mateo Silva · 7 titulares + 5 suplentes'], ['Carrasco Polo', 'Capitán: Felipe Ardao · 7 titulares + 5 suplentes'], ['Old Boys', 'Capitán: Joaquín Sosa · 7 titulares + 5 suplentes'], ['Trébol de Paysandú', 'Capitán: Lucas Pérez · 7 titulares + 5 suplentes'], ['Montevideo Cricket', 'Capitán: Tomás Costa · 7 titulares + 5 suplentes'], ['PSG Rugby', 'Capitán: Bruno Lima · 7 titulares + 5 suplentes'], ['Champagnat', 'Capitán: Ignacio Vidal · 7 titulares + 5 suplentes'], ['Seminario', 'Capitán: Agustín Ramos · 7 titulares + 5 suplentes'], ['Lobos de Punta del Este', 'Capitán: Nicolás Núñez · 7 titulares + 5 suplentes'], ['Cuervos Rugby', 'Capitán: Martín Suárez · 7 titulares + 5 suplentes'], ['Ceibos', 'Capitán: Franco Pereira · 7 titulares + 5 suplentes'], ['La Olla Florida', 'Capitán: Santiago Cabrera · 7 titulares + 5 suplentes'], ['Círculo de Tenis', 'Capitán: Emiliano Díaz · 7 titulares + 5 suplentes'], ['Cricket B', 'Capitán: Andrés López · 7 titulares + 5 suplentes'], ['Cardos Rugby', 'Capitán: Gonzalo Méndez · 7 titulares + 5 suplentes'], ['Toros de Durazno', 'Capitán: Facundo Rodríguez · 7 titulares + 5 suplentes']],
-    matches: [['02 JUL · 14:00', 'Old Christians', 'Carrasco Polo', '26 – 19', 'Final Copa de Oro · Finalizado'], ['02 JUL · 13:20', 'Old Boys', 'Trébol de Paysandú', '17 – 22', 'Final Copa de Plata · Finalizado'], ['02 JUL · 12:40', 'Montevideo Cricket', 'PSG Rugby', '31 – 12', 'Partido por 5.º puesto · Finalizado']],
-    standings: [['Old Christians', 5, 5, 0, 0, 15], ['Carrasco Polo', 5, 4, 0, 1, 12], ['Trébol de Paysandú', 5, 3, 0, 2, 9], ['Old Boys', 5, 2, 0, 3, 6], ['Montevideo Cricket', 4, 2, 0, 2, 6], ['PSG Rugby', 4, 1, 0, 3, 3]]
-  }
-};
-
-const CALENDAR_MONTHS = {
-  ENE: 1, FEB: 2, MAR: 3, ABR: 4, MAY: 5, JUN: 6,
-  JUL: 7, AGO: 8, SEP: 9, OCT: 10, NOV: 11, DIC: 12
-};
 const CALENDAR_WEEKDAYS = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
 const CALENDAR_MONTH_LABELS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 // Calendario (F8): cada partido de api/calendario.php con la forma que usa
@@ -1577,20 +1475,16 @@ function initializeProfileEditor() {
   const profileData = {
     ADMIN: {
       subtitle: 'Acceso completo al sistema · Administración general',
-      stats: [['Torneos activos', '10'], ['Usuarios administrativos', '3'], ['Reportes disponibles', '12'], ['Eventos de auditoría', '48']],
+      stats: [['Torneos activos', 'torneosActivos'], ['Usuarios activos', 'usuarios'], ['Solicitudes pendientes', 'solicitudesPendientes'], ['Eventos de auditoría', 'eventosAuditoria']],
       extras: [['Nivel de acceso', 'Control completo'], ['Ámbito', 'Todo el sistema']],
-      activityTitle: 'GESTIÓN RECIENTE',
-      activity: [
-        ['status-progress', 'Pendiente', 'Revisar resultado informado', 'Copa Apertura · Fecha 3', 'panel.html#panel-results'],
-        ['status-open', 'Sistema', 'Administrar usuarios y roles', '3 cuentas administrativas', 'panel.html'],
-        ['status-closed', 'Auditoría', 'Consultar registro de actividad', '48 eventos registrados', 'panel.html#panel-audit']
-      ]
+      activityTitle: 'GESTIÓN PENDIENTE',
+      activity: []
     },
     // Organizador/Árbitro/Participante no son roles de la cuenta: un Usuario
     // público los tiene en torneos puntuales (se listan abajo, desde la API).
     PUBLICO: {
       subtitle: 'Cuenta personal · Tus roles dependen de cada torneo',
-      stats: [['Torneos consultables', '11'], ['Calendarios públicos', '11'], ['Resultados oficiales', '24'], ['Acciones de gestión', '0']],
+      stats: [['Torneos jugados', 'torneosJugados'], ['Partidos ganados', 'partidosGanados'], ['Torneos organizados', 'torneosOrganizados'], ['Partidos arbitrados', 'partidosArbitrados']],
       extras: [['Nivel de acceso', 'Según cada torneo'], ['Ámbito', 'Torneos donde tenés un rol']],
       activityTitle: 'MIS TORNEOS Y SOLICITUDES',
       activity: []
@@ -1606,10 +1500,27 @@ function initializeProfileEditor() {
   document.getElementById('profileHeading').textContent = displayName.toUpperCase();
   document.getElementById('profileSubtitle').textContent = profileData.subtitle;
   document.getElementById('profileEmail').textContent = sesionUsuario.email;
-  profileData.stats.forEach(([label, value], index) => {
+  // Estadísticas reales (api/perfil.php); cada stat dice qué dato mostrar
+  profileData.stats.forEach(([label], index) => {
     document.getElementById(`statLabel${index + 1}`).textContent = label;
-    document.getElementById(`statValue${index + 1}`).textContent = value;
+    document.getElementById(`statValue${index + 1}`).textContent = '…';
   });
+  fetch('api/perfil.php')
+    .then(response => response.json())
+    .then(data => {
+      if (!data.success) return;
+      const e = data.estadisticas;
+      profileData.stats.forEach(([, clave], index) => { document.getElementById(`statValue${index + 1}`).textContent = e[clave]; });
+      if (sesionUsuario.rol === 'ADMIN') {
+        const pendientes = [
+          ['status-progress', 'Resultados', 'Resultados sin validar', `${e.resultadosSinValidar} en todos los torneos`, 'panel.html#panel-results'],
+          ['status-progress', 'Solicitudes', 'Solicitudes pendientes', `${e.solicitudesPendientes} para resolver`, 'panel.html#panel-requests'],
+          ['status-open', 'Sistema', 'Usuarios y roles', `${e.usuarios} cuentas activas`, 'panel.html#panel-users'],
+          ['status-closed', 'Auditoría', 'Registro de actividad', `${e.eventosAuditoria} eventos registrados`, 'panel.html#panel-audit'],
+        ];
+        document.getElementById('profileActivity').innerHTML = pendientes.map(([status, badge, title, subtitle, href]) => `<a href="${href}"><span class="status-pill ${status}">${badge}</span><div><strong>${title}</strong><small>${subtitle}</small></div><span>→</span></a>`).join('');
+      }
+    });
   document.getElementById('profileExtraLabel1').textContent = profileData.extras[0][0];
   document.getElementById('profileExtraValue1').textContent = profileData.extras[0][1];
   document.getElementById('profileExtraLabel2').textContent = profileData.extras[1][0];
@@ -1743,10 +1654,6 @@ function initializeDashboardByRole() {
     card.hidden = !allowedModules.includes(card.dataset.panelTarget);
   });
   document.body.classList.toggle('organizer-panel', !isAdmin);
-  if (!isAdmin) {
-    const values = ['3', '74', '12', '6'];
-    document.querySelectorAll('.stat-grid strong').forEach((element, index) => { if (values[index]) element.textContent = values[index]; });
-  }
 
   const overview = document.getElementById('dashboardOverview');
   const modules = [...document.querySelectorAll('[data-panel-module]')];
@@ -1905,8 +1812,6 @@ function initializeDashboardByRole() {
     cargarUsuarios();
   }
 
-  const assignedIds = ['copa-apertura', 'liga-juvenil', 'open-tenis'];
-  const dashboardTournaments = isAdmin ? SGDM_TOURNAMENTS : SGDM_TOURNAMENTS.filter(tournament => assignedIds.includes(tournament.id));
   if (!isAdmin) document.getElementById('tournamentsScope').textContent = 'Solo se muestran las competencias que organizás vos.';
 
   let torneosReales = [];
@@ -1985,6 +1890,11 @@ function initializeDashboardByRole() {
         return { name: i.nombre, captain: i.capitan || '—', tournament: i.torneo, members: `${aceptados}${i.maxIntegrantes ? ` / ${i.maxIntegrantes}` : ''}`, status: ESTADO_INSCRIPCION[i.estado] };
       }));
       document.getElementById('participantsTabCount').textContent = participantRows.length;
+      // Resumen del panel: las 5 inscripciones más recientes
+      const recientes = participantRows.slice(-5).reverse();
+      if (recientes.length) {
+        document.getElementById('recentParticipants').innerHTML = recientes.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.team)}</td><td>${escapeHtml(row.tournament)}</td><td><span class="status-pill ${pillDeEstado(row.status)}">${row.status}</span></td></tr>`).join('');
+      }
       document.getElementById('teamsTabCount').textContent = teamRows.length;
       document.getElementById('participantsSearch').dispatchEvent(new Event('input'));
       document.getElementById('teamsSearch').dispatchEvent(new Event('input'));
@@ -2269,31 +2179,45 @@ function initializeDashboardByRole() {
     if (allowedModules.includes('rounds')) llenarSelectRondas();
   });
 
+  // Reportes (RF-19): datos reales de api/reportes.php. El Admin ve todos los
+  // torneos; el Organizador, los suyos. Los walkovers van aparte (RF-12).
+  // Las tarjetas del resumen del panel salen del mismo pedido.
   const reportSelect = document.getElementById('reportTournament');
-  reportSelect.insertAdjacentHTML('beforeend', dashboardTournaments.map(tournament => `<option value="${tournament.id}">${tournament.name}</option>`).join(''));
-  const reportRows = dashboardTournaments.map(tournament => {
-    const [registered, capacity] = tournament.slots.split('/').map(value => Number(value.trim()));
-    const matches = SGDM_TOURNAMENT_DETAILS[tournament.id]?.matches || [];
-    return { id: tournament.id, name: tournament.name, discipline: tournament.disciplineLabel, registered, capacity, matches: matches.length, official: matches.filter(match => match[3]).length, status: tournament.statusLabel };
-  });
+  let reportRows = [];
+  const visibleReports = () => reportSelect.value ? reportRows.filter(row => row.id === Number(reportSelect.value)) : reportRows;
+  const estadoReporte = row => ESTADO_UI_LABEL[ESTADO_TORNEO_A_UI[row.estado] || 'cerrado'];
   const renderReports = () => {
-    const visible = reportSelect.value ? reportRows.filter(row => row.id === reportSelect.value) : reportRows;
-    const registered = visible.reduce((sum, row) => sum + row.registered, 0);
-    const capacity = visible.reduce((sum, row) => sum + row.capacity, 0);
-    const matches = visible.reduce((sum, row) => sum + row.matches, 0);
-    const official = visible.reduce((sum, row) => sum + row.official, 0);
-    document.getElementById('reportRegistrations').textContent = registered;
-    document.getElementById('reportOccupancy').textContent = capacity ? `${Math.round((registered / capacity) * 100)}%` : '0%';
-    document.getElementById('reportMatches').textContent = matches;
-    document.getElementById('reportOfficial').textContent = official;
-    document.getElementById('reportsTableBody').innerHTML = visible.map(row => `<tr><td><strong>${row.name}</strong></td><td>${row.discipline}</td><td>${row.registered}</td><td>${row.capacity}</td><td>${row.matches}</td><td><span class="status-pill ${row.status.includes('abiertas') ? 'status-open' : row.status === 'En curso' ? 'status-progress' : 'status-closed'}">${row.status}</span></td></tr>`).join('');
+    const visible = visibleReports();
+    const suma = (lista, clave) => lista.reduce((total, row) => total + (row[clave] || 0), 0);
+    const conCupo = visible.filter(row => row.cupoMaximo);
+    const cupo = suma(conCupo, 'cupoMaximo');
+    document.getElementById('reportRegistrations').textContent = suma(visible, 'inscriptos');
+    document.getElementById('reportOccupancy').textContent = cupo ? `${Math.round((suma(conCupo, 'inscriptos') / cupo) * 100)}%` : '—';
+    document.getElementById('reportMatches').textContent = suma(visible, 'partidos');
+    document.getElementById('reportOfficial').textContent = suma(visible, 'oficiales');
+    document.getElementById('reportsTableBody').innerHTML = visible.map(row => {
+      const estadoUi = ESTADO_TORNEO_A_UI[row.estado] || 'cerrado';
+      return `<tr><td><strong>${escapeHtml(row.nombre)}</strong></td><td>${escapeHtml(row.disciplinaNombre || 'Personalizada')}</td><td>${row.inscriptos}</td><td>${row.cupoMaximo ?? '—'}</td><td>${row.partidos}</td><td>${row.oficiales}</td><td>${row.walkovers}</td><td><span class="status-pill ${statusClass(estadoUi)}">${ESTADO_UI_LABEL[estadoUi]}</span></td></tr>`;
+    }).join('') || '<tr><td colspan="8">No hay torneos en tu ámbito.</td></tr>';
   };
   reportSelect.addEventListener('change', renderReports);
   document.getElementById('exportReport').addEventListener('click', () => {
-    const visible = reportSelect.value ? reportRows.filter(row => row.id === reportSelect.value) : reportRows;
-    downloadCsv('reporte-torneos.csv', ['Torneo', 'Disciplina', 'Inscripciones', 'Cupo', 'Partidos', 'Resultados oficiales', 'Estado'], visible.map(row => [row.name, row.discipline, row.registered, row.capacity, row.matches, row.official, row.status]));
+    downloadCsv('reporte-torneos.csv', ['Torneo', 'Disciplina', 'Inscripciones', 'Cupo', 'Partidos', 'Resultados oficiales', 'Walkovers', 'Sin validar', 'Estado'],
+      visibleReports().map(row => [row.nombre, row.disciplinaNombre || 'Personalizada', row.inscriptos, row.cupoMaximo ?? '', row.partidos, row.oficiales, row.walkovers, row.sinValidar, estadoReporte(row)]));
   });
-  renderReports();
+  if (allowedModules.includes('reports')) {
+    fetch('api/reportes.php')
+      .then(response => response.json())
+      .then(data => {
+        if (!data.success) return;
+        reportRows = data.torneos;
+        reportSelect.innerHTML = '<option value="">Todos los torneos</option>' + reportRows.map(row => `<option value="${row.id}">${escapeHtml(row.nombre)}</option>`).join('');
+        renderReports();
+        const { torneosActivos, participantes, equipos, resultadosSinValidar } = data.resumen;
+        const tarjetas = document.querySelectorAll('.stat-grid strong');
+        [torneosActivos, participantes, equipos, resultadosSinValidar].forEach((valor, i) => { if (tarjetas[i]) tarjetas[i].textContent = valor; });
+      });
+  }
 
   if (isAdmin) {
     // Registro de auditoría real (api/auditoria.php): lo escriben los
