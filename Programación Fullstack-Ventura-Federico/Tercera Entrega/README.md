@@ -78,8 +78,8 @@ el esquema empezó por el MER, que el equipo revisó antes de tocar la base y
 el código. Después de cada fase se probó todo con Docker desde una base
 nueva, y se actualizó la copia del servidor (`SGDM App - files/`).
 
-| Fase | Fecha y hora | Commit | Qué se hizo |
-|---|---|---|---|
+| Fase  | Commit | Qué se hizo |
+|---|---|---|
 | F1 Esquema | `cd30807` | Tabla `torneo_arbitro`, árbitro por partido (`enfrentamiento.id_arbitro`), estados `solicitado`/`rechazado` y la vista `vista_rol_torneo`. |
 | F2 Roles por torneo | `cd30807` | Globales solo Administrador y Usuario público; Organizador, Árbitro y Participante dependen de cada torneo (`requireTorneoRole()`, `api/sesion.php`). |
 | F3 Solicitudes | `cd30807` | Pedir crear un torneo (aprueba el Admin), participar o arbitrar (aprueba el Organizador); módulo Solicitudes del panel. |
