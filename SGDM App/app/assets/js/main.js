@@ -117,14 +117,14 @@ function toggleTheme() {
 
   if (nextTheme === 'light') {
     if (themeBtn) {
-      themeBtn.innerHTML = '<img class="ui-icon" src="assets/icons/moon.svg" alt="">';
+      themeBtn.innerHTML = '<img class="ui-icon" src="assets/icons/moon.svg" alt="" width="18" height="18">';
       themeBtn.setAttribute('aria-label', 'Activar modo oscuro');
     }
     if (logoImg) logoImg.src = 'assets/img/logo.png';
     if (ilustracion) ilustracion.src = 'assets/img/ilustracion.png';
   } else {
     if (themeBtn) {
-      themeBtn.innerHTML = '<img class="ui-icon" src="assets/icons/sun.svg" alt="">';
+      themeBtn.innerHTML = '<img class="ui-icon" src="assets/icons/sun.svg" alt="" width="18" height="18">';
       themeBtn.setAttribute('aria-label', 'Activar modo claro');
     }
     if (logoImg) logoImg.src = 'assets/img/logodark.png';
@@ -143,7 +143,7 @@ function initializeTheme() {
   document.documentElement.dataset.theme = initialTheme;
   if (themeBtn) {
     themeBtn.type = 'button';
-    themeBtn.innerHTML = `<img class="ui-icon" src="assets/icons/${initialTheme === 'dark' ? 'sun' : 'moon'}.svg" alt="">`;
+    themeBtn.innerHTML = `<img class="ui-icon" src="assets/icons/${initialTheme === 'dark' ? 'sun' : 'moon'}.svg" alt="" width="18" height="18">`;
     themeBtn.setAttribute('aria-label', initialTheme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro');
     themeBtn.addEventListener('click', toggleTheme);
   }
