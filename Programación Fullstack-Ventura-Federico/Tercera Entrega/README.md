@@ -94,8 +94,8 @@ nueva, y se actualizó la copia del servidor (`SGDM App - files/`).
 | F9 Reportes y perfil | `e82b4dc` | Reportes, tarjetas del panel y estadísticas del perfil reales; se borraron los datos de ejemplo del código. |
 | F10 Datos de demostración |`5901edf` | Seed chico y realista (no los 50 registros); corrección del emparejamiento suizo para no repetir rivales. |
 | F11 Documentación | `940b516` | [`NORMALIZACION.md`](./NORMALIZACION.md), consultas de la BD de ASO con roles por torneo, README al día y copia del servidor verificada. |
-| F12 Prueba final | — | Recorrido completo sobre una base nueva, haciendo clic en la interfaz: pedir un torneo, aprobarlo, inscripciones, fixture, resultados, walkover, finalizar y revocación de roles. Todo OK, sin cambios de código. |
-| Llaves y suizo esports | 21/10/2026 | (este cambio) | Vista de llaves aportada por el equipo (`bracket.js`/`bracket.css`): árbol de eliminación directa con camino del ganador y campeón, y etapa suiza por récord, en la página del torneo y en el panel. Formatos: eliminación directa al mejor de 1; suizo como en los esports, series al mejor de 3, se clasifica con N victorias y queda eliminado con N derrotas (N según la cantidad de inscriptos). |
+| F12 Prueba final | - | Recorrido completo sobre una base nueva, haciendo clic en la interfaz: pedir un torneo, aprobarlo, inscripciones, fixture, resultados, walkover, finalizar y revocación de roles. Todo OK, sin cambios de código. |
+| Llaves y suizo esports | - | Vista de llaves aportada por el equipo (`bracket.js`/`bracket.css`): árbol de eliminación directa con camino del ganador y campeón, y etapa suiza por récord, en la página del torneo y en el panel. Formatos: eliminación directa al mejor de 1; suizo como en los esports, series al mejor de 3, se clasifica con N victorias y queda eliminado con N derrotas (N según la cantidad de inscriptos). |
 
 Fuera de alcance por ahora: los 50 registros por componente, cambiar o
 recuperar la contraseña, contraseñas temporales enviadas por correo, subir el
