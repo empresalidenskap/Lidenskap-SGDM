@@ -239,20 +239,32 @@ final class Competencia
             return array_merge($cruces, $partidos);
         }
 
-        $cruces = [];
-        while ($ids) {
-            $a = array_shift($ids);
-            $rival = 0;
-            foreach ($ids as $posicion => $b) {
-                if (!isset($jugados["$a-$b"])) {
-                    $rival = $posicion;
-                    break;
-                }
-            }
-            $cruces[] = [$a, $ids[$rival]];
-            array_splice($ids, $rival, 1);
-        }
+        // Cada uno contra el más cercano en la tabla con el que no jugó; si eso
+        // deja a otros sin rival posible, se prueba el siguiente (RF-10). Solo
+        // si no hay ninguna combinación sin repetir, se cruza en orden.
+        $cruces = self::crucesSinRepetir($ids, $jugados) ?? array_chunk($ids, 2);
         return array_merge($cruces, $partidos);
+    }
+
+    /** Empareja la lista (ya ordenada por puntaje) sin repetir rivales, o null si no se puede. */
+    private static function crucesSinRepetir(array $ids, array $jugados): ?array
+    {
+        if (!$ids) {
+            return [];
+        }
+        $a = array_shift($ids);
+        foreach ($ids as $posicion => $b) {
+            if (isset($jugados["$a-$b"])) {
+                continue;
+            }
+            $resto = $ids;
+            array_splice($resto, $posicion, 1);
+            $siguientes = self::crucesSinRepetir($resto, $jugados);
+            if ($siguientes !== null) {
+                return array_merge([[$a, $b]], $siguientes);
+            }
+        }
+        return null;
     }
 
     /**

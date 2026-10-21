@@ -659,7 +659,7 @@ function createAuthModal() {
             <p id="loginError" class="auth-error" hidden>Correo o contraseña incorrectos.</p>
             <button class="btn-primary" type="submit">Ingresar</button>
           </form>
-          <details class="demo-accounts"><summary>Ver cuentas de demostración</summary><ul><li><b>Administrador:</b> admin@lidenskap.com / admin123</li><li><b>Organizador de Copa Demo:</b> organizador@lidenskap.com / org123</li><li><b>Árbitro de Copa Demo:</b> arbitro@lidenskap.com / arb123</li><li><b>Participante de Copa Demo:</b> atleta@lidenskap.com / user123</li><li><b>Usuario público:</b> publico@lidenskap.com / guest123</li></ul></details>
+          <details class="demo-accounts"><summary>Ver cuentas de demostración</summary><ul><li><b>Administrador:</b> admin@lidenskap.com / admin123</li><li><b>Organizador de 4 torneos:</b> organizador@lidenskap.com / org123</li><li><b>Árbitro de Copa Demo:</b> arbitro@lidenskap.com / arb123</li><li><b>Participante de Copa Demo (Halcones del Sur):</b> atleta@lidenskap.com / user123</li><li><b>Usuario público (con una invitación):</b> publico@lidenskap.com / guest123</li><li><b>Otros jugadores:</b> lucia@, mateo@, sofia@, camila@… (@lidenskap.com) / demo1234</li></ul></details>
         </section>
         <section id="viewRegister" hidden>
           <p class="section-eyebrow">Nueva cuenta</p><h2>REGISTRARSE</h2>
@@ -1883,15 +1883,15 @@ function initializeDashboardByRole() {
     .then(data => {
       inscripciones = data.success ? data.inscripciones : [];
       participantRows.splice(0, participantRows.length, ...inscripciones.flatMap(i => i.tipo === 'equipo'
-        ? i.integrantes.map(m => ({ name: m.nombre, team: i.nombre, tournament: i.torneo, role: m.esCapitan ? 'Capitán/a' : 'Integrante', status: ESTADO_INTEGRANTE[m.estado] }))
-        : [{ name: i.nombre, team: '—', tournament: i.torneo, role: 'Individual', status: ESTADO_INSCRIPCION[i.estado] }]));
+        ? i.integrantes.map(m => ({ name: m.nombre, team: i.nombre, tournament: i.torneo, role: m.esCapitan ? 'Capitán/a' : 'Integrante', status: ESTADO_INTEGRANTE[m.estado], orden: i.id }))
+        : [{ name: i.nombre, team: '—', tournament: i.torneo, role: 'Individual', status: ESTADO_INSCRIPCION[i.estado], orden: i.id }]));
       teamRows.splice(0, teamRows.length, ...inscripciones.filter(i => i.tipo === 'equipo').map(i => {
         const aceptados = i.integrantes.filter(m => m.estado === 'aceptada').length;
         return { name: i.nombre, captain: i.capitan || '—', tournament: i.torneo, members: `${aceptados}${i.maxIntegrantes ? ` / ${i.maxIntegrantes}` : ''}`, status: ESTADO_INSCRIPCION[i.estado] };
       }));
       document.getElementById('participantsTabCount').textContent = participantRows.length;
       // Resumen del panel: las 5 inscripciones más recientes
-      const recientes = participantRows.slice(-5).reverse();
+      const recientes = [...participantRows].sort((a, b) => b.orden - a.orden).slice(0, 5);
       if (recientes.length) {
         document.getElementById('recentParticipants').innerHTML = recientes.map(row => `<tr><td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.team)}</td><td>${escapeHtml(row.tournament)}</td><td><span class="status-pill ${pillDeEstado(row.status)}">${row.status}</span></td></tr>`).join('');
       }

@@ -9,6 +9,20 @@ Requisitos de la letra de proyecto para esta entrega:
 La aplicación vive en [`SGDM App/`](../../SGDM%20App/); los datos de prueba
 están en `SGDM App/db/03-seed-demo.sql`.
 
+Por decisión del equipo **no** se cargan 50 registros por componente: el
+seed es un conjunto chico y realista (16 usuarios, 6 torneos, entre 5 y 16
+filas por tabla) que alcanza para mostrar cada funcionalidad recién
+instalado:
+- **Liga en curso** (Copa Demo): 4 equipos, uno creado por el Organizador, con
+  fecha 1 cerrada (incluye un walkover), un resultado sin validar y la fecha 3
+  programada con árbitros.
+- **Eliminación directa finalizada** con cabezas de serie y campeona.
+- **Sistema suizo** con la ronda 1 completa (con partido libre).
+- **Liga con inscripciones abiertas**, con un equipo por aprobar, un pedido
+  para unirse a un equipo, un árbitro postulado y una invitación.
+- **Un torneo planificado** y **una solicitud de torneo** para el Admin.
+- Cuentas en el modal de inicio de sesión ("Ver cuentas de demostración").
+
 ## MER actualizado
 
 [`MER_SGDM_Proyecto.xml`](MER_SGDM_Proyecto.xml) (draw.io) es la copia del MER
