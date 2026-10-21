@@ -1092,39 +1092,33 @@ const CALENDAR_MONTHS = {
 };
 const CALENDAR_WEEKDAYS = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
 const CALENDAR_MONTH_LABELS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-const SGDM_SCHEDULE = SGDM_TOURNAMENTS.flatMap(tournament => {
-  const detail = SGDM_TOURNAMENT_DETAILS[tournament.id];
-  return (detail?.matches || []).map((match, index) => {
-    const [datePart, time = '--:--'] = match[0].split('·').map(part => part.trim());
-    const [dayText, monthText] = datePart.split(/\s+/);
-    const month = CALENDAR_MONTHS[monthText];
-    const year = tournament.date.match(/\b(20\d{2})\b/)?.[1] || '2026';
-    const date = `${year}-${String(month).padStart(2, '0')}-${String(Number(dayText)).padStart(2, '0')}`;
-    const phaseParts = match[4].split('·').map(part => part.trim());
-    const phase = phaseParts.filter(part => !['Próximo', 'Finalizado', tournament.game].includes(part)).join(' · ');
-    return {
-      id: `${tournament.id}-${index}`,
-      tournamentId: tournament.id,
-      discipline: tournament.discipline,
-      disciplineLabel: tournament.disciplineLabel,
-      game: tournament.game || '',
-      gameSlug: tournament.gameSlug || '',
-      format: tournament.format,
-      formatLabel: tournament.formatLabel,
-      date,
-      day: CALENDAR_WEEKDAYS[new Date(`${date}T12:00:00`).getDay()],
-      dateLabel: datePart,
-      time,
-      phase: phase || tournament.formatLabel,
-      home: match[1],
-      away: match[2],
-      score: match[3],
-      status: match[3] ? 'finalizado' : 'proximo',
-      statusLabel: match[3] ? 'Finalizado' : 'Próximo',
-      venue: tournament.venue
-    };
-  });
-}).sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+// Calendario (F8): cada partido de api/calendario.php con la forma que usa
+// initializeCalendar() (filtros por disciplina, formato, año, mes y día).
+function partidoDeCalendario(p) {
+  const mes = Number(p.fecha.slice(5, 7));
+  return {
+    id: p.id,
+    tournamentId: p.torneoId,
+    tournamentName: p.torneo,
+    discipline: p.disciplina,
+    disciplineLabel: p.disciplinaNombre || 'Personalizada',
+    game: '',
+    gameSlug: '',
+    format: p.formato,
+    formatLabel: p.formatoNombre,
+    date: p.fecha,
+    day: CALENDAR_WEEKDAYS[new Date(`${p.fecha}T12:00:00`).getDay()],
+    dateLabel: `${Number(p.fecha.slice(8, 10))} ${CALENDAR_MONTH_LABELS[mes - 1].slice(0, 3)}`,
+    time: p.hora || '--:--',
+    phase: p.fase,
+    home: p.local,
+    away: p.visitante,
+    score: p.resultado ? `${p.resultado}${p.walkover ? ' (WO)' : ''}` : '',
+    status: p.resultado ? 'finalizado' : 'proximo',
+    statusLabel: p.resultado ? 'Finalizado' : 'Próximo',
+    venue: p.sede || 'A definir'
+  };
+}
 
 function statusClass(status) {
   return status === 'abierto' ? 'status-open' : ['proximo', 'cerradas', 'curso'].includes(status) ? 'status-progress' : 'status-closed';
@@ -1241,7 +1235,9 @@ function initializeCalendar() {
   let selectedDiscipline = params.get('disciplina') || '';
   let selectedGame = params.get('juego') || '';
   let selectedDate = params.get('fecha') || '';
-  let selectedYear = params.get('anio') || '2026';
+  const anioActual = String(new Date().getFullYear());
+  let selectedYear = params.get('anio') || anioActual;
+  let partidos = [];
   let selectedMonth = params.get('mes') ? String(Number(params.get('mes'))) : '';
   if (selectedGame) selectedDiscipline = 'esports';
   if (selectedDate) {
@@ -1252,7 +1248,7 @@ function initializeCalendar() {
   gameSelect.value = selectedGame;
 
   const renderPeriodControls = () => {
-    const yearMatches = SGDM_SCHEDULE.filter(match => match.date.startsWith(`${selectedYear}-`));
+    const yearMatches = partidos.filter(match => match.date.startsWith(`${selectedYear}-`));
     monthRail.innerHTML = `<button class="${selectedMonth ? '' : 'active'}" type="button" data-calendar-month=""><span>Todo el año</span><strong>${yearMatches.length}</strong></button>` +
       CALENDAR_MONTH_LABELS.map((label, index) => {
         const month = String(index + 1);
@@ -1272,7 +1268,7 @@ function initializeCalendar() {
 
   const render = () => {
     renderPeriodControls();
-    const filtered = SGDM_SCHEDULE.filter(match =>
+    const filtered = partidos.filter(match =>
       match.date.startsWith(`${selectedYear}-`) &&
       (!selectedMonth || Number(match.date.slice(5, 7)) === Number(selectedMonth)) &&
       (!selectedDiscipline || match.discipline === selectedDiscipline) &&
@@ -1282,22 +1278,21 @@ function initializeCalendar() {
       (!statusSelect.value || match.status === statusSelect.value)
     );
     grid.innerHTML = filtered.map(match => {
-      const tournament = SGDM_TOURNAMENTS.find(item => item.id === match.tournamentId);
       return `<article class="schedule-card ${match.status === 'finalizado' ? 'schedule-finished' : ''}">
-        <header><div class="schedule-badges"><span class="discipline-badge discipline-${match.discipline}">${match.disciplineLabel}</span>${match.game ? `<span class="game-badge game-${match.gameSlug}">${match.game}</span>` : ''}</div><span class="schedule-status schedule-${match.status}">${match.statusLabel}</span></header>
+        <header><div class="schedule-badges"><span class="discipline-badge discipline-${match.discipline}">${escapeHtml(match.disciplineLabel)}</span>${match.game ? `<span class="game-badge game-${match.gameSlug}">${match.game}</span>` : ''}</div><span class="schedule-status schedule-${match.status}">${match.statusLabel}</span></header>
         <div class="schedule-body">
           <div class="schedule-time"><strong>${match.time}</strong><span>${match.dateLabel}</span><small>UTC−3</small></div>
           <div class="schedule-match">
-            <p>${tournament.name}</p>
-            <div><strong>${match.home}</strong><span>${match.score || 'VS.'}</span><strong>${match.away}</strong></div>
+            <p>${escapeHtml(match.tournamentName)}</p>
+            <div><strong>${escapeHtml(match.home)}</strong><span>${match.score || 'VS.'}</span><strong>${escapeHtml(match.away)}</strong></div>
             <small>${match.phase} · ${match.formatLabel}</small>
           </div>
         </div>
-        <div class="schedule-card-footer"><span>${match.venue}${match.game ? ' · Servidor LATAM' : ''}</span><a href="detalle-torneo.html?id=${match.tournamentId}">Ver torneo →</a></div>
+        <div class="schedule-card-footer"><span>${escapeHtml(match.venue)}${match.game ? ' · Servidor LATAM' : ''}</span><a href="detalle-torneo.html?id=${match.tournamentId}">Ver torneo →</a></div>
       </article>`;
     }).join('');
     count.textContent = `${filtered.length} ${filtered.length === 1 ? 'encuentro' : 'encuentros'}`;
-    document.getElementById('calendarTotal').textContent = SGDM_SCHEDULE.filter(match => match.date.startsWith(`${selectedYear}-`)).length;
+    document.getElementById('calendarTotal').textContent = partidos.filter(match => match.date.startsWith(`${selectedYear}-`)).length;
     const selectedButton = disciplineButtons.find(button => button.dataset.calendarDiscipline === selectedDiscipline);
     title.textContent = selectedGame
       ? `PARTIDOS DE ${gameSelect.options[gameSelect.selectedIndex].text.toUpperCase()}`
@@ -1314,7 +1309,7 @@ function initializeCalendar() {
     selectedDiscipline = '';
     selectedGame = '';
     selectedDate = '';
-    selectedYear = '2026';
+    selectedYear = anioActual;
     selectedMonth = '';
     yearSelect.value = selectedYear;
     gameSelect.value = '';
@@ -1359,6 +1354,10 @@ function initializeCalendar() {
   document.getElementById('clearCalendarFilters')?.addEventListener('click', reset);
   document.querySelector('[data-reset-calendar]')?.addEventListener('click', reset);
   render();
+  fetch('api/calendario.php')
+    .then(response => response.json())
+    .then(data => { partidos = data.success ? data.partidos.map(partidoDeCalendario) : []; render(); })
+    .catch(() => render());
 }
 
 function initializeTournamentDetail() {

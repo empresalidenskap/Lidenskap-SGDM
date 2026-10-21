@@ -298,6 +298,18 @@ final class Competencia
         return true;
     }
 
+    /** Nombre de una ronda: "Fecha N" en liga, "Final"/"Semifinales"/... en llaves. */
+    public static function nombreRonda(string $formato, int $numero, int $partidos): string
+    {
+        if ($formato === 'eliminacion') {
+            $nombres = [1 => 'Final', 2 => 'Semifinales', 4 => 'Cuartos de final'];
+            if (isset($nombres[$partidos])) {
+                return $nombres[$partidos];
+            }
+        }
+        return ($formato === 'liga' ? 'Fecha ' : 'Ronda ') . $numero;
+    }
+
     /** Fecha programada de la ronda N: una por semana desde el inicio del torneo. */
     public static function fechaRonda(array $torneo, int $numero): ?string
     {
