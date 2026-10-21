@@ -1029,6 +1029,16 @@ th { color: var(--text-muted); font-size: 0.65rem; letter-spacing: 0.08em; text-
 .team-create .field { flex: 1 1 220px; }
 /* "Anotarme como" (individual o un equipo) en el detalle del torneo */
 .sidebar-actions .field { margin: 0.75rem 0 0.5rem; }
+/* Rondas, partidos y tabla (panel y detalle del torneo) */
+.round-list { display: grid; gap: 1.25rem; margin-top: 1rem; }
+.round-block header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; }
+.match-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+.match-controls select, .match-controls input, .round-seeds input { padding: 0.35rem 0.5rem; color: var(--text-primary); font: inherit; font-size: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; }
+.round-seeds { display: grid; gap: 0.5rem; margin: 1rem 0; }
+.round-seeds label { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; font-size: 0.82rem; }
+.round-seeds input { width: 5rem; }
+.standings-table { margin: 1rem 0; }
+.champion-banner { color: var(--gold-light); font-weight: 700; }
 .inline-editor { margin-top: 1rem; }
 
 .form-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }

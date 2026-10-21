@@ -93,18 +93,19 @@
 
     <section id="panel-results" class="panel-module surface-card" data-panel-module="results" hidden>
       <header class="panel-module-header"><div><p class="section-eyebrow">Competencia</p><h2>TODOS LOS RESULTADOS</h2><p>Partidos finalizados, próximos encuentros y resultados pendientes.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
-      <div class="panel-toolbar"><label class="panel-search">Buscar resultado<input id="resultsSearch" type="search" placeholder="Torneo, equipo o jugador"></label><select id="resultsStatus" aria-label="Filtrar resultados"><option value="">Todos los estados</option><option value="Oficial">Oficiales</option><option value="Pendiente">Pendientes</option><option value="Próximo">Próximos</option></select></div>
+      <div class="panel-toolbar"><label class="panel-search">Buscar resultado<input id="resultsSearch" type="search" placeholder="Torneo, equipo o jugador"></label><select id="resultsStatus" aria-label="Filtrar resultados"><option value="">Todos los estados</option><option value="Oficial">Oficiales</option><option value="Pendiente de validar">Pendientes de validar</option><option value="Sin cargar">Sin cargar</option><option value="WO">Walkover</option></select></div>
       <p id="resultsCount" class="panel-count"></p>
       <div class="table-scroll"><table><thead><tr><th>Torneo</th><th>Ronda / Fecha</th><th>Enfrentamiento</th><th>Resultado</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="resultsTableBody"></tbody></table></div>
       <div class="panel-pagination"><button class="btn-secondary" id="resultsPrev" type="button">← Anterior</button><span id="resultsPage"></span><button class="btn-secondary" id="resultsNext" type="button">Siguiente →</button></div>
     </section>
 
     <section id="panel-rounds" class="panel-module surface-card" data-panel-module="rounds" hidden>
-      <header class="panel-module-header"><div><p class="section-eyebrow">Competencia</p><h2>RONDAS Y LLAVES</h2><p>Genera enfrentamientos, revisa los cruces y controla su publicación.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
-      <div class="panel-toolbar"><label class="panel-search">Torneo<select id="roundTournament"></select></label><button class="btn-primary" id="generateRound" type="button">+ Generar siguiente ronda</button></div>
+      <header class="panel-module-header"><div><p class="section-eyebrow">Competencia</p><h2>RONDAS Y LLAVES</h2><p>Generá el fixture, asigná árbitros y horarios, y cerrá cada ronda cuando sus resultados estén validados.</p></div><button class="btn-secondary" type="button" data-panel-back>← Volver al resumen</button></header>
+      <div class="panel-toolbar"><label class="panel-search">Torneo<select id="roundTournament"></select></label><button class="btn-primary" id="generateRound" type="button" hidden>+ Generar siguiente ronda</button></div>
       <section class="round-status-grid" aria-label="Estado de la ronda"><article><span>Formato</span><strong id="roundFormat">-</strong></article><article><span>Ronda actual</span><strong id="roundCurrent">-</strong></article><article><span>Estado</span><strong id="roundStatus">-</strong></article></section>
-      <div class="bracket" id="roundBracket" aria-label="Vista de rondas y llaves"></div>
-      <div class="round-actions"><button class="btn-secondary" id="publishRound" type="button">Publicar ronda</button><button class="btn-secondary" id="closeRound" type="button">Cerrar ronda</button><p id="roundFeedback" class="form-feedback" aria-live="polite"></p></div>
+      <div class="round-actions"><p id="roundFeedback" class="form-feedback" aria-live="polite"></p></div>
+      <div id="roundSeeds" class="round-seeds" hidden></div>
+      <div id="roundBracket" class="round-list" aria-label="Vista de rondas y llaves"></div>
     </section>
 
     <section id="panel-reports" class="panel-module surface-card" data-panel-module="reports" hidden>

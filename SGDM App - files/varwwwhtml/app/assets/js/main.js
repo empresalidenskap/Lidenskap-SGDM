@@ -1141,6 +1141,34 @@ const ESTADO_TORNEO_A_UI = {
 const ESTADO_UI_LABEL = { proximo: 'Próximamente', abierto: 'Inscripciones abiertas', cerradas: 'Inscripciones cerradas', curso: 'En curso', cerrado: 'Finalizado' };
 const FORMATO_LABEL = { liga: 'Liga', eliminacion: 'Eliminación Directa', suizo: 'Sistema Suizo' };
 
+// Partidos (F6): tarjeta de un partido para el panel y el detalle del torneo.
+// Un resultado sin validar (solo lo ven el Organizador y el árbitro) va con *.
+function fechaHoraCorta(valor) {
+  return new Date(valor.replace(' ', 'T')).toLocaleString('es-UY', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function partidoHtml(p, controles = '') {
+  const marcador = p.libre ? 'libre' : p.resultado ? `${p.resultado.local} - ${p.resultado.visitante}${p.resultado.validado ? '' : ' *'}` : 'vs.';
+  const nota = p.estado === 'walkover' ? 'Walkover' : p.libre ? 'Pasa sin jugar' : p.fechaHora ? fechaHoraCorta(p.fechaHora) : 'Sin horario';
+  const arbitro = p.arbitro && !controles ? ` · Árbitro: ${escapeHtml(p.arbitro)}` : '';
+  return `<article class="bracket-match"><span>${nota}${arbitro}</span><div><strong>${escapeHtml(p.local)}</strong><b>${marcador}</b><strong>${p.libre ? '—' : escapeHtml(p.visitante)}</strong></div>${controles}</article>`;
+}
+
+function nombreRonda(formato, ronda) {
+  if (formato === 'eliminacion') {
+    const partidos = ronda.partidos.length;
+    if (partidos === 1) return 'Final';
+    if (partidos === 2) return 'Semifinales';
+    if (partidos === 4) return 'Cuartos de final';
+  }
+  return formato === 'liga' ? `Fecha ${ronda.numero}` : `Ronda ${ronda.numero}`;
+}
+
+// Tabla de posiciones (liga y suizo), ya ordenada por el servidor (RF-09)
+function tablaPosicionesHtml(tabla) {
+  return `<div class="table-scroll standings-table"><table><thead><tr><th>#</th><th>Competidor</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead><tbody>${tabla.map(f => `<tr><td>${f.posicion}</td><td><strong>${escapeHtml(f.nombre)}</strong></td><td>${f.jugados}</td><td>${f.ganados}</td><td>${f.empatados}</td><td>${f.perdidos}</td><td>${f.golesAFavor}</td><td>${f.golesEnContra}</td><td>${f.diferencia}</td><td><strong>${f.puntos}</strong></td></tr>`).join('')}</tbody></table></div>`;
+}
+
 function initializeTournamentSearch() {
   const grid = document.getElementById('tournamentGrid');
   if (!grid) return;
@@ -1493,6 +1521,22 @@ function initializeTournamentDetail() {
           window.location.reload();
         });
       }
+
+      // Fixture, tabla y llaves (consulta pública, RF-18): solo resultados
+      // validados, salvo para el Organizador y el árbitro de cada partido.
+      fetch(`api/rondas.php?idTorneo=${t.id}`)
+        .then(response => response.json())
+        .then(data => {
+          if (!data.success || !data.rondas.length) return;
+          document.getElementById('detailFixtureCard').hidden = false;
+          const campeon = document.getElementById('detailChampion');
+          if (data.campeon) {
+            campeon.innerHTML = `<span class="champion-banner">🏆 Campeón: ${escapeHtml(data.campeon)}</span>`;
+            campeon.hidden = false;
+          }
+          document.getElementById('detailStandings').innerHTML = data.tabla.length ? tablaPosicionesHtml(data.tabla) : '';
+          document.getElementById('detailRounds').innerHTML = data.rondas.map(ronda => `<section class="round-block"><header><strong>${nombreRonda(data.torneo.formato, ronda)}${ronda.fecha ? ` · ${ronda.fecha}` : ''}</strong></header><div class="bracket">${ronda.partidos.map(p => partidoHtml(p)).join('')}</div></section>`).join('');
+        });
 
       const deleteBtn = document.getElementById('btnDeleteTournament');
       if (deleteBtn && sesionUsuario?.rol === 'ADMIN') {
@@ -1876,7 +1920,7 @@ function initializeDashboardByRole() {
   };
   document.getElementById('panelTournamentSearch').addEventListener('input', renderTournaments);
   const cargarTorneos = () => fetch('api/torneos.php').then(response => response.json()).then(data => { torneosReales = data.success ? data.torneos : []; renderTournaments(); });
-  cargarTorneos();
+  const torneosListos = cargarTorneos();
 
   // Solicitudes pendientes: el Admin ve todas (incluidas las de crear torneo);
   // el Organizador, las de árbitro/participante de sus torneos.
@@ -1962,7 +2006,7 @@ function initializeDashboardByRole() {
     search: document.getElementById('teamsSearch'),
     renderRow: row => `<tr><td><strong>${escapeHtml(row.name)}</strong></td><td>${escapeHtml(row.captain)}</td><td>${escapeHtml(row.tournament)}</td><td>${row.members}</td><td><span class="status-pill ${pillDeEstado(row.status)}">${row.status}</span></td></tr>`
   });
-  if (allowedModules.includes('participants')) cargarInscripciones();
+  const inscripcionesListas = allowedModules.includes('participants') ? cargarInscripciones() : Promise.resolve();
 
   // Torneos que gestiono y en qué fase admiten sumar gente (RF-08)
   const misTorneosEn = estados => (isAdmin ? torneosReales : torneosReales.filter(t => t.organizadorId === sesionUsuario.id_usuario))
@@ -2016,16 +2060,33 @@ function initializeDashboardByRole() {
     document.getElementById('teamsRoster').hidden = tab.dataset.rosterTab !== 'teams';
   }));
 
-  const results = dashboardTournaments.flatMap(tournament => (SGDM_TOURNAMENT_DETAILS[tournament.id]?.matches || []).map((match, index) => ({
-    tournament: tournament.name,
-    round: match[4],
-    matchup: `${match[1]} vs. ${match[2]}`,
-    score: match[3] || 'Sin cargar',
-    status: match[3] ? 'Oficial' : (tournament.status === 'curso' ? 'Pendiente' : 'Próximo'),
-    id: `${tournament.id}-${index}`
-  })));
+  // Resultados (F6): el Organizador/Admin ve los partidos de sus torneos; el
+  // árbitro, solo los que tiene asignados (RF-11). El árbitro carga, el
+  // Organizador también puede cargar o corregir, y es quien valida.
+  const PILL_RESULTADO = { Oficial: 'status-open', WO: 'status-open', 'Pendiente de validar': 'status-progress', 'Sin cargar': 'status-closed', Libre: 'status-closed' };
+  const resultRows = [];
+  const torneosConPartidos = () => [...new Set([
+    ...misTorneosEn(['en_curso', 'finalizado']).map(t => t.id),
+    ...(sesionUsuario.rolesTorneo || []).filter(r => r.rol === 'ARBITRO').map(r => r.idTorneo),
+  ])];
+  const cargarResultados = () => Promise.all(torneosConPartidos().map(id => fetch(`api/rondas.php?idTorneo=${id}`).then(response => response.json())))
+    .then(lista => {
+      const filas = [];
+      lista.filter(d => d.success).forEach(d => d.rondas.forEach(ronda => ronda.partidos.forEach(p => {
+        if (!d.gestiona && !p.esMio) return;
+        const status = p.libre ? 'Libre' : p.estado === 'walkover' ? 'WO' : !p.resultado ? 'Sin cargar' : p.resultado.validado ? 'Oficial' : 'Pendiente de validar';
+        filas.push({
+          id: p.id, tournament: d.torneo.nombre, round: `${nombreRonda(d.torneo.formato, ronda)}${ronda.estado === 'finalizada' ? ' (cerrada)' : ''}`,
+          matchup: p.libre ? `${p.local} (libre)` : `${p.local} vs. ${p.visitante}`, local: p.local, visitante: p.visitante,
+          score: p.resultado ? `${p.resultado.local} - ${p.resultado.visitante}` : '—', status,
+          gestiona: d.gestiona, abierta: ronda.estado !== 'finalizada', libre: p.libre, marcador: p.resultado,
+        });
+      })));
+      resultRows.splice(0, resultRows.length, ...filas);
+      document.getElementById('resultsSearch').dispatchEvent(new Event('input'));
+    });
   paginate({
-    rows: results,
+    rows: resultRows,
     tbody: document.getElementById('resultsTableBody'),
     count: document.getElementById('resultsCount'),
     pageLabel: document.getElementById('resultsPage'),
@@ -2034,29 +2095,51 @@ function initializeDashboardByRole() {
     search: document.getElementById('resultsSearch'),
     filter: document.getElementById('resultsStatus'),
     pageSize: 10,
-    renderRow: row => `<tr><td><strong>${row.tournament}</strong></td><td>${row.round}</td><td>${row.matchup}</td><td><strong>${row.score}</strong></td><td><span class="status-pill ${row.status === 'Oficial' ? 'status-open' : row.status === 'Pendiente' ? 'status-progress' : 'status-closed'}">${row.status}</span></td><td><button class="table-action" type="button" data-result-edit="${row.id}">${row.status === 'Oficial' ? (isAdmin ? 'Corregir' : 'Solicitar corrección') : 'Cargar'}</button></td></tr>`
-  });
-  document.getElementById('resultsTableBody').addEventListener('click', event => {
-    const button = event.target.closest('[data-result-edit]');
-    if (!button) return;
-    const result = results.find(item => item.id === button.dataset.resultEdit);
-    if (!result) return;
-    if (!isAdmin && result.status === 'Oficial') {
-      showToast('Solicitud de autorización enviada al administrador para corregir este resultado.');
-      return;
-    }
-    openPanelForm({
-      title: result.status === 'Oficial' ? 'CORREGIR RESULTADO' : 'CARGAR RESULTADO',
-      help: result.matchup,
-      fields: [{ name: 'score', label: 'Marcador' }, { name: 'status', label: 'Estado', type: 'select', options: ['Pendiente', 'Oficial'] }],
-      values: result,
-      onSubmit: data => {
-        result.score = data.score;
-        result.status = data.status;
-        document.getElementById('resultsSearch').dispatchEvent(new Event('input'));
-        showToast('Resultado guardado en el prototipo.');
+    renderRow: row => {
+      const acciones = [];
+      if (row.abierta && !row.libre) {
+        acciones.push(`<button class="table-action" type="button" data-result-load="${row.id}">${row.marcador ? 'Corregir' : 'Cargar'}</button>`);
+        if (row.gestiona && row.status === 'Pendiente de validar') acciones.push(`<button class="table-action" type="button" data-result-validate="${row.id}">Validar</button>`);
+        if (row.gestiona) acciones.push(`<button class="table-action danger-action" type="button" data-result-wo="${row.id}">Walkover</button>`);
       }
+      return `<tr><td><strong>${escapeHtml(row.tournament)}</strong></td><td>${row.round}</td><td>${escapeHtml(row.matchup)}</td><td><strong>${row.score}</strong></td><td><span class="status-pill ${PILL_RESULTADO[row.status]}">${row.status}</span></td><td><div class="table-actions">${acciones.join('') || '—'}</div></td></tr>`;
+    }
+  });
+  const enviarResultado = (metodo, body) => fetch('api/resultados.php', { method: metodo, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then(response => response.json())
+    .then(result => {
+      showToast(result.success ? (result.rondaNueva ? 'Resultado validado: se armó la ronda siguiente de la llave.' : 'Resultado guardado.') : result.error);
+      if (result.success) { cargarResultados(); if (allowedModules.includes('rounds')) cargarRondas(); }
     });
+  document.getElementById('resultsTableBody').addEventListener('click', event => {
+    const cargar = event.target.closest('[data-result-load]');
+    const validar = event.target.closest('[data-result-validate]');
+    const walkover = event.target.closest('[data-result-wo]');
+    const boton = cargar || validar || walkover;
+    const row = boton && resultRows.find(item => item.id === Number(boton.dataset.resultLoad ?? boton.dataset.resultValidate ?? boton.dataset.resultWo));
+    if (!row) return;
+    if (cargar) {
+      openPanelForm({
+        title: row.marcador ? 'CORREGIR RESULTADO' : 'CARGAR RESULTADO', help: `${row.local} vs. ${row.visitante} · ${row.round}`,
+        fields: [
+          { name: 'local', label: escapeHtml(row.local), type: 'number' },
+          { name: 'visitante', label: escapeHtml(row.visitante), type: 'number' },
+          ...(row.gestiona ? [{ name: 'validar', label: 'Al guardar', type: 'select', full: true, options: [{ value: '1', label: 'Validar: queda oficial' }, { value: '0', label: 'Dejar pendiente de validar' }] }] : []),
+        ],
+        values: { local: row.marcador?.local ?? '', visitante: row.marcador?.visitante ?? '' },
+        submitLabel: 'Guardar resultado',
+        onSubmit: data => enviarResultado('POST', { accion: 'cargar', idEnfrentamiento: row.id, local: Number(data.local), visitante: Number(data.visitante), validar: data.validar === '1' })
+      });
+    } else if (validar) {
+      enviarResultado('PATCH', { idEnfrentamiento: row.id });
+    } else if (walkover) {
+      openPanelForm({
+        title: 'WALKOVER', help: 'Se aplica el marcador de walkover del torneo y el partido queda marcado como WO, distinto de un partido jugado.',
+        fields: [{ name: 'ganador', label: 'Gana por walkover', type: 'select', full: true, options: [{ value: 'local', label: escapeHtml(row.local) }, { value: 'visitante', label: escapeHtml(row.visitante) }] }],
+        submitLabel: 'Registrar walkover',
+        onSubmit: data => enviarResultado('POST', { accion: 'walkover', idEnfrentamiento: row.id, ganador: data.ganador })
+      });
+    }
   });
 
   const downloadCsv = (filename, headers, rows) => {
@@ -2069,39 +2152,112 @@ function initializeDashboardByRole() {
     URL.revokeObjectURL(link.href);
   };
 
+  // Rondas y llaves (F6): fixture, cabezas de serie, árbitro y horario de
+  // cada partido, y cierre de rondas. Solo el Admin reabre, con motivo (RF-13).
   const roundSelect = document.getElementById('roundTournament');
-  roundSelect.innerHTML = dashboardTournaments.map(tournament => `<option value="${tournament.id}">${tournament.name}</option>`).join('');
-  const roundState = Object.fromEntries(dashboardTournaments.map(tournament => [tournament.id, { number: 1, status: tournament.status === 'cerrado' ? 'Cerrada' : 'Borrador' }]));
-  const renderRounds = () => {
-    const tournament = dashboardTournaments.find(item => item.id === roundSelect.value) || dashboardTournaments[0];
-    const detail = SGDM_TOURNAMENT_DETAILS[tournament.id];
-    const state = roundState[tournament.id];
-    document.getElementById('roundFormat').textContent = tournament.formatLabel;
-    document.getElementById('roundCurrent').textContent = `Ronda ${state.number}`;
-    document.getElementById('roundStatus').textContent = state.status;
-    document.getElementById('roundBracket').innerHTML = (detail?.matches || []).map((match, index) => `<article class="bracket-match"><span>Encuentro ${index + 1}</span><div><strong>${match[1]}</strong><b>${match[3] || 'vs.'}</b><strong>${match[2]}</strong></div><small>${match[0]} · ${match[4]}</small></article>`).join('');
-    document.getElementById('publishRound').disabled = state.status === 'Publicada' || state.status === 'Cerrada';
-    document.getElementById('closeRound').disabled = state.status === 'Cerrada';
+  const roundFeedback = document.getElementById('roundFeedback');
+  const generateRound = document.getElementById('generateRound');
+  const roundSeeds = document.getElementById('roundSeeds');
+  const roundBracket = document.getElementById('roundBracket');
+  const ESTADO_RONDA = { pendiente: 'Pendiente', en_curso: 'En juego', finalizada: 'Cerrada' };
+  let competencia = null;
+  const renderRondas = () => {
+    const t = torneosReales.find(item => item.id === Number(roundSelect.value));
+    roundSeeds.hidden = true;
+    generateRound.hidden = true;
+    if (!t || !competencia) {
+      ['roundFormat', 'roundCurrent', 'roundStatus'].forEach(id => { document.getElementById(id).textContent = '-'; });
+      roundBracket.innerHTML = '<p>No tenés torneos con las inscripciones cerradas o en curso.</p>';
+      return;
+    }
+    const { rondas, torneo: datos } = competencia;
+    const ultima = rondas[rondas.length - 1];
+    document.getElementById('roundFormat').textContent = datos.formatoNombre;
+    document.getElementById('roundCurrent').textContent = ultima ? nombreRonda(datos.formato, ultima) : 'Sin fixture';
+    document.getElementById('roundStatus').textContent = competencia.campeon ? `Campeón: ${competencia.campeon}` : ultima ? ESTADO_RONDA[ultima.estado] : 'Listo para generar';
+    if (!rondas.length && t.estado === 'inscripcion_cerrada') {
+      generateRound.textContent = 'Generar fixture';
+      generateRound.hidden = false;
+      // Llaves: cabezas de serie antes de armar la primera ronda (RF-17)
+      if (datos.formato === 'eliminacion') {
+        const confirmadas = inscripciones.filter(i => i.idTorneo === t.id && i.estado === 'confirmada');
+        roundSeeds.innerHTML = '<p class="helper-text">Cabezas de serie (1 = la mejor). Las que tengan número evitan cruzarse al principio y, si la llave no es potencia de 2, pasan sin jugar. El resto se ordena por el sorteo.</p>'
+          + confirmadas.map(i => `<label>${escapeHtml(i.nombre)}<input type="number" min="1" data-seed="${i.id}" value="${i.cabezaSerie ?? ''}" placeholder="—"></label>`).join('');
+        roundSeeds.hidden = false;
+      }
+    } else if (datos.formato === 'suizo' && t.estado === 'en_curso' && !competencia.campeon) {
+      generateRound.textContent = '+ Generar siguiente ronda';
+      generateRound.hidden = false;
+    }
+    roundBracket.innerHTML = rondas.map(ronda => {
+      const abierta = ronda.estado !== 'finalizada';
+      const acciones = (competencia.gestiona && abierta ? `<button class="table-action" type="button" data-round-close="${ronda.id}">Cerrar ronda</button>` : '')
+        + (isAdmin && !abierta ? `<button class="table-action" type="button" data-round-reopen="${ronda.id}">Reabrir</button>` : '');
+      const partidos = ronda.partidos.map(p => {
+        const controles = competencia.gestiona && abierta && !p.libre
+          ? `<p class="match-controls"><select data-match-referee="${p.id}" aria-label="Árbitro"><option value="0">Sin árbitro</option>${competencia.arbitros.map(a => `<option value="${a.id}"${a.id === p.idArbitro ? ' selected' : ''}>${escapeHtml(a.nombre)}</option>`).join('')}</select><input type="datetime-local" data-match-time="${p.id}" aria-label="Fecha y hora" value="${p.fechaHora ? p.fechaHora.replace(' ', 'T').slice(0, 16) : ''}"><button class="table-action" type="button" data-match-save="${p.id}">Guardar</button></p>`
+          : '';
+        return partidoHtml(p, controles);
+      }).join('');
+      return `<section class="round-block"><header><strong>${nombreRonda(datos.formato, ronda)}${ronda.fecha ? ` · ${ronda.fecha}` : ''} · ${ESTADO_RONDA[ronda.estado]}</strong><span class="table-actions">${acciones}</span></header><div class="bracket">${partidos}</div></section>`;
+    }).join('') + (competencia.tabla.length ? tablaPosicionesHtml(competencia.tabla) : '');
   };
-  roundSelect.addEventListener('change', renderRounds);
-  document.getElementById('generateRound').addEventListener('click', () => {
-    const state = roundState[roundSelect.value];
-    state.number += 1;
-    state.status = 'Borrador';
-    renderRounds();
-    document.getElementById('roundFeedback').textContent = `Ronda ${state.number} generada para revisión.`;
+  const cargarRondas = () => {
+    const id = Number(roundSelect.value);
+    if (!id) { competencia = null; renderRondas(); return Promise.resolve(); }
+    return fetch(`api/rondas.php?idTorneo=${id}`).then(response => response.json())
+      .then(data => { competencia = data.success ? data : null; renderRondas(); });
+  };
+  const llenarSelectRondas = () => {
+    const lista = misTorneosEn(['inscripcion_cerrada', 'en_curso', 'finalizado']);
+    const actual = roundSelect.value;
+    roundSelect.innerHTML = lista.map(t => `<option value="${t.id}">${escapeHtml(t.nombre)}</option>`).join('');
+    if (lista.some(t => String(t.id) === actual)) roundSelect.value = actual;
+    return cargarRondas();
+  };
+  const accionRonda = (url, metodo, body, ok) => fetch(url, { method: metodo, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then(response => response.json())
+    .then(result => {
+      roundFeedback.textContent = result.success ? ok : result.error;
+      if (result.success) { cargarTorneos().then(llenarSelectRondas); if (allowedModules.includes('results')) cargarResultados(); }
+    });
+  roundSelect.addEventListener('change', cargarRondas);
+  generateRound.addEventListener('click', () => {
+    const primera = !competencia.rondas.length;
+    if (primera && !window.confirm('¿Generar el fixture? El torneo pasa a estar en curso y ya no se puede cambiar quiénes juegan.')) return;
+    accionRonda('api/rondas.php', 'POST', { accion: 'generar', idTorneo: Number(roundSelect.value) }, primera ? 'Fixture generado: el torneo está en curso.' : 'Ronda generada.');
   });
-  document.getElementById('publishRound').addEventListener('click', () => {
-    roundState[roundSelect.value].status = 'Publicada';
-    renderRounds();
-    document.getElementById('roundFeedback').textContent = 'Ronda publicada en la consulta pública.';
+  roundSeeds.addEventListener('change', event => {
+    const input = event.target.closest('[data-seed]');
+    if (!input) return;
+    fetch('api/inscripciones.php', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: Number(input.dataset.seed), cabezaSerie: Number(input.value) || 0 }) })
+      .then(response => response.json())
+      .then(result => { roundFeedback.textContent = result.success ? 'Cabeza de serie guardada.' : result.error; if (result.success) cargarInscripciones(); });
   });
-  document.getElementById('closeRound').addEventListener('click', () => {
-    roundState[roundSelect.value].status = 'Cerrada';
-    renderRounds();
-    document.getElementById('roundFeedback').textContent = 'Ronda cerrada. Los resultados quedan bloqueados hasta una corrección autorizada.';
+  roundBracket.addEventListener('click', event => {
+    const cerrar = event.target.closest('[data-round-close]');
+    const reabrir = event.target.closest('[data-round-reopen]');
+    const guardar = event.target.closest('[data-match-save]');
+    if (cerrar) {
+      accionRonda('api/rondas.php', 'PATCH', { accion: 'cerrar', idRonda: Number(cerrar.dataset.roundClose) }, 'Ronda cerrada: sus resultados quedan bloqueados.');
+    } else if (reabrir) {
+      const motivo = window.prompt('Motivo de la reapertura (queda en la auditoría):');
+      if (motivo) accionRonda('api/rondas.php', 'PATCH', { accion: 'reabrir', idRonda: Number(reabrir.dataset.roundReopen), motivo }, 'Ronda reabierta.');
+    } else if (guardar) {
+      const id = guardar.dataset.matchSave;
+      accionRonda('api/enfrentamientos.php', 'PATCH', {
+        id: Number(id),
+        idArbitro: Number(roundBracket.querySelector(`[data-match-referee="${id}"]`).value),
+        fechaHora: roundBracket.querySelector(`[data-match-time="${id}"]`).value,
+      }, 'Partido programado.');
+    }
   });
-  renderRounds();
+
+  // Primero los torneos (y el plantel, para las cabezas de serie)
+  Promise.all([torneosListos, inscripcionesListas]).then(() => {
+    if (allowedModules.includes('results')) cargarResultados();
+    if (allowedModules.includes('rounds')) llenarSelectRondas();
+  });
 
   const reportSelect = document.getElementById('reportTournament');
   reportSelect.insertAdjacentHTML('beforeend', dashboardTournaments.map(tournament => `<option value="${tournament.id}">${tournament.name}</option>`).join(''));
