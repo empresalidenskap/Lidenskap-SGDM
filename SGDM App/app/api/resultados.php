@@ -19,6 +19,8 @@ use App\RolesTorneo;
  *        Solo el Organizador: aplica el marcador de walkover del torneo y
  *        queda marcado como 'walkover' (distinto de un partido jugado).
  *   PATCH {idEnfrentamiento}: el Organizador valida el resultado.
+ * Eliminación directa: un solo partido, sin empate. Suizo: serie al mejor de
+ * 3, el marcador son los juegos ganados (2-0, 2-1, 1-2 o 0-2).
  * Una ronda cerrada no se toca. Al validar se recalcula la tabla y, en
  * eliminación directa, si la ronda quedó completa se arma la siguiente.
  */
@@ -76,6 +78,10 @@ if ($accion === 'cargar') {
     }
     if ($torneo['formato'] === 'eliminacion' && $local === $visitante) {
         fallar(400, 'En eliminación directa no puede haber empate.');
+    }
+    // Suizo: cada partido es una serie al mejor de 3 (gana quien llega a 2)
+    if ($torneo['formato'] === 'suizo' && !in_array("$local-$visitante", ['2-0', '2-1', '1-2', '0-2'], true)) {
+        fallar(400, 'En el sistema suizo cada partido es una serie al mejor de 3: el marcador tiene que ser 2-0, 2-1, 1-2 o 0-2.');
     }
     $validar = $gestiona && !empty($input['validar']);
     $guardar->execute([$partido['id_enfrentamiento'], $local, $visitante, $validar ? 1 : 0]);

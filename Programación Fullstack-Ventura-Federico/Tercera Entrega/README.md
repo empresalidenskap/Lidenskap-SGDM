@@ -10,8 +10,9 @@ Requisitos de la letra de proyecto para esta entrega:
   - Roles por torneo (Organizador, Árbitro, Participante) con solicitudes,
     invitaciones y revocación automática al finalizar el torneo.
   - Fases del torneo (RF-08), equipos e inscripciones (RF-15).
-  - Fixture de liga (RF-16), llaves de eliminación directa (RF-17) y sistema
-    suizo sin repetir rivales (RF-10).
+  - Fixture de liga (RF-16), llaves de eliminación directa al mejor de 1
+    (RF-17) y etapa suiza estilo esports, series al mejor de 3, sin repetir
+    rivales (RF-10), con la vista de llaves.
   - Resultados por el árbitro asignado con validación del Organizador
     (RF-11), walkover (RF-12), tabla con desempate (RF-09) y cierre y
     reapertura de rondas con auditoría (RF-13).
@@ -34,7 +35,8 @@ instalado:
   fecha 1 cerrada (incluye un walkover), un resultado sin validar y la fecha 3
   programada con árbitros.
 - **Eliminación directa finalizada** con cabezas de serie y campeona.
-- **Sistema suizo** con la ronda 1 completa (con partido libre).
+- **Sistema suizo** con la ronda 1 completa (series al mejor de 3, con
+  partido libre).
 - **Liga con inscripciones abiertas**, con un equipo por aprobar, un pedido
   para unirse a un equipo, un árbitro postulado y una invitación.
 - **Un torneo planificado** y **una solicitud de torneo** para el Admin.
@@ -93,6 +95,7 @@ nueva, y se actualizó la copia del servidor (`SGDM App - files/`).
 | F10 Datos de demostración | 20/10/2026 22:41 | `5901edf` | Seed chico y realista (no los 50 registros); corrección del emparejamiento suizo para no repetir rivales. |
 | F11 Documentación | 20/10/2026 22:47 | `940b516` | [`NORMALIZACION.md`](./NORMALIZACION.md), consultas de la BD de ASO con roles por torneo, README al día y copia del servidor verificada. |
 | F12 Prueba final | 20/10/2026 ≈23:00 | — | Recorrido completo sobre una base nueva, haciendo clic en la interfaz: pedir un torneo, aprobarlo, inscripciones, fixture, resultados, walkover, finalizar y revocación de roles. Todo OK, sin cambios de código. |
+| Llaves y suizo esports | 21/10/2026 | (este cambio) | Vista de llaves aportada por el equipo (`bracket.js`/`bracket.css`): árbol de eliminación directa con camino del ganador y campeón, y etapa suiza por récord, en la página del torneo y en el panel. Formatos: eliminación directa al mejor de 1; suizo como en los esports, series al mejor de 3, se clasifica con N victorias y queda eliminado con N derrotas (N según la cantidad de inscriptos). |
 
 Fuera de alcance por ahora: los 50 registros por componente, cambiar o
 recuperar la contraseña, contraseñas temporales enviadas por correo, subir el

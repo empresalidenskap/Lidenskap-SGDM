@@ -86,6 +86,8 @@ function handleList(): void
         $verResultado = $p['puntuacion_local'] !== null && ($p['validado'] || $gestiona || $esMio);
         $partidosPorRonda[$p['id_ronda']][] = [
             'id' => (int) $p['id_enfrentamiento'],
+            'idLocal' => (int) $p['id_inscripcion_local'],
+            'idVisitante' => $p['id_inscripcion_visitante'] !== null ? (int) $p['id_inscripcion_visitante'] : null,
             'local' => $p['local'],
             'visitante' => $p['visitante'],
             'libre' => $p['id_inscripcion_visitante'] === null,
@@ -122,11 +124,6 @@ function handleList(): void
         }
     }
 
-    // Liga y suizo: al finalizar, el campeón es el primero de la tabla
-    if ($torneo['estado'] === 'finalizado' && $torneo['formato'] !== 'eliminacion' && $rondas) {
-        $campeon = Competencia::tabla($idTorneo)[0]['nombre'] ?? null;
-    }
-
     // Árbitros aprobados del torneo, para que el Organizador los asigne
     $arbitros = [];
     if ($gestiona) {
@@ -137,6 +134,20 @@ function handleList(): void
         );
         $stmt->execute([$idTorneo]);
         $arbitros = array_map(static fn (array $a): array => ['id' => (int) $a['id_usuario'], 'nombre' => $a['nombre']], $stmt->fetchAll());
+    }
+
+    // Liga: tabla con desempate; suizo: además récord y estado de cada uno
+    $tabla = [];
+    $umbral = null;
+    if ($rondas && $torneo['formato'] === 'liga') {
+        $tabla = Competencia::tabla($idTorneo);
+    } elseif ($rondas && $torneo['formato'] === 'suizo') {
+        $tabla = Competencia::tablaSuizo($idTorneo);
+        $umbral = Competencia::umbralSuizo(count($tabla));
+    }
+    // Liga y suizo: al finalizar, el campeón es el primero de la tabla
+    if ($torneo['estado'] === 'finalizado' && $tabla) {
+        $campeon = $tabla[0]['nombre'];
     }
 
     echo json_encode([
@@ -151,7 +162,8 @@ function handleList(): void
         'gestiona' => $gestiona,
         'soyArbitro' => $soyArbitro,
         'rondas' => $salida,
-        'tabla' => $rondas && $torneo['formato'] !== 'eliminacion' ? Competencia::tabla($idTorneo) : [],
+        'tabla' => $tabla,
+        'umbral' => $umbral,
         'campeon' => $campeon,
         'arbitros' => $arbitros,
     ]);
@@ -205,6 +217,10 @@ function handleGenerate(array $input): void
         }
         if (!Competencia::rondaCompleta((int) $ultima['id_ronda'])) {
             fallar(409, "Faltan resultados por validar en la ronda {$ultima['numero_ronda']}.");
+        }
+        $enJuego = array_filter(Competencia::recordSuizo($idTorneo), static fn (array $r): bool => $r['estado'] === 'en_juego');
+        if (count($enJuego) < 2) {
+            fallar(409, 'La etapa suiza terminó (todos se clasificaron o quedaron eliminados): finalizá el torneo.');
         }
         $numero = (int) $ultima['numero_ronda'] + 1;
         $pdo->prepare("UPDATE ronda SET estado_ronda = 'finalizada' WHERE id_ronda = ?")->execute([$ultima['id_ronda']]);

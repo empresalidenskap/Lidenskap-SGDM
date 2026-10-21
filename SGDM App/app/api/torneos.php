@@ -156,6 +156,9 @@ function handleCreate(): void
         'cupo_maximo' => $cupoMaximo,
         'fecha_inicio' => $fechaInicio,
         'max_integrantes_equipo' => $maxIntegrantes > 0 ? $maxIntegrantes : null,
+        // En el suizo (series al mejor de 3) el walkover es 2-0
+        'marcador_wo_ganador' => $formatoCodigo === 'suizo' ? 2 : 3,
+        'marcador_wo_perdedor' => 0,
         'estado' => $esSolicitud ? 'solicitado' : 'planificado',
     ]);
 

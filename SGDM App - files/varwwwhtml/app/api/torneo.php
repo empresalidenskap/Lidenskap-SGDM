@@ -106,7 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
             $stmt->execute([Competencia::ganador($final[0])]);
             $campeon = $stmt->fetchColumn();
         } else {
-            $campeon = Competencia::tabla($id)[0]['nombre'] ?? null;
+            $tabla = $formato === 'suizo' ? Competencia::tablaSuizo($id) : Competencia::tabla($id);
+            $campeon = $tabla[0]['nombre'] ?? null;
         }
         $detalle = $campeon ? "Campeón: $campeon" : null;
     }

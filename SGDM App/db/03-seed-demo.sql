@@ -193,12 +193,13 @@ INSERT INTO tabla_posiciones (id_inscripcion, victorias, empates, derrotas, gole
     (@i_mateo,     0, 0, 1, 2, 6);
 
 -- ---------------------------------------------------------------------------
--- 4. Suizo de Ajedrez Invierno: sistema suizo EN CURSO con 5 jugadores.
---    Ronda 1 completa (Sofía quedó libre); el Organizador ya puede generar
---    la ronda 2 desde el panel.
+-- 4. Suizo de Ajedrez Invierno: etapa suiza EN CURSO con 5 jugadores, series
+--    al mejor de 3 (con 2 victorias se clasifica, con 2 derrotas queda
+--    eliminado). Ronda 1 completa (Sofía quedó libre); el Organizador ya
+--    puede generar la ronda 2 desde el panel.
 -- ---------------------------------------------------------------------------
-INSERT INTO torneo (id_tipo_torneo, id_usuario_organizador, nombre_torneo, descripcion, sede, cupo_maximo, fecha_inicio, estado) VALUES
-    (@suizo, @u_org, 'Suizo de Ajedrez Invierno', 'Partidas a 30 minutos, emparejamiento por puntaje sin repetir rivales.', 'Club de Ajedrez Montevideo', 8, '2026-10-15', 'en_curso');
+INSERT INTO torneo (id_tipo_torneo, id_usuario_organizador, nombre_torneo, descripcion, sede, cupo_maximo, fecha_inicio, estado, marcador_wo_ganador, marcador_wo_perdedor) VALUES
+    (@suizo, @u_org, 'Suizo de Ajedrez Invierno', 'Series al mejor de 3 partidas a 30 minutos. Cruces entre jugadores con el mismo récord, sin repetir rivales.', 'Club de Ajedrez Montevideo', 8, '2026-10-15', 'en_curso', 2, 0);
 SET @t4 = LAST_INSERT_ID();
 INSERT INTO torneo_modulo (id_torneo, id_modulo) VALUES (@t4, (SELECT id_modulo FROM modulo_competencia WHERE nombre_modulo = 'Ajedrez'));
 
@@ -216,13 +217,13 @@ INSERT INTO enfrentamiento (id_ronda, id_inscripcion_local, id_inscripcion_visit
 INSERT INTO enfrentamiento (id_ronda, id_inscripcion_local, id_inscripcion_visitante, estado_partido) VALUES
     (@r4_1, @a_sofia, NULL, 'finalizado');
 INSERT INTO resultado (id_enfrentamiento, puntuacion_local, puntuacion_visitante, validado, fecha_carga) VALUES
-    (@w1, 1, 0, TRUE, '2026-10-15 20:10:00'),
-    (@w2, 1, 1, TRUE, '2026-10-15 20:25:00');
+    (@w1, 2, 0, TRUE, '2026-10-15 20:10:00'),
+    (@w2, 2, 1, TRUE, '2026-10-15 20:25:00');
 INSERT INTO tabla_posiciones (id_inscripcion, victorias, empates, derrotas, goles_a_favor, goles_en_contra) VALUES
-    (@a_lucia,    1, 0, 0, 1, 0),
-    (@a_joaquin,  0, 1, 0, 1, 1),
-    (@a_agustina, 0, 0, 1, 0, 1),
-    (@a_nicolas,  0, 1, 0, 1, 1),
+    (@a_lucia,    1, 0, 0, 2, 0),
+    (@a_joaquin,  1, 0, 0, 2, 1),
+    (@a_agustina, 0, 0, 1, 0, 2),
+    (@a_nicolas,  0, 0, 1, 1, 2),
     (@a_sofia,    1, 0, 0, 0, 0);
 
 -- ---------------------------------------------------------------------------

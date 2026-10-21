@@ -9,8 +9,10 @@ namespace App;
  *   - Liga (RF-16): todas las fechas de una vez, método del círculo.
  *   - Eliminación directa (RF-17): llave por cabezas de serie y sorteo,
  *     con partidos libres para los primeros; el ganador avanza solo.
- *   - Sistema suizo (RF-10): cruce por puntaje sin repetir rivales; con
- *     número impar el libre rota entre los de menor puntaje.
+ *   - Sistema suizo (RF-10), como la etapa suiza de los esports: series al
+ *     mejor de 3, cruce entre los del mismo récord sin repetir rivales; con
+ *     N victorias se clasifica y con N derrotas queda eliminado. Con número
+ *     impar el libre rota entre los de peor récord.
  * Un partido libre es un enfrentamiento sin visitante: lo gana el local.
  */
 final class Competencia
@@ -182,21 +184,21 @@ final class Competencia
 
     /**
      * Sistema suizo. Primera ronda: por número de sorteo, la mitad de arriba
-     * contra la de abajo. Siguientes: ordenados por puntos (y sorteo), cada
-     * uno contra el más cercano con el que todavía no jugó. Si son impares,
-     * queda libre el de menor puntaje que todavía no tuvo libre.
+     * contra la de abajo. Siguientes: solo los que siguen en juego, ordenados
+     * por récord (y sorteo), cada uno contra el más cercano con el que
+     * todavía no jugó. Si son impares, queda libre el de peor récord que
+     * todavía no tuvo libre.
      */
     public static function emparejarSuizo(int $idTorneo, array $ids, bool $primera): array
     {
         $pdo = Database::getConnection();
         if (!$primera) {
-            $stmt = $pdo->prepare(
-                'SELECT v.id_inscripcion FROM vista_tabla_posiciones v
-                 JOIN inscripcion i ON i.id_inscripcion = v.id_inscripcion
-                 WHERE v.id_torneo = ? ORDER BY v.puntos_acumulados DESC, i.numero_sorteo, i.id_inscripcion'
-            );
-            $stmt->execute([$idTorneo]);
-            $ids = array_values(array_intersect(array_map('intval', $stmt->fetchAll(\PDO::FETCH_COLUMN)), $ids));
+            // Solo los que siguen en juego, agrupados por récord (más victorias
+            // y menos derrotas primero); a igual récord, por sorteo
+            $record = array_filter(self::recordSuizo($idTorneo), static fn (array $r): bool => $r['estado'] === 'en_juego');
+            uasort($record, static fn (array $a, array $b): int =>
+                [$b['victorias'], $a['derrotas'], $a['sorteo']] <=> [$a['victorias'], $b['derrotas'], $b['sorteo']]);
+            $ids = array_keys($record);
         }
 
         $stmt = $pdo->prepare(
@@ -244,6 +246,93 @@ final class Competencia
         // si no hay ninguna combinación sin repetir, se cruza en orden.
         $cruces = self::crucesSinRepetir($ids, $jugados) ?? array_chunk($ids, 2);
         return array_merge($cruces, $partidos);
+    }
+
+    /**
+     * Etapa suiza estilo esports: se clasifica al llegar a N victorias y se
+     * queda eliminado con N derrotas. N depende de cuántos juegan (como en
+     * las Masters de Valorant con 8 equipos o los Majors de CS2 con 16).
+     */
+    public static function umbralSuizo(int $inscriptos): int
+    {
+        return match (true) {
+            $inscriptos <= 8 => 2,
+            $inscriptos <= 16 => 3,
+            $inscriptos <= 32 => 4,
+            default => 5,
+        };
+    }
+
+    /**
+     * Récord de cada inscripto en el suizo: victorias (series ganadas
+     * validadas + partidos libres), derrotas y estado (clasificado, eliminado
+     * o en_juego). [id_inscripcion => [...]]
+     */
+    public static function recordSuizo(int $idTorneo): array
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare(
+            "SELECT id_inscripcion, numero_sorteo FROM inscripcion
+             WHERE id_torneo = ? AND estado_inscripcion = 'confirmada'"
+        );
+        $stmt->execute([$idTorneo]);
+        $record = [];
+        foreach ($stmt->fetchAll() as $fila) {
+            $record[(int) $fila['id_inscripcion']] = ['victorias' => 0, 'derrotas' => 0, 'sorteo' => (int) $fila['numero_sorteo']];
+        }
+        $umbral = self::umbralSuizo(count($record));
+
+        $stmt = $pdo->prepare(
+            'SELECT e.id_inscripcion_local AS l, e.id_inscripcion_visitante AS v, r.puntuacion_local AS pl, r.puntuacion_visitante AS pv, r.validado
+             FROM enfrentamiento e
+             JOIN ronda ro ON ro.id_ronda = e.id_ronda
+             LEFT JOIN resultado r ON r.id_enfrentamiento = e.id_enfrentamiento
+             WHERE ro.id_torneo = ?'
+        );
+        $stmt->execute([$idTorneo]);
+        foreach ($stmt->fetchAll() as $p) {
+            $l = (int) $p['l'];
+            if ($p['v'] === null) {
+                if (isset($record[$l])) {
+                    $record[$l]['victorias']++;
+                }
+                continue;
+            }
+            $v = (int) $p['v'];
+            if (!$p['validado'] || (int) $p['pl'] === (int) $p['pv'] || !isset($record[$l], $record[$v])) {
+                continue;
+            }
+            [$ganador, $perdedor] = (int) $p['pl'] > (int) $p['pv'] ? [$l, $v] : [$v, $l];
+            $record[$ganador]['victorias']++;
+            $record[$perdedor]['derrotas']++;
+        }
+
+        foreach ($record as &$r) {
+            $r['estado'] = $r['victorias'] >= $umbral ? 'clasificado' : ($r['derrotas'] >= $umbral ? 'eliminado' : 'en_juego');
+        }
+        unset($r);
+        return $record;
+    }
+
+    /**
+     * Tabla del suizo: la de RF-09 con el récord y el estado de cada uno,
+     * ordenada primero por récord (más victorias, menos derrotas).
+     */
+    public static function tablaSuizo(int $idTorneo): array
+    {
+        $tabla = self::tabla($idTorneo);
+        $record = self::recordSuizo($idTorneo);
+        foreach ($tabla as $i => $fila) {
+            $r = $record[$fila['idInscripcion']] ?? ['victorias' => 0, 'derrotas' => 0, 'estado' => 'en_juego'];
+            $tabla[$i] += ['victorias' => $r['victorias'], 'derrotas' => $r['derrotas'], 'estadoSuizo' => $r['estado'], 'orden' => $i];
+        }
+        usort($tabla, static fn (array $a, array $b): int =>
+            [$b['victorias'], $a['derrotas'], $a['orden']] <=> [$a['victorias'], $b['derrotas'], $b['orden']]);
+        foreach ($tabla as $i => $fila) {
+            $tabla[$i]['posicion'] = $i + 1;
+            unset($tabla[$i]['orden']);
+        }
+        return $tabla;
     }
 
     /** Empareja la lista (ya ordenada por puntaje) sin repetir rivales, o null si no se puede. */

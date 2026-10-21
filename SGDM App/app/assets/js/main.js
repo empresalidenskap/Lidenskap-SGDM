@@ -1059,9 +1059,38 @@ function nombreRonda(formato, ronda) {
   return formato === 'liga' ? `Fecha ${ronda.numero}` : `Ronda ${ronda.numero}`;
 }
 
+// Llaves (assets/js/bracket.js): la eliminación directa como árbol (al mejor
+// de 1) y el suizo agrupado por récord (series al mejor de 3). Solo muestra
+// resultados validados.
+function datosLlave(rondas) {
+  const results = {};
+  rondas.forEach(ronda => ronda.partidos.forEach((p, i) => {
+    const fecha = p.fechaHora ? fechaHoraCorta(p.fechaHora) : undefined;
+    results[`${ronda.numero}-${i + 1}`] = p.resultado && p.resultado.validado
+      ? { score: [p.resultado.local, p.resultado.visitante], date: fecha, note: p.estado === 'walkover' ? 'Walkover' : undefined }
+      : { date: fecha };
+  }));
+  return { firstRound: rondas[0].partidos.map(p => [p.local, p.libre ? null : p.visitante]), results };
+}
+
+function dibujarLlave(contenedor, datos) {
+  if (!contenedor || !window.SGDMBracket || !datos.rondas.length) return false;
+  if (datos.torneo.formato === 'eliminacion') SGDMBracket.render(contenedor, datosLlave(datos.rondas));
+  else if (datos.torneo.formato === 'suizo') SGDMBracket.renderSuizo(contenedor, { rondas: datos.rondas, umbral: datos.umbral });
+  else return false;
+  return true;
+}
+
+const LEYENDA_LLAVE = '<div class="bracket-legend" aria-hidden="true"><span><i class="legend-win"></i>Ganador / camino definido</span><span><i class="legend-next"></i>Partido por jugar</span><span><i></i>Por definir</span></div>';
+
 // Tabla de posiciones (liga y suizo), ya ordenada por el servidor (RF-09)
 function tablaPosicionesHtml(tabla) {
-  return `<div class="table-scroll standings-table"><table><thead><tr><th>#</th><th>Competidor</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead><tbody>${tabla.map(f => `<tr><td>${f.posicion}</td><td><strong>${escapeHtml(f.nombre)}</strong></td><td>${f.jugados}</td><td>${f.ganados}</td><td>${f.empatados}</td><td>${f.perdidos}</td><td>${f.golesAFavor}</td><td>${f.golesEnContra}</td><td>${f.diferencia}</td><td><strong>${f.puntos}</strong></td></tr>`).join('')}</tbody></table></div>`;
+  // Suizo: récord (victorias-derrotas) y si ya se clasificó o quedó eliminado
+  const suizo = tabla.some(f => f.estadoSuizo);
+  const ESTADO_SUIZO = { clasificado: ['status-open', 'Clasificado'], eliminado: ['status-closed', 'Eliminado'], en_juego: ['status-progress', 'En juego'] };
+  const extraTitulos = suizo ? '<th>Récord</th><th>Estado</th>' : '';
+  const extra = f => (suizo ? `<td><strong>${f.victorias}-${f.derrotas}</strong></td><td><span class="status-pill ${ESTADO_SUIZO[f.estadoSuizo][0]}">${ESTADO_SUIZO[f.estadoSuizo][1]}</span></td>` : '');
+  return `<div class="table-scroll standings-table"><table><thead><tr><th>#</th><th>Competidor</th>${extraTitulos}<th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr></thead><tbody>${tabla.map(f => `<tr><td>${f.posicion}</td><td><strong>${escapeHtml(f.nombre)}</strong></td>${extra(f)}<td>${f.jugados}</td><td>${f.ganados}</td><td>${f.empatados}</td><td>${f.perdidos}</td><td>${f.golesAFavor}</td><td>${f.golesEnContra}</td><td>${f.diferencia}</td><td><strong>${f.puntos}</strong></td></tr>`).join('')}</tbody></table></div>`;
 }
 
 function initializeTournamentSearch() {
@@ -1436,7 +1465,13 @@ function initializeTournamentDetail() {
             campeon.hidden = false;
           }
           document.getElementById('detailStandings').innerHTML = data.tabla.length ? tablaPosicionesHtml(data.tabla) : '';
-          document.getElementById('detailRounds').innerHTML = data.rondas.map(ronda => `<section class="round-block"><header><strong>${nombreRonda(data.torneo.formato, ronda)}${ronda.fecha ? ` · ${ronda.fecha}` : ''}</strong></header><div class="bracket">${ronda.partidos.map(p => partidoHtml(p)).join('')}</div></section>`).join('');
+          const rondasEl = document.getElementById('detailRounds');
+          if (data.torneo.formato === 'liga') {
+            rondasEl.innerHTML = data.rondas.map(ronda => `<section class="round-block"><header><strong>${nombreRonda(data.torneo.formato, ronda)}${ronda.fecha ? ` · ${ronda.fecha}` : ''}</strong></header><div class="bracket">${ronda.partidos.map(p => partidoHtml(p)).join('')}</div></section>`).join('');
+          } else {
+            rondasEl.innerHTML = (data.torneo.formato === 'eliminacion' ? LEYENDA_LLAVE : '<p class="helper-text">Etapa suiza: cada partido es una serie al mejor de 3. Con ' + data.umbral + ' victorias se clasifica y con ' + data.umbral + ' derrotas queda eliminado.</p>') + '<div class="detail-bracket"></div>';
+            dibujarLlave(rondasEl.querySelector('.detail-bracket'), data);
+          }
         });
 
       const deleteBtn = document.getElementById('btnDeleteTournament');
@@ -1992,7 +2027,7 @@ function initializeDashboardByRole() {
           id: p.id, tournament: d.torneo.nombre, round: `${nombreRonda(d.torneo.formato, ronda)}${ronda.estado === 'finalizada' ? ' (cerrada)' : ''}`,
           matchup: p.libre ? `${p.local} (libre)` : `${p.local} vs. ${p.visitante}`, local: p.local, visitante: p.visitante,
           score: p.resultado ? `${p.resultado.local} - ${p.resultado.visitante}` : '—', status,
-          gestiona: d.gestiona, abierta: ronda.estado !== 'finalizada', libre: p.libre, marcador: p.resultado,
+          gestiona: d.gestiona, abierta: ronda.estado !== 'finalizada', libre: p.libre, marcador: p.resultado, formato: d.torneo.formato,
         });
       })));
       resultRows.splice(0, resultRows.length, ...filas);
@@ -2033,7 +2068,7 @@ function initializeDashboardByRole() {
     if (!row) return;
     if (cargar) {
       openPanelForm({
-        title: row.marcador ? 'CORREGIR RESULTADO' : 'CARGAR RESULTADO', help: `${row.local} vs. ${row.visitante} · ${row.round}`,
+        title: row.marcador ? 'CORREGIR RESULTADO' : 'CARGAR RESULTADO', help: `${row.local} vs. ${row.visitante} · ${row.round}${row.formato === 'suizo' ? ' · Serie al mejor de 3: 2-0 o 2-1' : row.formato === 'eliminacion' ? ' · Partido único, sin empate' : ''}`,
         fields: [
           { name: 'local', label: escapeHtml(row.local), type: 'number' },
           { name: 'visitante', label: escapeHtml(row.visitante), type: 'number' },
@@ -2106,7 +2141,8 @@ function initializeDashboardByRole() {
       generateRound.textContent = '+ Generar siguiente ronda';
       generateRound.hidden = false;
     }
-    roundBracket.innerHTML = rondas.map(ronda => {
+    const conLlave = rondas.length && ['eliminacion', 'suizo'].includes(datos.formato);
+    roundBracket.innerHTML = (conLlave ? '<div class="panel-bracket"></div>' : '') + rondas.map(ronda => {
       const abierta = ronda.estado !== 'finalizada';
       const acciones = (competencia.gestiona && abierta ? `<button class="table-action" type="button" data-round-close="${ronda.id}">Cerrar ronda</button>` : '')
         + (isAdmin && !abierta ? `<button class="table-action" type="button" data-round-reopen="${ronda.id}">Reabrir</button>` : '');
@@ -2118,6 +2154,7 @@ function initializeDashboardByRole() {
       }).join('');
       return `<section class="round-block"><header><strong>${nombreRonda(datos.formato, ronda)}${ronda.fecha ? ` · ${ronda.fecha}` : ''} · ${ESTADO_RONDA[ronda.estado]}</strong><span class="table-actions">${acciones}</span></header><div class="bracket">${partidos}</div></section>`;
     }).join('') + (competencia.tabla.length ? tablaPosicionesHtml(competencia.tabla) : '');
+    if (conLlave) dibujarLlave(roundBracket.querySelector('.panel-bracket'), competencia);
   };
   const cargarRondas = () => {
     const id = Number(roundSelect.value);

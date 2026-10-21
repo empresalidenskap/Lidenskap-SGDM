@@ -43,5 +43,10 @@ edita desde el repositorio) tiene que acompañarla:
   en curso (al generar el fixture) → finalizado.
 - [ ] **Resultados** (RF-11): los carga el árbitro asignado al partido o el
   Organizador; solo el Organizador los valida y recién ahí son oficiales.
+- [ ] **Formatos** (RF-10, RF-17): eliminación directa al mejor de 1 (un
+  partido, sin empate); el sistema suizo pasa a ser la etapa suiza de los
+  esports: series al mejor de 3, cruce entre los del mismo récord sin repetir
+  rivales, se clasifica con N victorias y queda eliminado con N derrotas (2
+  hasta 8 inscriptos, 3 hasta 16, 4 hasta 32).
 - [ ] Actualizar los casos de uso y el diagrama UML con estos flujos
   ([`diagramaUML.drawio`](../Segunda%20Entrega/diagramaUML.drawio)).

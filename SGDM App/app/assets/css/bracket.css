@@ -1,0 +1,166 @@
+/* ============================================================
+   LIDENSKAP — SGDM  |  bracket.css
+   Llaves (eliminación directa y etapa suiza). Mobile first: en celular se
+   desliza horizontalmente ronda por ronda; en PC entra completa.
+   Usa las variables de color de styles.css (tema claro/oscuro).
+   ============================================================ */
+
+.bracket-section { margin-top: 1rem; }
+.bracket-section .section-eyebrow { margin-bottom: 0.35rem; }
+.bracket-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin: 0.5rem 0 1rem; color: var(--text-muted); font-size: 0.7rem; }
+.bracket-legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.bracket-legend i { width: 10px; height: 10px; border-radius: 2px; background: var(--border-hover); }
+.bracket-legend .legend-win { background: var(--gold); }
+.bracket-legend .legend-next { background: var(--accent); }
+
+.bk-hint { margin-bottom: 0.6rem; color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.04em; }
+.bk-empty { padding: 1.5rem; color: var(--text-secondary); text-align: center; border: 1px dashed var(--border-hover); border-radius: 8px; }
+
+/* Contenedor con scroll horizontal (celular) */
+.bk-scroll {
+  --bk-gap: 1.1rem;          /* espacio entre rondas = largo de las líneas */
+  --bk-card: 196px;          /* ancho de cada partido */
+  --bk-line: var(--border-hover);
+  --bk-line-win: var(--gold);
+  overflow-x: auto;
+  padding: 0.25rem 0 0.9rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.bk-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+
+.bk-tree { display: flex; align-items: stretch; width: max-content; min-width: 100%; }
+
+/* Cada ronda es una columna. Todas tienen el mismo alto, así que
+   cada partido de la ronda siguiente queda justo en el medio de
+   los dos partidos de los que viene. */
+.bk-round { display: flex; flex-direction: column; flex: 0 0 auto; scroll-snap-align: start; }
+.bk-round-title {
+  display: flex; flex-direction: column; justify-content: center; gap: 0.15rem;
+  height: 52px; margin: 0 var(--bk-gap) 0.5rem;
+  padding: 0 0.75rem;
+  color: var(--text-primary); background: var(--bg-secondary);
+  border: 1px solid var(--border); border-radius: 7px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.15rem; font-weight: 400; letter-spacing: 0.05em;
+}
+.bk-round:first-child .bk-round-title { margin-left: 0; }
+.bk-round-title small { color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.bk-round-body { display: flex; flex: 1; flex-direction: column; }
+
+/* Un "slot" por partido: ocupa la mitad de alto que el de la ronda siguiente */
+.bk-slot { position: relative; display: flex; flex: 1; align-items: center; padding: 0.4rem var(--bk-gap); }
+.bk-round:first-child .bk-slot { padding-left: 0; }
+
+/* ---------- Líneas conectoras ---------- */
+/* Salida hacia la derecha: el de arriba baja, el de abajo sube y se juntan */
+.bk-slot.is-top::after,
+.bk-slot.is-bottom::after,
+.bk-slot.is-single::after {
+  content: ''; position: absolute; right: 0; width: var(--bk-gap);
+  border: 0 solid var(--bk-line); pointer-events: none;
+}
+.bk-slot.is-top::after { top: 50%; height: 50%; border-top-width: 2px; border-right-width: 2px; border-top-right-radius: 8px; }
+.bk-slot.is-bottom::after { bottom: 50%; height: 50%; border-bottom-width: 2px; border-right-width: 2px; border-bottom-right-radius: 8px; }
+.bk-slot.is-single::after { top: 50%; border-top-width: 2px; transform: translateY(-1px); }
+
+/* Entrada desde la izquierda (desde la ronda 2 en adelante) */
+.bk-round + .bk-round .bk-slot::before {
+  content: ''; position: absolute; left: 0; top: 50%; width: var(--bk-gap);
+  border-top: 2px solid var(--bk-line); transform: translateY(-1px); pointer-events: none;
+}
+
+/* Camino del ganador en dorado */
+.bk-slot.is-decided::after { border-color: var(--bk-line-win); }
+.bk-round + .bk-round .bk-slot.is-fed::before { border-color: var(--bk-line-win); }
+
+/* ---------- Tarjeta del partido ---------- */
+.bk-match {
+  position: relative; z-index: 1;
+  width: var(--bk-card);
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  transition: border-color 0.2s, transform 0.2s;
+}
+.bk-match:hover { transform: translateY(-2px); border-color: var(--border-hover); }
+.bk-match.is-done { border-left-color: var(--gold); }
+.bk-match.is-bye { border-left-color: var(--border-hover); opacity: 0.7; }
+
+.bk-match-head, .bk-match-note {
+  display: flex; justify-content: space-between; gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  color: var(--text-muted); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.bk-match-head { background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+.bk-match-head time { color: var(--text-secondary); white-space: nowrap; }
+.bk-match-note { border-top: 1px solid var(--border); font-weight: 600; text-transform: none; letter-spacing: 0.02em; }
+.bk-match.is-pending .bk-match-note { color: var(--accent-light); }
+[data-theme="dark"] .bk-match.is-pending .bk-match-note { color: #ff8c99; }
+
+.bk-team {
+  display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; align-items: center; gap: 0.45rem;
+  min-height: 34px; padding: 0.3rem 0.6rem;
+  font-size: 0.78rem;
+}
+.bk-team + .bk-team { border-top: 1px solid var(--border); }
+.bk-seed { color: var(--text-muted); font-size: 0.62rem; font-weight: 700; text-align: center; }
+.bk-name { overflow: hidden; color: var(--text-primary); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.bk-score { min-width: 24px; color: var(--text-secondary); font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+
+.bk-team.is-winner { background: rgba(212, 160, 23, 0.1); }
+.bk-team.is-winner .bk-name, .bk-team.is-winner .bk-score { color: var(--gold-light); }
+.bk-team.is-loser .bk-name, .bk-team.is-loser .bk-score { color: var(--text-muted); font-weight: 500; }
+.bk-team.is-tbd .bk-name, .bk-team.is-bye .bk-name { color: var(--text-muted); font-style: italic; font-weight: 500; }
+
+[data-theme="light"] .bk-team.is-winner .bk-name,
+[data-theme="light"] .bk-team.is-winner .bk-score { color: #8a6400; }
+
+/* ---------- Campeón ---------- */
+.bk-round--champion .bk-round-title { margin-right: 0; }
+.bk-round--champion .bk-slot { padding-right: 0; }
+.bk-champion {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem;
+  width: 150px; min-height: 104px; padding: 1rem;
+  color: var(--text-muted); text-align: center;
+  background: var(--bg-card); border: 1px dashed var(--border-hover); border-radius: 10px;
+}
+.bk-champion span { font-size: 1.8rem; filter: grayscale(1); opacity: 0.5; }
+.bk-champion strong { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; font-weight: 400; letter-spacing: 0.04em; line-height: 1.05; }
+.bk-champion.is-crowned {
+  color: var(--gold-light);
+  background: linear-gradient(160deg, var(--bg-card), rgba(212, 160, 23, 0.16));
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 22px rgba(212, 160, 23, 0.25);
+}
+.bk-champion.is-crowned span { filter: none; opacity: 1; }
+[data-theme="light"] .bk-champion.is-crowned { color: #8a6400; }
+
+/* ---------- Tablet y PC ---------- */
+@media (min-width: 640px) {
+  .bk-scroll { --bk-gap: 1.5rem; --bk-card: 210px; scroll-snap-type: x proximity; }
+  .bk-team { font-size: 0.82rem; }
+}
+
+@media (min-width: 900px) {
+  .bk-scroll { --bk-gap: 2rem; --bk-card: 220px; }
+}
+
+/* Dentro de una grilla (detalle del torneo, panel) la llave no puede
+   ensanchar la página: se desliza dentro de su tarjeta */
+.detail-main-content, .detail-card, .round-list > *, .detail-bracket, .panel-bracket { min-width: 0; }
+
+/* ---------- Etapa suiza (sin líneas: columnas por ronda, grupos por récord) ---------- */
+.bk-swiss .bk-swiss-body { gap: 1rem; justify-content: flex-start; }
+.bk-group { display: grid; align-content: start; gap: 0.5rem; padding: 0 var(--bk-gap); }
+.bk-round:first-child .bk-group { padding-left: 0; }
+.bk-group-title { color: var(--text-muted); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.bk-swiss .bk-standing { margin: 0 var(--bk-gap); }
+.bk-swiss .bk-round:last-child .bk-standing { margin-right: 0; }
+.bk-standing.is-qualified { border-left-color: var(--gold); }
+.bk-standing.is-eliminated { border-left-color: var(--border-hover); }
+.bk-standing.is-eliminated .bk-name, .bk-standing.is-eliminated .bk-score { color: var(--text-muted); }
