@@ -1,0 +1,7 @@
+# Las páginas HTML no llevan versión (?v=) como el JS y el CSS: el navegador
+# tiene que preguntar siempre si cambiaron, si no muestra una copia vieja
+<IfModule mod_headers.c>
+    <FilesMatch "\.html$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>

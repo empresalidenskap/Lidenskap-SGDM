@@ -1103,7 +1103,9 @@ function initializeTournamentSearch() {
   const count = document.getElementById('resultsCount');
   const empty = document.getElementById('emptyResults');
   const params = new URLSearchParams(window.location.search);
-  if (params.get('disciplina')) discipline.value = params.get('disciplina');
+  // ?discipline= era el enlace viejo de Disciplinas (puede seguir en la cache)
+  const disciplinaUrl = params.get('disciplina') || params.get('discipline');
+  if (disciplinaUrl) discipline.value = disciplinaUrl;
   if (params.get('formato')) format.value = params.get('formato');
 
   let torneos = [];
