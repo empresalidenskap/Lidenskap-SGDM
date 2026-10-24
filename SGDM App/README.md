@@ -36,8 +36,8 @@ docker compose up -d
 
 ## Cuentas de demostración
 
-Ya están cargadas en la base al levantar el proyecto (también en "Iniciar
-sesión" → "Ver cuentas de demostración"). Solo el Administrador tiene un rol
+Ya están cargadas en la base al levantar el proyecto. El sitio no las muestra
+(en un servidor real hay que cambiarles la contraseña). Solo el Administrador tiene un rol
 global; los demás son Usuarios públicos con roles **dentro de cada torneo**:
 
 | Cuenta | Correo | Contraseña |

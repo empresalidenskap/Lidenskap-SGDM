@@ -40,7 +40,8 @@ instalado:
 - **Liga con inscripciones abiertas**, con un equipo por aprobar, un pedido
   para unirse a un equipo, un árbitro postulado y una invitación.
 - **Un torneo planificado** y **una solicitud de torneo** para el Admin.
-- Cuentas en el modal de inicio de sesión ("Ver cuentas de demostración").
+- Cuentas de demostración en el [README de la aplicación](../../SGDM%20App/README.md)
+  (el sitio ya no las muestra en el inicio de sesión).
 
 ## MER actualizado
 
@@ -63,7 +64,8 @@ en el diagrama lista los dominios (ENUM) y los atributos derivados.
   `Estado` (solicitada, invitada, aceptada, rechazada); EstadoInscripcion y
   Arbitra.EstadoSolicitud suman `invitada` (invitación del Organizador que el
   usuario acepta o rechaza). **Capitanea** pasa a ser opcional: el capitán es
-  solo una etiqueta y un equipo creado por el Organizador no tiene.
+  quien creó el equipo y lo único que hace es anotarlo en un torneo (quién
+  entra lo decide el Organizador); un equipo creado por el Organizador no tiene.
 - Rondas y resultados: la relación **Juega_Visitante** pasa a ser opcional;
   un enfrentamiento sin visitante es un partido libre (bye) que gana el local
   sin jugar (número impar en Sistema Suizo, llaves que no son potencia de 2).

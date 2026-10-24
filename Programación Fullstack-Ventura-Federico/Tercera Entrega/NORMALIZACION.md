@@ -74,7 +74,8 @@ otros datos se expone en vistas:
 ## 5. Cambios de opcionalidad
 
 - `equipo.id_usuario` (relación **Capitanea**) pasa a ser opcional: el
-  capitán es solo una etiqueta y un equipo creado por el Organizador no
+  capitán es quien creó el equipo y solo lo anota en un torneo (quién entra
+  lo decide el Organizador); un equipo creado por el Organizador no
   tiene.
 - `enfrentamiento.id_inscripcion_visitante` (relación **Juega_Visitante**)
   pasa a ser opcional: un partido sin visitante es un partido libre (bye),

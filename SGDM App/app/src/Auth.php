@@ -17,6 +17,15 @@ final class Auth
     private static function ensureStarted(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
+            // Cookie de sesión: JS no la puede leer (HttpOnly, así un XSS no
+            // roba la sesión), no viaja desde otros sitios (SameSite) y por
+            // HTTPS solo viaja cifrada (Secure)
+            session_set_cookie_params([
+                'httponly' => true,
+                'samesite' => 'Lax',
+                'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+            ]);
+            ini_set('session.use_strict_mode', '1');
             session_start();
         }
     }
@@ -34,6 +43,13 @@ final class Auth
         self::ensureStarted();
         session_regenerate_id(true);
         $_SESSION['usuario'] = $usuario;
+    }
+
+    public static function logout(): void
+    {
+        self::ensureStarted();
+        $_SESSION = [];
+        session_destroy();
     }
 
     public static function current(): ?array

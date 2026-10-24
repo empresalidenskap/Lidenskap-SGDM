@@ -61,7 +61,8 @@ CREATE TABLE participante (
 );
 
 -- EQUIPO
--- id_usuario: capitán. Es solo una etiqueta (quien creó el equipo); un
+-- id_usuario: capitán (quien creó el equipo), el único que lo anota en un
+-- torneo; no decide quién entra (eso es del Organizador). Un
 -- equipo creado por el Organizador del torneo no tiene.
 CREATE TABLE equipo (
     id_equipo        INT AUTO_INCREMENT PRIMARY KEY,
@@ -293,7 +294,7 @@ JOIN tipo_torneo tt ON tt.id_tipo_torneo = t.id_tipo_torneo;
 -- inscripciones. Cada fila es también la solicitud o invitación (id_origen =
 -- id de la fila de origen). En un equipo el rol es de sus integrantes
 -- aceptados una vez confirmada la inscripción; mientras no lo está, la fila
--- es la solicitud de quien lo anotó (el capitán, que es solo una etiqueta).
+-- es la solicitud de quien lo anotó (el capitán).
 -- 'activo' se apaga solo cuando el torneo pasa a finalizado/cancelado: así
 -- se revoca el rol sin borrar nada y el historial queda.
 CREATE OR REPLACE VIEW vista_rol_torneo AS

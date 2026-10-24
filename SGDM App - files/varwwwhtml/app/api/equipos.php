@@ -15,7 +15,7 @@ use App\Models\Usuario;
 use App\RolesTorneo;
 
 /*
- * Equipos. El capitán es solo una etiqueta (quien lo creó); quién entra al
+ * Equipos. El capitán (quien lo creó) solo anota al equipo en un torneo; quién entra al
  * equipo lo decide el Organizador del torneo donde está anotado:
  *   - un Usuario público pide unirse     -> 'solicitada' (resuelve el Organizador)
  *   - el Organizador invita a una cuenta -> 'invitada'   (resuelve la persona)

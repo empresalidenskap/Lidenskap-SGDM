@@ -652,14 +652,13 @@ function createAuthModal() {
         </div>
         <section id="viewLogin">
           <p class="section-eyebrow">Acceso al sistema</p><h2 id="authTitle">INICIAR SESIÓN</h2>
-          <p class="auth-help">Ingresá con tu cuenta, o probá una de las cuentas de demostración.</p>
+          <p class="auth-help">Ingresá con tu cuenta.</p>
           <form id="loginForm">
             <div class="field"><label for="loginEmail">Correo electrónico</label><input type="email" id="loginEmail" autocomplete="username" required></div>
             <div class="field"><label for="loginPassword">Contraseña</label><div class="password-field"><input type="password" id="loginPassword" autocomplete="current-password" required>${passwordToggleButtonHtml()}</div></div>
             <p id="loginError" class="auth-error" hidden>Correo o contraseña incorrectos.</p>
             <button class="btn-primary" type="submit">Ingresar</button>
           </form>
-          <details class="demo-accounts"><summary>Ver cuentas de demostración</summary><ul><li><b>Administrador:</b> admin@lidenskap.com / admin123</li><li><b>Organizador de 4 torneos:</b> organizador@lidenskap.com / org123</li><li><b>Árbitro de Copa Demo:</b> arbitro@lidenskap.com / arb123</li><li><b>Participante de Copa Demo (Halcones del Sur):</b> atleta@lidenskap.com / user123</li><li><b>Usuario público (con una invitación):</b> publico@lidenskap.com / guest123</li><li><b>Otros jugadores:</b> lucia@, mateo@, sofia@, camila@… (@lidenskap.com) / demo1234</li></ul></details>
         </section>
         <section id="viewRegister" hidden>
           <p class="section-eyebrow">Nueva cuenta</p><h2>REGISTRARSE</h2>
@@ -812,7 +811,7 @@ function renderAccountNav() {
       </button>
       <div class="profile-menu" id="profileMenu">
         <div class="profile-menu-header">
-          <span class="user-email" id="dropdownUserEmail">${sesionUsuario.email || ''}</span>
+          <span class="user-email" id="dropdownUserEmail">${escapeHtml(sesionUsuario.email)}</span>
         </div>
         <ul class="profile-menu-links">
           <li><a href="perfil.html">Mi Perfil</a></li>
@@ -1208,7 +1207,7 @@ function initializeCalendar() {
     );
     grid.innerHTML = filtered.map(match => {
       return `<article class="schedule-card ${match.status === 'finalizado' ? 'schedule-finished' : ''}">
-        <header><div class="schedule-badges"><span class="discipline-badge discipline-${match.discipline}">${escapeHtml(match.disciplineLabel)}</span>${match.game ? `<span class="game-badge game-${match.gameSlug}">${match.game}</span>` : ''}</div><span class="schedule-status schedule-${match.status}">${match.statusLabel}</span></header>
+        <header><div class="schedule-badges"><span class="discipline-badge discipline-${match.discipline}">${escapeHtml(match.disciplineLabel)}</span>${match.game ? `<span class="game-badge game-${escapeHtml(match.gameSlug)}">${escapeHtml(match.game)}</span>` : ''}</div><span class="schedule-status schedule-${match.status}">${match.statusLabel}</span></header>
         <div class="schedule-body">
           <div class="schedule-time"><strong>${match.time}</strong><span>${match.dateLabel}</span><small>UTC−3</small></div>
           <div class="schedule-match">
@@ -1737,11 +1736,11 @@ function initializeDashboardByRole() {
         // option puede ser un texto o { value, label }
         const optionsHtml = field.options.map(option => {
           const { value: optionValue, label } = typeof option === 'object' ? option : { value: option, label: option };
-          return `<option value="${optionValue}"${String(optionValue) === String(value) ? ' selected' : ''}>${label}</option>`;
+          return `<option value="${escapeHtml(optionValue)}"${String(optionValue) === String(value) ? ' selected' : ''}>${label}</option>`;
         }).join('');
         return `<div class="field ${field.full ? 'field-full' : ''}"><label for="panel-${field.name}">${field.label}</label><select id="panel-${field.name}" name="${field.name}" ${field.required === false ? '' : 'required'}>${optionsHtml}</select></div>`;
       }
-      const inputHtml = `<input id="panel-${field.name}" name="${field.name}" type="${field.type || 'text'}" value="${value}" ${field.required === false ? '' : 'required'}>`;
+      const inputHtml = `<input id="panel-${field.name}" name="${field.name}" type="${field.type || 'text'}" value="${escapeHtml(value)}" ${field.required === false ? '' : 'required'}>`;
       if (field.type === 'password') {
         return `<div class="field ${field.full ? 'field-full' : ''}"><label for="panel-${field.name}">${field.label}</label><div class="password-field">${inputHtml}${passwordToggleButtonHtml()}</div></div>`;
       }
