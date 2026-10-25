@@ -237,7 +237,7 @@ chequeo() {
         echo -e "${VERDE}[OK]${SIN_COLOR} Disco de la base al ${disco}%"
     fi
 
-    ultimo=$(ls -t "$DIR_BACKUP_DB"/bd_${DB_NAME}_*.sql.gz 2>/dev/null | head -n 1)
+    ultimo=$(ls -t "$DIR_BACKUP_DB"/bd_${DB_NAME}_*.sql.gz.enc 2>/dev/null | head -n 1)
     if [[ -z "$ultimo" ]]; then
         echo -e "${ROJO}[ALERTA]${SIN_COLOR} No hay respaldos en $DIR_BACKUP_DB"
         log "ALERTA: no hay respaldos en $DIR_BACKUP_DB."

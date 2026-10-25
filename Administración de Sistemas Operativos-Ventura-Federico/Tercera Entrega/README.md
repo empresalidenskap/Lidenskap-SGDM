@@ -59,5 +59,5 @@ Requisitos de la letra de proyecto para esta entrega:
 
 Pendientes arrastrados de la segunda entrega:
 
-- [ ] Activar la copia offsite en el servidor real: `rclone config` (remote `gdrive`) y `OFFSITE_HABILITADO="true"` en `respaldo_sgdm.sh`
+- [ ] Activar la copia offsite en el servidor real: `rclone config` (remote `gdrive`) y `OFFSITE_HABILITADO="true"` en `respaldo_sgdm.sh`, paso a paso en [RCLONE.md](../Segunda%20Entrega/RCLONE.md)
 - [ ] Correcciones indicadas por el docente sobre la segunda entrega (completar al recibir la devolución)

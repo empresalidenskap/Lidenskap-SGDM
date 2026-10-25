@@ -11,7 +11,7 @@ Requisitos de la letra de proyecto para esta entrega:
   (`respaldo_sgdm.sh`)
   - [x] Definir destino de la copia offsite: Google Drive, vía `rclone`
     (sin servidor propio ni presupuesto para uno). Implementado en
-    `enviar_offsite()`.
+    `enviar_offsite()`. Configuración paso a paso en [RCLONE.md](./RCLONE.md).
 - [x] Sistema de monitoreo implementado en el servidor (Zabbix, Grafana, etc.) Documentar Instalación
   (`monitoreo_sgdm.sh`, documentación en `MONITOREO.md`)
   - [x] Collector de MariaDB (`netdata_monitor`@`localhost`, solo metadatos)

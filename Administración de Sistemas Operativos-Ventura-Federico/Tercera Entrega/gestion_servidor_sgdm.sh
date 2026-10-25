@@ -74,8 +74,8 @@ estado_servidor() {
     done
     echo ""
     echo "---- Último respaldo ----"
-    echo "BD:  $(ls -t $DIR_BACKUP/bd 2>/dev/null | head -n 1)"
-    echo "App: $(ls -t $DIR_BACKUP/app 2>/dev/null | head -n 1)"
+    echo "BD:  $(ls -t $DIR_BACKUP/bd 2>/dev/null | grep '\.enc$' | head -n 1)"
+    echo "App: $(ls -t $DIR_BACKUP/app 2>/dev/null | grep '\.enc$' | head -n 1)"
     log "Consulta: estado del servidor."
 }
 
@@ -118,6 +118,9 @@ menu_respaldos() {
     echo "2) Respaldar aplicación y configuración"
     echo "3) Respaldar todo"
     echo "4) Ver respaldos existentes"
+    echo "5) Verificar un respaldo (hash y firma digital)"
+    echo "6) Descifrar un respaldo (queda en /root)"
+    echo "7) Dónde están las claves de los respaldos"
     echo "0) Volver"
     read -p "Opción: " op || salir
     case $op in
@@ -125,6 +128,15 @@ menu_respaldos() {
         2) ejecutar respaldo_sgdm.sh app ;;
         3) ejecutar respaldo_sgdm.sh todo ;;
         4) ls -lh $DIR_BACKUP/bd $DIR_BACKUP/app ;;
+        5)
+            read -p "Archivo .enc (ruta completa): " archivo || salir
+            ejecutar respaldo_sgdm.sh verificar "$archivo"
+            ;;
+        6)
+            read -p "Archivo .enc (ruta completa): " archivo || salir
+            ejecutar respaldo_sgdm.sh descifrar "$archivo" "/root/$(basename "${archivo%.enc}")"
+            ;;
+        7) ejecutar respaldo_sgdm.sh claves ;;
     esac
 }
 
@@ -134,6 +146,8 @@ menu_seguridad() {
     echo "3) IPs bloqueadas (fail2ban)"
     echo "4) Desbloquear una IP"
     echo "5) Escanear con el antivirus ahora"
+    echo "6) HTTPS: estado del certificado"
+    echo "7) HTTPS: cómo importar la CA en una PC"
     echo "0) Volver"
     read -p "Opción: " op || salir
     case $op in
@@ -148,6 +162,8 @@ menu_seguridad() {
             fi
             ;;
         5) ejecutar seguridad_sgdm.sh escanear ;;
+        6) ejecutar ssl_sgdm.sh estado ;;
+        7) ejecutar ssl_sgdm.sh ca ;;
     esac
 }
 
