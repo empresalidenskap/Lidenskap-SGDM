@@ -21,8 +21,8 @@ Requisitos de la letra de proyecto para esta entrega:
   - HTTPS en Apache (`mod_ssl`) y redirección de `http` a `https`.
   - [ ] Falta correrlo en el servidor real (`sudo ssl_sgdm.sh instalar`) e
     importar la CA en las PCs de la defensa.
-- [ ] Políticas de seguridad de usuario
-- [ ] Informe OWASP de aspectos de seguridad del sitio
+- [x] Políticas de seguridad de usuario
+- [x] Informe OWASP de aspectos de seguridad del sitio
 
 ## Corrección de la segunda entrega de Ciberseguridad
 
