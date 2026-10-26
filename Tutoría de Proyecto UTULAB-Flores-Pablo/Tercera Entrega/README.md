@@ -4,10 +4,10 @@ Docente: Pablo Flores
 
 Requisitos de la letra de proyecto para esta entrega:
 
-- [ ] Actas de reunión formal interna de la tercera entrega (mínimo 6)
-- [ ] Modelo 3D de producto diseñado para marketing de la empresa
-- [ ] Manual de usuario de todos los roles del sistema
-- [ ] Seguimiento final de la planificación del sistema
+- [] Actas de reunión formal interna de la tercera entrega (mínimo 6)
+- [x] Modelo 3D de producto diseñado para marketing de la empresa
+- [x] Manual de usuario de todos los roles del sistema
+- [] Seguimiento final de la planificación del sistema
 
 ## Corrección de la segunda entrega de Tutoría de Proyecto UTULAB
 
