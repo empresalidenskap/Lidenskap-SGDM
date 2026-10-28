@@ -16,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 Auth::requireRole('ADMIN');
 
-// Los 1000 eventos más recientes; el panel pagina y filtra del lado del cliente.
 $filas = Database::getConnection()->query(
     'SELECT a.id_auditoria, a.accion_realizada, a.tabla_afectada, a.fecha_hora, a.ip_origen, u.email
      FROM auditoria_registro a

@@ -1,8 +1,4 @@
 #!/bin/bash
-# docker_sgdm.sh
-#   SGDM en contenedores Docker (web + MariaDB), en el puerto 8080, junto a la
-#   instalación nativa. Los archivos de Docker están en /opt/sgdm/docker.
-#   Uso: sudo /usr/local/sbin/docker_sgdm.sh <accion>
 set -Eeuo pipefail
 
 LOG="/var/log/sgdm_docker.log"
@@ -16,7 +12,6 @@ log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG"
 }
 
-# Si algo falla, deja en el log qué comando fue
 trap 'log "ERROR en la línea $LINENO: $BASH_COMMAND"' ERR
 
 require_root() {
@@ -35,10 +30,8 @@ instalar() {
     if [[ ! -f /etc/yum.repos.d/docker-ce.repo ]]; then
         dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
     fi
-    # --allowerasing: reemplaza runc/podman si vinieran instalados
     dnf install -y --allowerasing docker-ce docker-ce-cli containerd.io docker-compose-plugin >/dev/null
 
-    # SELinux activo en los contenedores y logs con tamaño máximo (3 x 10 MB por contenedor)
     mkdir -p /etc/docker
     cat > /etc/docker/daemon.json <<'EOF'
 {
@@ -57,16 +50,12 @@ EOF
     log "Docker instalado: $(docker --version)."
 }
 
-# Arma la carpeta de construcción con el mismo código y la misma base que la instalación nativa
 preparar() {
     [[ -f "$DIR_DOCKER/docker-compose.yml" ]] || { log "ERROR: falta $DIR_DOCKER/docker-compose.yml (reinstalar con instalar_sgdm.sh --con-docker)."; exit 1; }
     mkdir -p "$DIR_DOCKER/app"
     install -d -m 755 "$DIR_DOCKER/db"
     rsync -a --delete "$DOCROOT/" "$DIR_DOCKER/app/"
-    # MariaDB los lee como su propio usuario dentro del contenedor: deben ser legibles
-    # (no tienen contraseñas; 02-users.sh las toma de las variables de entorno)
     install -m 644 "$DIR_SGDM/01-schema.sql" "$DIR_SGDM/03-seed-demo.sql" "$DIR_DOCKER/db/"
-    # 02-users.sh es la versión para Docker (usuarios con host '%'), no la de /opt/sgdm
     install -m 755 "$DIR_DOCKER/02-users.sh" "$DIR_DOCKER/db/"
 
     if [[ ! -f "$DIR_DOCKER/.env" ]]; then
@@ -133,7 +122,6 @@ respaldo() {
     chmod 700 "$DIR_RESPALDO"
     local archivo
     archivo="$DIR_RESPALDO/sgdm_docker_$(date +%Y%m%d_%H%M%S).sql.gz"
-    # La contraseña se lee dentro del contenedor, no aparece en la lista de procesos del servidor
     compose exec -T db sh -c 'mariadb-dump -u root -p"$MARIADB_ROOT_PASSWORD" --single-transaction "$MARIADB_DATABASE"' | gzip > "$archivo"
     chmod 600 "$archivo"
     log "Respaldo de la base en Docker: $archivo"

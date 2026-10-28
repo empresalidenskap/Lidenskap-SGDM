@@ -5,16 +5,8 @@ namespace App;
 
 use App\Models\AuditoriaRegistro;
 
-/**
- * Registro de auditoría (auditoria_registro). Se llama desde cada endpoint
- * después de una acción que cambia datos o el acceso al sistema.
- */
 final class Auditoria
 {
-    /**
-     * $idUsuario null = el usuario de la sesión actual (si hay).
-     * $detalle: dato extra de la acción (p. ej. cuántas solicitudes se rechazaron).
-     */
     public static function registrar(string $accion, string $tabla, ?int $idUsuario = null, ?string $detalle = null): void
     {
         $idUsuario ??= Auth::current()['id_usuario'] ?? null;

@@ -1,8 +1,4 @@
 #!/bin/bash
-#    No se incluyen logs del sistema/aplicación (rotación aparte via logrotate).
-#   Requiere rclone para la copia offsite a Google Drive (sudo dnf install -y rclone mariadb).
-#   Cada respaldo se cifra (AES-256), se le calcula el hash (SHA-256) y se
-#   firma (RSA 4096): archivo.enc + archivo.enc.sha256 + archivo.enc.sig
 set -euo pipefail
 umask 077
 
@@ -18,18 +14,11 @@ CONFIG_PATHS=(/etc/httpd /etc/php /etc/firewalld)
 DIR_BACKUP_APP="/var/backups/sgdm/app"
 RETENCION_APP=4
 
-# Claves de los respaldos (se crean solas en el primer respaldo, solo root).
-# Sin cifrado.clave no se puede restaurar nada: guardar una copia fuera del servidor.
 DIR_CLAVES="/etc/sgdm/respaldos"
-CLAVE_CIFRADO="$DIR_CLAVES/cifrado.clave"   # contraseña aleatoria para AES-256
-FIRMA_KEY="$DIR_CLAVES/firma.key"           # clave privada RSA: firma
-FIRMA_PUB="$DIR_CLAVES/firma.pub"           # clave pública RSA: verifica
+CLAVE_CIFRADO="$DIR_CLAVES/cifrado.clave"
+FIRMA_KEY="$DIR_CLAVES/firma.key"
+FIRMA_PUB="$DIR_CLAVES/firma.pub"
 
-# Copia offsite a Google Drive (via rclone)
-# Setup de una sola vez en el servidor (interactivo, no lo puede hacer este script):
-#   sudo dnf install -y rclone
-#   rclone config          # crear un remote llamado "gdrive" (tipo "drive", cuenta propia)
-# Después de eso, cambiar OFFSITE_HABILITADO a "true".
 OFFSITE_HABILITADO="false"
 OFFSITE_RCLONE_REMOTE="gdrive"
 OFFSITE_RCLONE_PATH="sgdm-backups"
@@ -45,8 +34,6 @@ require_root() {
     fi
 }
 
-# RECORDATORIO pa mi: AlmaLinux Minimal no trae rsync ni el cliente de mariadb por defecto:
-# hay que instalarlos con dnf antes del primer uso.
 verificar_dependencias() {
     local faltan=()
     command -v gzip >/dev/null || faltan+=("gzip")
@@ -74,8 +61,6 @@ comando_dump() {
     fi
 }
 
-# Se crean una sola vez: si se rehacen, los respaldos anteriores no se pueden
-# descifrar ni verificar con las claves nuevas
 preparar_claves() {
     mkdir -p "$DIR_CLAVES"
     chmod 700 "$DIR_CLAVES"
@@ -93,13 +78,10 @@ preparar_claves() {
     fi
 }
 
-# stdin -> stdout. La clave se deriva de la contraseña con PBKDF2 y sal aleatoria
 cifrar() {
     openssl enc -aes-256-cbc -salt -pbkdf2 -iter 100000 -pass file:"$CLAVE_CIFRADO"
 }
 
-# Hash SHA-256 (integridad) y firma RSA (autenticidad) del archivo ya cifrado,
-# así se puede verificar sin descifrarlo (por ejemplo, la copia de Google Drive)
 sellar() {
     local archivo=$1
     (cd "$(dirname "$archivo")" && sha256sum "$(basename "$archivo")" > "$(basename "$archivo").sha256")
@@ -131,8 +113,6 @@ verificar() {
     return $errores
 }
 
-# Solo descifra si el hash y la firma son correctos. Deja el .sql.gz / .tar.gz
-# en la carpeta actual (o en el destino indicado)
 descifrar() {
     local archivo=$1 salida
     salida=${2:-$(basename "${archivo%.enc}")}
@@ -246,7 +226,6 @@ instalar_cron() {
     cron_file="/etc/cron.d/sgdm_respaldos"
 
     cat > "$cron_file" <<EOF
-# Respaldos automáticos SGDM - generado por $script_path instalar-cron
 0 3 * * *   root  $script_path bd  >> $LOG 2>&1
 30 3 * * 0  root  $script_path app >> $LOG 2>&1
 EOF

@@ -5,11 +5,14 @@ require_once __DIR__ . '/../src/autoload.php';
 
 use App\Auditoria;
 use App\Auth;
+use App\Correo;
 use App\Database;
 use App\Equipos;
+use App\Models\Equipo;
 use App\Models\Rol;
 use App\Models\Torneo;
 use App\Models\Usuario;
+use App\Password;
 use App\RoleLabels;
 use App\RolesTorneo;
 
@@ -79,7 +82,7 @@ function handleCreate(): void
     $rolCodigo = trim((string) ($input['rol'] ?? ''));
     $idTorneo = (int) ($input['idTorneo'] ?? 0);
 
-    if ($nombre === '' || $apellido === '' || $email === '' || $password === '' || $rolCodigo === '') {
+    if ($nombre === '' || $apellido === '' || $email === '' || $rolCodigo === '') {
         http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Completá todos los campos.']);
         return;
@@ -135,9 +138,17 @@ function handleCreate(): void
         return;
     }
 
-    if (strlen($password) < 8) {
+    // Sin contraseña: la elige la persona con el enlace que le llega por correo
+    $sinPassword = $password === '';
+    if ($sinPassword && !Correo::configurado()) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'La contraseña debe tener al menos 8 caracteres.']);
+        echo json_encode(['success' => false, 'error' => 'El envío de correos no está configurado en el servidor: poné una contraseña inicial.']);
+        return;
+    }
+    $problema = $sinPassword ? null : Password::validar($password);
+    if ($problema !== null) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => $problema]);
         return;
     }
 
@@ -162,7 +173,8 @@ function handleCreate(): void
         'nombre' => $nombre,
         'apellido' => $apellido,
         'email' => $email,
-        'password' => password_hash($password, PASSWORD_DEFAULT),
+        // Una contraseña al azar que nadie conoce, hasta que la persona elija la suya
+        'password' => password_hash($sinPassword ? bin2hex(random_bytes(16)) : $password, PASSWORD_DEFAULT),
     ];
     $id = Usuario::create($datosUsuario);
 
@@ -180,7 +192,22 @@ function handleCreate(): void
     $pdo->commit();
 
     $detalle = $torneo !== null ? " en {$torneo['nombre_torneo']}" : '';
-    Auditoria::registrar('Alta de usuario ' . RoleLabels::forCode($rolCodigo) . "$detalle: $email", 'usuario');
+    $mensaje = 'Usuario creado.';
+    $enviado = null;
+    if ($sinPassword) {
+        $equipo = $idEquipo > 0 ? Equipo::find($idEquipo) : null;
+        $rolTexto = RoleLabels::forCode($rolCodigo) . ($equipo !== null ? " del equipo {$equipo['nombre_equipo']}" : '') . $detalle;
+        $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+        $urlSitio = ($https ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['SCRIPT_NAME'], 2), '/\\') . '/';
+        $enviado = Password::enviarBienvenida($datosUsuario, $rolTexto, $urlSitio);
+        $mensaje = $enviado
+            ? "Usuario creado. Le mandamos un correo a {$email} para que elija su contraseña."
+            : 'Usuario creado, pero no se pudo mandar el correo: que entre con "¿Olvidaste tu contraseña?".';
+    }
+    Auditoria::registrar(
+        'Alta de usuario ' . RoleLabels::forCode($rolCodigo) . "$detalle: $email", 'usuario', null,
+        $enviado === null ? null : ($enviado ? 'Sin contraseña: se envió el correo de bienvenida' : 'Sin contraseña: falló el correo de bienvenida')
+    );
 
-    echo json_encode(['success' => true, 'id' => $id]);
+    echo json_encode(['success' => true, 'id' => $id, 'mensaje' => $mensaje]);
 }

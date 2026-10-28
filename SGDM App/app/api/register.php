@@ -7,6 +7,7 @@ use App\Auditoria;
 use App\Auth;
 use App\Models\Rol;
 use App\Models\Usuario;
+use App\Password;
 use App\RoleLabels;
 
 header('Content-Type: application/json; charset=utf-8');
@@ -39,9 +40,10 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-if (strlen($password) < 8) {
+$problema = Password::validar($password);
+if ($problema !== null) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'La contraseña debe tener al menos 8 caracteres.']);
+    echo json_encode(['success' => false, 'error' => $problema]);
     exit;
 }
 

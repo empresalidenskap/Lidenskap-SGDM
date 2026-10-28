@@ -7,13 +7,6 @@ use App\Auth;
 use App\Catalogos;
 use App\Database;
 
-/*
- * Reportes del panel (RF-19): el Admin ve todos los torneos; el Organizador,
- * los suyos que siguen activos. Por torneo: inscriptos, cupo, partidos,
- * resultados oficiales, walkovers (RF-12: se distinguen de un partido jugado)
- * y resultados sin validar. 'resumen' alimenta las tarjetas del panel.
- */
-
 header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
@@ -26,7 +19,6 @@ $usuario = Auth::requireLogin();
 $pdo = Database::getConnection();
 const ACTIVOS = ['planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso'];
 
-// Cuenta partidos de un torneo (sin los libres) que cumplen una condición
 $partidos = static fn (string $condicion): string => "(SELECT COUNT(*) FROM enfrentamiento e
         JOIN ronda ro ON ro.id_ronda = e.id_ronda
         LEFT JOIN resultado re ON re.id_enfrentamiento = e.id_enfrentamiento
@@ -71,7 +63,6 @@ $torneos = array_map(static fn (array $f): array => [
     'sinValidar' => (int) $f['sin_validar'],
 ], $stmt->fetchAll());
 
-// Tarjetas del panel, sobre los torneos activos del alcance
 $activos = array_values(array_filter($torneos, static fn (array $t): bool => in_array($t['estado'], ACTIVOS, true)));
 $ids = array_column($activos, 'id');
 $participantes = 0;

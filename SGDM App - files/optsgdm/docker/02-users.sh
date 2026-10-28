@@ -1,7 +1,4 @@
 #!/bin/bash
-# DCL, usuarios de la base de datos y sus permisos.
-# ! (cambiar las contraseñas antes de usar en el servidor real)
-# Host '%' en vez de 'localhost': en docker-compose la app PHP (contenedor "web") y MariaDB (contenedor "db") son hosts distintos en la red interna
 
 set -e
 
@@ -10,15 +7,12 @@ mariadb -u root -p"${MARIADB_ROOT_PASSWORD}" <<-EOSQL
     DROP USER IF EXISTS '${DB_APP_USER}'@'%';
     DROP USER IF EXISTS '${DB_CONSULTA_USER}'@'%';
 
-    -- Administrador de la base: mantenimiento y respaldos
     CREATE USER '${DB_ADMIN_USER}'@'%' IDENTIFIED BY '${DB_ADMIN_PASSWORD}';
     GRANT ALL PRIVILEGES ON ${MARIADB_DATABASE}.* TO '${DB_ADMIN_USER}'@'%';
 
-    -- Usuario de la aplicacion PHP: solo operaciones CRUD, sin DDL
     CREATE USER '${DB_APP_USER}'@'%' IDENTIFIED BY '${DB_APP_PASSWORD}';
     GRANT SELECT, INSERT, UPDATE, DELETE ON ${MARIADB_DATABASE}.* TO '${DB_APP_USER}'@'%';
 
-    -- Usuario de consulta publica: solo lectura de lo que se publica
     CREATE USER '${DB_CONSULTA_USER}'@'%' IDENTIFIED BY '${DB_CONSULTA_PASSWORD}';
     GRANT SELECT ON ${MARIADB_DATABASE}.torneo             TO '${DB_CONSULTA_USER}'@'%';
     GRANT SELECT ON ${MARIADB_DATABASE}.tipo_torneo        TO '${DB_CONSULTA_USER}'@'%';

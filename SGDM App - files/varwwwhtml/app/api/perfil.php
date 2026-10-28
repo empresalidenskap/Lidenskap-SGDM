@@ -6,14 +6,6 @@ require_once __DIR__ . '/../src/autoload.php';
 use App\Auth;
 use App\Database;
 
-/*
- * Estadísticas del perfil, calculadas en vivo (nada guardado):
- *   Admin          -> estado general del sistema.
- *   Usuario público -> su historial en todos los torneos: donde jugó (solo o
- *                     en un equipo), partidos ganados, torneos organizados y
- *                     partidos arbitrados. Solo cuentan resultados validados.
- */
-
 header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
@@ -42,7 +34,6 @@ if ($usuario['rol'] === 'ADMIN') {
 } else {
     $yo = $usuario['id_usuario'];
 
-    // Mis inscripciones confirmadas: como participante o como integrante de un equipo
     $stmt = $pdo->prepare("SELECT id_origen FROM vista_rol_torneo WHERE id_usuario = ? AND rol = 'PARTICIPANTE' AND estado_solicitud = 'aprobada'");
     $stmt->execute([$yo]);
     $mias = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));

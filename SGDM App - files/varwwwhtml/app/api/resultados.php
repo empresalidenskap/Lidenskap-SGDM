@@ -9,22 +9,6 @@ use App\Competencia;
 use App\Database;
 use App\RolesTorneo;
 
-/*
- * Resultados (RF-11, RF-12, RF-13).
- *   POST {accion: 'cargar', idEnfrentamiento, local, visitante, validar}
- *        Carga o corrige el marcador: el árbitro asignado a ese partido o el
- *        Organizador. Queda pendiente de validar; el Organizador puede
- *        guardarlo ya validado.
- *   POST {accion: 'walkover', idEnfrentamiento, ganador: 'local'|'visitante'}
- *        Solo el Organizador: aplica el marcador de walkover del torneo y
- *        queda marcado como 'walkover' (distinto de un partido jugado).
- *   PATCH {idEnfrentamiento}: el Organizador valida el resultado.
- * Eliminación directa: un solo partido, sin empate. Suizo: serie al mejor de
- * 3, el marcador son los juegos ganados (2-0, 2-1, 1-2 o 0-2).
- * Una ronda cerrada no se toca. Al validar se recalcula la tabla y, en
- * eliminación directa, si la ronda quedó completa se arma la siguiente.
- */
-
 header('Content-Type: application/json; charset=utf-8');
 
 function fallar(int $status, string $error): never
@@ -65,7 +49,6 @@ $descripcion = "partido {$partido['id_enfrentamiento']} (ronda {$partido['numero
 
 $pdo->beginTransaction();
 if ($accion === 'cargar') {
-    // RF-11: el árbitro solo en los partidos que tiene asignados
     $esSuArbitro = (int) $partido['id_arbitro'] === $sesion['id_usuario']
         && RolesTorneo::tiene($sesion['id_usuario'], $idTorneo, ['ARBITRO']);
     if (!$gestiona && !$esSuArbitro) {
@@ -79,7 +62,6 @@ if ($accion === 'cargar') {
     if ($torneo['formato'] === 'eliminacion' && $local === $visitante) {
         fallar(400, 'En eliminación directa no puede haber empate.');
     }
-    // Suizo: cada partido es una serie al mejor de 3 (gana quien llega a 2)
     if ($torneo['formato'] === 'suizo' && !in_array("$local-$visitante", ['2-0', '2-1', '1-2', '0-2'], true)) {
         fallar(400, 'En el sistema suizo cada partido es una serie al mejor de 3: el marcador tiene que ser 2-0, 2-1, 1-2 o 0-2.');
     }
@@ -114,7 +96,6 @@ if ($accion === 'cargar') {
     fallar(400, 'Acción inválida.');
 }
 
-// Un resultado validado (o que dejó de estarlo al corregirse) cambia la tabla
 Competencia::recalcularTabla($idTorneo);
 $avanzo = $validar && $torneo['formato'] === 'eliminacion' && Competencia::avanzarLlave($torneo, (int) $partido['id_ronda']);
 $pdo->commit();

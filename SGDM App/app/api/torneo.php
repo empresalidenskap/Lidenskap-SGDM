@@ -29,8 +29,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     }
     // Las FK de torneo_modulo/torneo_arbitro/ronda/inscripcion (y en cascada
     // enfrentamiento/resultado/tabla_posiciones) tienen ON DELETE CASCADE:
-    // borrar el torneo se lleva puesto todo lo que dependía de él.
+    // borrar el torneo se lleva puesto todo lo que dependía de él. Las rondas
+    // van primero: los partidos apuntan a las inscripciones, y si MariaDB
+    // borra antes una inscripción, la FK del partido lo impide.
+    $pdo = Database::getConnection();
+    $pdo->beginTransaction();
+    $pdo->prepare('DELETE FROM ronda WHERE id_torneo = ?')->execute([$id]);
     Torneo::delete($id);
+    $pdo->commit();
     Auditoria::registrar("Baja de torneo: {$torneoBorrar['nombre_torneo']}", 'torneo');
     echo json_encode(['success' => true]);
     exit;
@@ -163,8 +169,8 @@ $pdo = Database::getConnection();
 $stmt = $pdo->prepare(
     'SELECT t.id_torneo, t.nombre_torneo, t.descripcion, t.sede, t.cupo_maximo,
             t.fecha_inicio, t.fecha_fin, t.estado, t.id_usuario_organizador,
-            t.max_integrantes_equipo,
-            tt.nombre_tipo,
+            t.max_integrantes_equipo, t.marcador_wo_ganador, t.marcador_wo_perdedor,
+            tt.nombre_tipo, tt.puntos_victoria, tt.puntos_empate, tt.puntos_derrota,
             mc.nombre_modulo,
             u.nombre AS organizador_nombre, u.apellido AS organizador_apellido
      FROM torneo t
@@ -216,6 +222,14 @@ $inscriptos = array_map(static function (array $fila): array {
     ];
 }, $stmtInscriptos->fetchAll());
 
+// Datos del reglamento que arma la tarjeta del detalle (todo sale del torneo y su formato)
+$confirmados = count(array_filter($inscriptos, static fn (array $i): bool => $i['estado'] === 'confirmada'));
+$reglas = [
+    'puntos' => [(float) $torneo['puntos_victoria'], (float) $torneo['puntos_empate'], (float) $torneo['puntos_derrota']],
+    'walkover' => [(int) $torneo['marcador_wo_ganador'], (int) $torneo['marcador_wo_perdedor']],
+    'umbralSuizo' => Competencia::umbralSuizo(max($confirmados, 2)),
+];
+
 echo json_encode([
     'success' => true,
     'torneo' => [
@@ -235,5 +249,6 @@ echo json_encode([
         'organizador' => trim($torneo['organizador_nombre'] . ' ' . $torneo['organizador_apellido']),
         'organizadorId' => (int) $torneo['id_usuario_organizador'],
         'inscriptos' => $inscriptos,
+        'reglas' => $reglas,
     ],
 ]);

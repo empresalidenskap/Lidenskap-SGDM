@@ -14,17 +14,6 @@ use App\Models\Torneo;
 use App\Models\Usuario;
 use App\RolesTorneo;
 
-/*
- * Equipos. El capitán (quien lo creó) solo anota al equipo en un torneo; quién entra al
- * equipo lo decide el Organizador del torneo donde está anotado:
- *   - un Usuario público pide unirse     -> 'solicitada' (resuelve el Organizador)
- *   - el Organizador invita a una cuenta -> 'invitada'   (resuelve la persona)
- *   - el Admin asigna                    -> 'aceptada'
- * Las solicitudes/invitaciones se resuelven en api/solicitudes.php
- * (tipo 'unirse_equipo'). Un equipo juega un solo torneo activo a la vez.
- */
-
-// Mientras el torneo está en estas fases se puede cambiar el plantel
 const FASES_PLANTEL = ['planificado', 'inscripcion_abierta'];
 
 header('Content-Type: application/json; charset=utf-8');
@@ -64,11 +53,6 @@ function leerInput(): array
     return is_array($input) ? $input : $_POST;
 }
 
-/**
- * ?mios=1      -> equipos donde soy capitán o integrante, con su plantel.
- * ?idTorneo=N  -> equipos confirmados en ese torneo (consulta pública), con
- *                 cuántos integrantes tienen, para "Solicitar unirme".
- */
 function handleList(): void
 {
     $pdo = Database::getConnection();
@@ -139,12 +123,6 @@ function handleList(): void
     echo json_encode(['success' => true, 'equipos' => $equipos]);
 }
 
-/**
- * Sin idTorneo: un Usuario público crea su equipo (queda como capitán e
- * integrante) y después lo anota en un torneo con api/solicitudes.php.
- * Con idTorneo: el Organizador/Admin crea un equipo sin capitán, ya
- * confirmado en su torneo.
- */
 function handleCreate(array $input): void
 {
     $nombre = trim((string) ($input['nombre'] ?? ''));
@@ -183,7 +161,6 @@ function handleCreate(array $input): void
     echo json_encode(['success' => true, 'id' => $idEquipo]);
 }
 
-/** Torneo activo del equipo con el plantel abierto, o corta con el error. */
 function torneoConPlantelAbierto(int $idEquipo): array
 {
     $torneo = Equipos::torneoActivo($idEquipo) ?? fallar(409, 'El equipo no está anotado en ningún torneo activo.');
@@ -193,7 +170,6 @@ function torneoConPlantelAbierto(int $idEquipo): array
     return $torneo;
 }
 
-/** Un Usuario público pide unirse a un equipo que no está completo. */
 function handleJoin(array $input): void
 {
     $sesion = Auth::requireRole('PUBLICO');
@@ -216,7 +192,6 @@ function handleJoin(array $input): void
     echo json_encode(['success' => true]);
 }
 
-/** El Organizador invita a una cuenta al equipo; el Admin la suma directo. */
 function handleInvite(array $input): void
 {
     $sesion = Auth::requireLogin();
@@ -244,10 +219,6 @@ function handleInvite(array $input): void
     echo json_encode(['success' => true, 'asignado' => $esAdmin]);
 }
 
-/**
- * ?idEquipo=&idParticipante= : sacar a un integrante (Organizador/Admin) o
- * salir uno mismo del equipo, mientras el plantel esté abierto.
- */
 function handleRemove(): void
 {
     $sesion = Auth::requireLogin();

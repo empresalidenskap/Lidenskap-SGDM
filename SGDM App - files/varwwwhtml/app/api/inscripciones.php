@@ -7,13 +7,6 @@ use App\Auditoria;
 use App\Auth;
 use App\Database;
 
-/*
- * Inscripciones de los torneos que gestiono (panel → Participantes y
- * equipos): el Admin ve todas; el Organizador, las de sus torneos activos.
- * Cada equipo trae su plantel (integrantes aceptados, invitados o que
- * pidieron unirse).
- */
-
 header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
@@ -91,11 +84,6 @@ foreach ($stmt->fetchAll() as $fila) {
 
 echo json_encode(['success' => true, 'inscripciones' => $inscripciones]);
 
-/**
- * PATCH {id, cabezaSerie}: el Organizador fija las cabezas de serie de las
- * llaves (RF-17), con las inscripciones cerradas y antes de generar el
- * fixture. null o 0 = sin cabeza de serie.
- */
 function cambiarCabezaDeSerie(): void
 {
     $input = json_decode(file_get_contents('php://input'), true);

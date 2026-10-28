@@ -7,7 +7,7 @@
 
   <script src="assets/js/theme-init.js?v=20260908-1"></script>
 
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261024-1">
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261027-3">
 </head>
 <body data-page="contact">
   <div id="star-container"></div>
@@ -47,7 +47,7 @@
       <form id="contactForm" class="form-grid">
         <div class="field">
           <label for="contactName">Nombre completo *</label>
-          <input type="text" id="contactName" name="name" placeholder="Ej.: Juan Pérez" required>
+          <input type="text" id="contactName" name="name" placeholder="Ej.: Juan Pérez" maxlength="100" required>
         </div>
 
         <div class="field">
@@ -68,14 +68,14 @@
 
         <div class="field field-full">
           <label for="contactMessage">Mensaje *</label>
-          <textarea id="contactMessage" name="message" rows="5" placeholder="Escribe tu consulta en detalle..." required></textarea>
+          <textarea id="contactMessage" name="message" rows="5" placeholder="Escribe tu consulta en detalle..." minlength="10" maxlength="2000" required></textarea>
         </div>
 
         <div class="form-actions field-full">
           <button class="btn-primary" type="submit">Enviar mensaje</button>
         </div>
       </form>
-      <p id="contactFeedback" class="helper-text" style="margin-top: 1rem;"></p>
+      <p id="contactFeedback" class="helper-text" style="margin-top: 1rem;" aria-live="polite"></p>
     </section>
   </main>
 
@@ -89,6 +89,6 @@
     </div>
   </footer>
 
-  <script src="assets/js/main.js?v=20261024-1"></script>
+  <script src="assets/js/main.js?v=20261027-3"></script>
 </body>
 </html>

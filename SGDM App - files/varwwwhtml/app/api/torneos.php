@@ -89,9 +89,6 @@ function handleList(): void
     echo json_encode(['success' => true, 'torneos' => $torneos]);
 }
 
-// El Admin publica el torneo directo. Un Usuario público solo puede
-// solicitarlo: queda 'solicitado' (oculto al público) hasta que el Admin lo
-// apruebe desde api/solicitudes.php, y ahí pasa a ser su Organizador.
 function handleCreate(): void
 {
     $usuario = Auth::requireLogin();
@@ -110,7 +107,6 @@ function handleCreate(): void
     $cupoMaximo = (int) ($input['cupoMaximo'] ?? 0);
     $fechaInicio = trim((string) ($input['fechaInicio'] ?? ''));
     $sede = trim((string) ($input['sede'] ?? ''));
-    // Solo para torneos de equipos; vacío = sin límite de integrantes
     $maxIntegrantes = (int) ($input['maxIntegrantesEquipo'] ?? 0);
 
     if ($nombre === '' || $descripcion === '' || $disciplinaCodigo === ''
@@ -156,7 +152,6 @@ function handleCreate(): void
         'cupo_maximo' => $cupoMaximo,
         'fecha_inicio' => $fechaInicio,
         'max_integrantes_equipo' => $maxIntegrantes > 0 ? $maxIntegrantes : null,
-        // En el suizo (series al mejor de 3) el walkover es 2-0
         'marcador_wo_ganador' => $formatoCodigo === 'suizo' ? 2 : 3,
         'marcador_wo_perdedor' => 0,
         'estado' => $esSolicitud ? 'solicitado' : 'planificado',

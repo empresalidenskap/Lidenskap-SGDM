@@ -27,22 +27,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         echo json_encode(['success' => false, 'error' => 'Torneo no encontrado.']);
         exit;
     }
-    // Las FK de torneo_modulo/torneo_arbitro/ronda/inscripcion (y en cascada
-    // enfrentamiento/resultado/tabla_posiciones) tienen ON DELETE CASCADE:
-    // borrar el torneo se lleva puesto todo lo que dependía de él.
+    $pdo = Database::getConnection();
+    $pdo->beginTransaction();
+    $pdo->prepare('DELETE FROM ronda WHERE id_torneo = ?')->execute([$id]);
     Torneo::delete($id);
+    $pdo->commit();
     Auditoria::registrar("Baja de torneo: {$torneoBorrar['nombre_torneo']}", 'torneo');
     echo json_encode(['success' => true]);
     exit;
 }
 
-// Fases de inscripción (RF-08), en orden y solo hacia adelante:
-// planificado -> inscripcion_abierta -> inscripcion_cerrada. Al cerrar, lo
-// que quedó sin resolver (solicitudes e invitaciones de participantes y de
-// integrantes de equipos) se rechaza solo, y se sortea el orden de los
-// confirmados (numero_sorteo: llaves y último criterio de desempate).
-// en_curso empieza al generar el fixture (api/rondas.php); 'finalizar' lo
-// cierra: en_curso -> finalizado.
 if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
     $accion = $_GET['accion'] ?? '';
     $torneoFase = Torneo::find($id);
@@ -73,11 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
     $pdo = Database::getConnection();
     $detalle = null;
 
-    // Finalizar (F7): solo con todos los resultados validados ("resultados
-    // publicados") y, en llaves, con campeón. Al pasar a 'finalizado',
-    // vista_rol_torneo apaga los roles del torneo: organizador, árbitros y
-    // participantes vuelven a ser solo Usuarios públicos (misma cuenta) y el
-    // historial queda.
     if ($accion === 'finalizar') {
         $stmt = $pdo->prepare('SELECT id_ronda, numero_ronda FROM ronda WHERE id_torneo = ? ORDER BY numero_ronda');
         $stmt->execute([$id]);
@@ -163,8 +152,8 @@ $pdo = Database::getConnection();
 $stmt = $pdo->prepare(
     'SELECT t.id_torneo, t.nombre_torneo, t.descripcion, t.sede, t.cupo_maximo,
             t.fecha_inicio, t.fecha_fin, t.estado, t.id_usuario_organizador,
-            t.max_integrantes_equipo,
-            tt.nombre_tipo,
+            t.max_integrantes_equipo, t.marcador_wo_ganador, t.marcador_wo_perdedor,
+            tt.nombre_tipo, tt.puntos_victoria, tt.puntos_empate, tt.puntos_derrota,
             mc.nombre_modulo,
             u.nombre AS organizador_nombre, u.apellido AS organizador_apellido
      FROM torneo t
@@ -177,8 +166,6 @@ $stmt = $pdo->prepare(
 $stmt->execute(['id' => $id]);
 $torneo = $stmt->fetch();
 
-// Una solicitud de torneo (sin aprobar o rechazada) solo la ven el Admin y
-// quien la pidió; para el resto es como si no existiera.
 if ($torneo !== false && in_array($torneo['estado'], ['solicitado', 'rechazado'], true)) {
     $sesion = Auth::current();
     $puedeVerla = $sesion !== null
@@ -194,8 +181,6 @@ if ($torneo === false) {
     exit;
 }
 
-// Nombre de cada inscripto: si el competidor es un equipo usa
-// nombre_equipo, si es un participante usa nombre_participante.
 $stmtInscriptos = $pdo->prepare(
     'SELECT i.id_inscripcion, i.estado_inscripcion, c.tipo_competidor,
             eq.nombre_equipo, pa.nombre_participante
@@ -216,6 +201,13 @@ $inscriptos = array_map(static function (array $fila): array {
     ];
 }, $stmtInscriptos->fetchAll());
 
+$confirmados = count(array_filter($inscriptos, static fn (array $i): bool => $i['estado'] === 'confirmada'));
+$reglas = [
+    'puntos' => [(float) $torneo['puntos_victoria'], (float) $torneo['puntos_empate'], (float) $torneo['puntos_derrota']],
+    'walkover' => [(int) $torneo['marcador_wo_ganador'], (int) $torneo['marcador_wo_perdedor']],
+    'umbralSuizo' => Competencia::umbralSuizo(max($confirmados, 2)),
+];
+
 echo json_encode([
     'success' => true,
     'torneo' => [
@@ -235,5 +227,6 @@ echo json_encode([
         'organizador' => trim($torneo['organizador_nombre'] . ' ' . $torneo['organizador_apellido']),
         'organizadorId' => (int) $torneo['id_usuario_organizador'],
         'inscriptos' => $inscriptos,
+        'reglas' => $reglas,
     ],
 ]);

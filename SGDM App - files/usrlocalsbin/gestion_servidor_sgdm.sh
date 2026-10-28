@@ -37,7 +37,6 @@ confirmar() {
     [[ "$resp" == "s" || "$resp" == "S" ]]
 }
 
-# Ejecuta uno de los scripts del servidor y avisa si terminó con error
 ejecutar() {
     local script="$DIR_SBIN/$1"
     if [[ ! -x "$script" ]]; then

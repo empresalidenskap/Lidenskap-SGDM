@@ -3,14 +3,8 @@ declare(strict_types=1);
 
 namespace App;
 
-/**
- * Consultas de equipos que usan varios endpoints. Un equipo juega un solo
- * torneo activo a la vez: el de su inscripción pendiente o confirmada en un
- * torneo que no terminó. El Organizador de ese torneo decide quién entra.
- */
 final class Equipos
 {
-    /** Torneo activo del equipo (fila de torneo + id/estado de la inscripción) o null. */
     public static function torneoActivo(int $idEquipo): ?array
     {
         $stmt = Database::getConnection()->prepare(
@@ -37,14 +31,12 @@ final class Equipos
         return (int) $stmt->fetchColumn();
     }
 
-    /** ¿El equipo ya llegó al máximo de integrantes que fija el torneo? */
     public static function lleno(int $idEquipo, array $torneo): bool
     {
         return $torneo['max_integrantes_equipo'] !== null
             && self::aceptados($idEquipo) >= (int) $torneo['max_integrantes_equipo'];
     }
 
-    /** Fila de integrante (con el id_usuario de la persona) o null. */
     public static function integrante(int $idEquipo, int $idParticipante): ?array
     {
         $stmt = Database::getConnection()->prepare(
@@ -59,7 +51,6 @@ final class Equipos
         return $fila === false ? null : $fila;
     }
 
-    /** Crea o reactiva (si había sido rechazada) la fila de integrante. */
     public static function ponerIntegrante(int $idEquipo, int $idParticipante, string $estado): void
     {
         Database::getConnection()->prepare(
@@ -75,11 +66,6 @@ final class Equipos
         )->execute([$estado, $idEquipo, $idParticipante]);
     }
 
-    /**
-     * Pedidos e invitaciones para unirse a equipos de torneos activos, con
-     * el mismo formato que las demás solicitudes (tipo 'unirse_equipo').
-     * $where filtra sobre ep/i/u (p. ej. "u.id_usuario = :yo").
-     */
     public static function solicitudes(string $where, array $params): array
     {
         $stmt = Database::getConnection()->prepare(

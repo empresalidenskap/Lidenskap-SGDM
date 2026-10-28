@@ -12,3 +12,15 @@ spl_autoload_register(function (string $class): void {
         require $file;
     }
 });
+
+// Manejo centralizado de errores: un error que ningún endpoint atrapó queda
+// en el log de PHP y el front recibe el mismo JSON de siempre, sin detalles
+// internos (rutas, consultas) que le sirvan a un atacante.
+set_exception_handler(static function (Throwable $error): void {
+    error_log('[SGDM] ' . $error);
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+    }
+    echo json_encode(['success' => false, 'error' => 'Ocurrió un error en el servidor. Intentá de nuevo y, si sigue pasando, avisá al administrador.']);
+});

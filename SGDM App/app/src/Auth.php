@@ -14,7 +14,7 @@ namespace App;
  */
 final class Auth
 {
-    private static function ensureStarted(): void
+    public static function ensureStarted(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             // Cookie de sesión: JS no la puede leer (HttpOnly, así un XSS no

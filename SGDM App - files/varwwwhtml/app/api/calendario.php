@@ -7,14 +7,6 @@ use App\Catalogos;
 use App\Competencia;
 use App\Database;
 
-/*
- * Calendario público (RF-18): los partidos de todos los torneos que ya
- * tienen fixture (en curso o finalizados), sin iniciar sesión. Solo se
- * muestra el resultado validado; los partidos libres no se listan porque no
- * se juegan. La fecha es la que programó el Organizador o, si no, la de la
- * ronda.
- */
-
 header('Content-Type: application/json; charset=utf-8');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {

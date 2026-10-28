@@ -18,6 +18,9 @@ app/
 │   ├── Equipos.php             Planteles y torneo activo de cada equipo
 │   ├── Competencia.php         Fixture por formato, llaves, suizo y tabla de posiciones
 │   ├── Auditoria.php           Registro de auditoría
+│   ├── Password.php            Reglas de contraseña y aviso de cambio por correo
+│   ├── RecuperacionPassword.php  "Olvidé mi contraseña" (código por correo)
+│   ├── Correo.php              Envío con la API de Gmail (ver ../README.md)
 │   ├── Catalogos.php           Traducción código↔nombre (disciplina/formato)
 │   └── Models/                Una clase por tabla (17 en total)
 └── assets/

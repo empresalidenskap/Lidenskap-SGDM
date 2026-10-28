@@ -98,10 +98,11 @@ nueva, y se actualizó la copia del servidor (`SGDM App - files/`).
 | F11 Documentación | `940b516` | [`NORMALIZACION.md`](./NORMALIZACION.md), consultas de la BD de ASO con roles por torneo, README al día y copia del servidor verificada. |
 | F12 Prueba final | - | Recorrido completo sobre una base nueva, haciendo clic en la interfaz: pedir un torneo, aprobarlo, inscripciones, fixture, resultados, walkover, finalizar y revocación de roles. Todo OK, sin cambios de código. |
 | Llaves y suizo esports | - | Vista de llaves aportada por el equipo (`bracket.js`/`bracket.css`): árbol de eliminación directa con camino del ganador y campeón, y etapa suiza por récord, en la página del torneo y en el panel. Formatos: eliminación directa al mejor de 1; suizo como en los esports, series al mejor de 3, se clasifica con N victorias y queda eliminado con N derrotas (N según la cantidad de inscriptos). |
+| Contraseñas y correo | - | "Olvidé mi contraseña" con un código de 6 números por correo (API de Gmail, empresalidenskap@gmail.com), cambiar la contraseña desde el perfil, aviso por correo de cada cambio, y cuentas creadas por el Administrador sin contraseña: a la persona le llega un correo para elegirla. Detalle y configuración en `SGDM App/README.md`. |
+| Sin funciones de muestra | - | Contacto envía el mensaje por correo a la casilla del sistema (`api/contacto.php`, se responde con "Responder"); la tarjeta de reglamento del torneo, que mostraba un PDF de ejemplo, ahora lista las reglas reales de su formato (puntos, desempate, walkover); se quitó del panel el módulo Configuración, que solo guardaba en el navegador y no cambiaba nada del sistema. |
 
-Fuera de alcance por ahora: los 50 registros por componente, cambiar o
-recuperar la contraseña, contraseñas temporales enviadas por correo, subir el
-reglamento de cada torneo y el filtro por videojuego del calendario.
+Fuera de alcance por ahora: los 50 registros por componente, subir un
+reglamento propio en PDF y el filtro por videojuego del calendario.
 
 ## Corrección de la segunda entrega de Programación Fullstack
 

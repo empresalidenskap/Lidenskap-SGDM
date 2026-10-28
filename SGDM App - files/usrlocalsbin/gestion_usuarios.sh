@@ -1,17 +1,10 @@
 #!/bin/bash
-# gestion_usuarios_sgdm.sh
-#   Implementa el principio de privilegio mínimo
-#     - Cada integrante del equipo tiene su propia cuenta.
-#     - La aplicación corre bajo un usuario de servicio sin acceso interactivo.
-#     - El acceso sudo se otorga por grupo, no por usuario individual, para poder revocarlo o auditarlo de forma centralizada.
 set -euo pipefail
 
 LOG="/var/log/sgdm_gestion_usuarios.log"
 GRUPO_ADMIN="sgdm_admins"
 GRUPO_DEV="sgdm_devs"
 DIR_APP="/var/www/html"
-
-# Utilidades
 
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG" >/dev/null
@@ -24,7 +17,6 @@ require_root() {
     fi
 }
 
-# Verifica que quien ejecuta el script pertenezca al grupo de administración
 requiere_rol_admin() {
     local usuario_actual
     usuario_actual=$(id -un)
@@ -44,8 +36,6 @@ requiere_rol_admin() {
 generar_password_temporal() {
     openssl rand -base64 12
 }
-
-# Grupos base del proyecto
 
 crear_grupos_base() {
     for g in "$GRUPO_ADMIN" "$GRUPO_DEV"; do
@@ -67,8 +57,6 @@ configurar_sudo_admins() {
     fi
     log "Privilegios sudo otorgados al grupo '$GRUPO_ADMIN' vía $archivo_sudoers."
 }
-
-# Alta de cuentas de administración 
 
 crear_usuario_admin() {
     local usuario=$1
@@ -92,8 +80,6 @@ crear_usuario_admin() {
     echo ">> Contraseña temporal para $usuario: ${temp_pass}  (se debe cambiar al primer ingreso)"
 }
 
-# Alta de cuentas de servicio
-
 crear_usuario_servicio() {
     local usuario=$1
     local home_dir=$2
@@ -116,8 +102,6 @@ asignar_permisos_directorio_app() {
     chmod -R 750 "$dir"
     log "Permisos de '$dir' asignados a svc_sgdm:${GRUPO_DEV} (750)."
 }
-
-# Baja / bloqueo / desbloqueo
 
 bloquear_usuario() {
     local usuario=$1
@@ -144,8 +128,6 @@ eliminar_usuario() {
     fi
 }
 
-# Reporte / auditoría
-
 listar_usuarios() {
     echo "---- Usuarios humanos (UID 1000-65533) ----"
     while IFS=: read -r nombre _ uid _ _ _ shell; do
@@ -163,8 +145,6 @@ listar_usuarios() {
     echo "---- Usuario de servicio de la aplicación ----"
     getent passwd svc_sgdm 2>/dev/null || echo "(no configurado aún)"
 }
-
-# Provisión inicial: alta de TODOS los usuarios definidos para el proyecto
 
 provisionar_usuarios_proyecto() {
     require_root
@@ -184,8 +164,6 @@ provisionar_usuarios_proyecto() {
     echo
     listar_usuarios
 }
-
-# CLI
 
 uso() {
     cat <<EOF

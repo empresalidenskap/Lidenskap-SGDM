@@ -1,10 +1,3 @@
-/* ============================================================
-   LIDENSKAP — SGDM  |  bracket.css
-   Llaves (eliminación directa y etapa suiza). Mobile first: en celular se
-   desliza horizontalmente ronda por ronda; en PC entra completa.
-   Usa las variables de color de styles.css (tema claro/oscuro).
-   ============================================================ */
-
 .bracket-section { margin-top: 1rem; }
 .bracket-section .section-eyebrow { margin-bottom: 0.35rem; }
 .bracket-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin: 0.5rem 0 1rem; color: var(--text-muted); font-size: 0.7rem; }
@@ -16,10 +9,9 @@
 .bk-hint { margin-bottom: 0.6rem; color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.04em; }
 .bk-empty { padding: 1.5rem; color: var(--text-secondary); text-align: center; border: 1px dashed var(--border-hover); border-radius: 8px; }
 
-/* Contenedor con scroll horizontal (celular) */
 .bk-scroll {
-  --bk-gap: 1.1rem;          /* espacio entre rondas = largo de las líneas */
-  --bk-card: 196px;          /* ancho de cada partido */
+  --bk-gap: 1.1rem;
+  --bk-card: 196px;
   --bk-line: var(--border-hover);
   --bk-line-win: var(--gold);
   overflow-x: auto;
@@ -32,9 +24,6 @@
 
 .bk-tree { display: flex; align-items: stretch; width: max-content; min-width: 100%; }
 
-/* Cada ronda es una columna. Todas tienen el mismo alto, así que
-   cada partido de la ronda siguiente queda justo en el medio de
-   los dos partidos de los que viene. */
 .bk-round { display: flex; flex-direction: column; flex: 0 0 auto; scroll-snap-align: start; }
 .bk-round-title {
   display: flex; flex-direction: column; justify-content: center; gap: 0.15rem;
@@ -48,12 +37,9 @@
 .bk-round-title small { color: var(--text-muted); font-family: 'Inter', sans-serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .bk-round-body { display: flex; flex: 1; flex-direction: column; }
 
-/* Un "slot" por partido: ocupa la mitad de alto que el de la ronda siguiente */
 .bk-slot { position: relative; display: flex; flex: 1; align-items: center; padding: 0.4rem var(--bk-gap); }
 .bk-round:first-child .bk-slot { padding-left: 0; }
 
-/* ---------- Líneas conectoras ---------- */
-/* Salida hacia la derecha: el de arriba baja, el de abajo sube y se juntan */
 .bk-slot.is-top::after,
 .bk-slot.is-bottom::after,
 .bk-slot.is-single::after {
@@ -64,17 +50,14 @@
 .bk-slot.is-bottom::after { bottom: 50%; height: 50%; border-bottom-width: 2px; border-right-width: 2px; border-bottom-right-radius: 8px; }
 .bk-slot.is-single::after { top: 50%; border-top-width: 2px; transform: translateY(-1px); }
 
-/* Entrada desde la izquierda (desde la ronda 2 en adelante) */
 .bk-round + .bk-round .bk-slot::before {
   content: ''; position: absolute; left: 0; top: 50%; width: var(--bk-gap);
   border-top: 2px solid var(--bk-line); transform: translateY(-1px); pointer-events: none;
 }
 
-/* Camino del ganador en dorado */
 .bk-slot.is-decided::after { border-color: var(--bk-line-win); }
 .bk-round + .bk-round .bk-slot.is-fed::before { border-color: var(--bk-line-win); }
 
-/* ---------- Tarjeta del partido ---------- */
 .bk-match {
   position: relative; z-index: 1;
   width: var(--bk-card);
@@ -119,7 +102,6 @@
 [data-theme="light"] .bk-team.is-winner .bk-name,
 [data-theme="light"] .bk-team.is-winner .bk-score { color: #8a6400; }
 
-/* ---------- Campeón ---------- */
 .bk-round--champion .bk-round-title { margin-right: 0; }
 .bk-round--champion .bk-slot { padding-right: 0; }
 .bk-champion {
@@ -141,7 +123,6 @@
 .bk-champion.is-crowned span { opacity: 1; }
 [data-theme="light"] .bk-champion.is-crowned { color: #8a6400; }
 
-/* ---------- Tablet y PC ---------- */
 @media (min-width: 640px) {
   .bk-scroll { --bk-gap: 1.5rem; --bk-card: 210px; scroll-snap-type: x proximity; }
   .bk-team { font-size: 0.82rem; }
@@ -151,11 +132,8 @@
   .bk-scroll { --bk-gap: 2rem; --bk-card: 220px; }
 }
 
-/* Dentro de una grilla (detalle del torneo, panel) la llave no puede
-   ensanchar la página: se desliza dentro de su tarjeta */
 .detail-main-content, .detail-card, .round-list > *, .detail-bracket, .panel-bracket { min-width: 0; }
 
-/* ---------- Etapa suiza (sin líneas: columnas por ronda, grupos por récord) ---------- */
 .bk-swiss .bk-swiss-body { gap: 1rem; justify-content: flex-start; }
 .bk-group { display: grid; align-content: start; gap: 0.5rem; padding: 0 var(--bk-gap); }
 .bk-round:first-child .bk-group { padding-left: 0; }

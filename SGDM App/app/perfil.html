@@ -6,7 +6,7 @@
   <title>Perfil Lidenskap</title>
   <script src="assets/js/theme-init.js?v=20260908-1"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261024-1">
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261027-3">
 </head>
 <body data-page="profile">
   <div id="star-container"></div>
@@ -64,7 +64,10 @@
             <div><dt id="profileExtraLabel1">Acceso</dt><dd id="profileExtraValue1">-</dd></div>
             <div><dt id="profileExtraLabel2">Ámbito</dt><dd id="profileExtraValue2">-</dd></div>
           </dl>
-          <button id="profileLogout" class="btn-secondary profile-logout" type="button">Cerrar sesión</button>
+          <div class="profile-account-actions">
+            <button id="changePasswordBtn" class="btn-secondary" type="button">Cambiar contraseña</button>
+            <button id="profileLogout" class="btn-secondary profile-logout" type="button">Cerrar sesión</button>
+          </div>
         </aside>
       </div>
 
@@ -109,6 +112,33 @@
           <p id="profileFeedback" class="form-feedback field-full" aria-live="polite"></p>
         </form>
       </section>
+
+      <!-- Se abre con el botón o con perfil.html#cambiar-contrasena (menú Mi Perfil) -->
+      <section id="passwordEditor" class="inline-editor surface-card password-editor" hidden aria-label="Cambiar contraseña">
+        <p class="section-eyebrow" id="cambiar-contrasena">Seguridad</p>
+        <h2>CAMBIAR CONTRASEÑA</h2>
+        <form id="passwordForm" class="form-grid">
+          <div class="field field-full">
+            <label for="currentPassword">Contraseña actual</label>
+            <div class="password-field"><input type="password" id="currentPassword" autocomplete="current-password" required></div>
+            <button type="button" class="auth-link" id="passwordForgotLink">¿No la recordás? Recuperarla por correo</button>
+          </div>
+          <div class="field">
+            <label for="newPassword">Contraseña nueva</label>
+            <div class="password-field"><input type="password" id="newPassword" autocomplete="new-password" required></div>
+          </div>
+          <div class="field">
+            <label for="confirmPassword">Repetir contraseña nueva</label>
+            <div class="password-field"><input type="password" id="confirmPassword" autocomplete="new-password" required></div>
+          </div>
+          <p id="passwordError" class="auth-error field-full" role="alert" hidden></p>
+          <div class="form-actions field-full">
+            <button class="btn-primary" type="submit">Guardar contraseña</button>
+            <button class="btn-secondary" type="button" id="cancelPasswordEdit">Cancelar</button>
+          </div>
+          <p id="passwordFeedback" class="form-feedback field-full" aria-live="polite"></p>
+        </form>
+      </section>
     </section>
   </main>
 
@@ -123,6 +153,6 @@
     </div>
   </footer>
 
-  <script src="assets/js/main.js?v=20261024-1"></script>
+  <script src="assets/js/main.js?v=20261027-3"></script>
 </body>
 </html>

@@ -1,0 +1,2 @@
+# Las clases PHP solo se incluyen desde api/: no se piden desde el navegador
+Require all denied

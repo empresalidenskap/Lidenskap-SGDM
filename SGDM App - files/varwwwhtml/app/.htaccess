@@ -1,14 +1,8 @@
-# Las páginas HTML no llevan versión (?v=) como el JS y el CSS: el navegador
-# tiene que preguntar siempre si cambiaron, si no muestra una copia vieja
 <IfModule mod_headers.c>
     <FilesMatch "\.html$">
         Header set Cache-Control "no-cache"
     </FilesMatch>
 
-    # Encabezados de seguridad (OWASP). La CSP solo deja correr los .js del
-    # propio sitio: un <script> o un onerror="..." metido en un nombre no se
-    # ejecuta aunque llegue al HTML. Los estilos permiten 'unsafe-inline'
-    # por los style="..." del maquetado; las fuentes vienen de Google Fonts.
     Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "DENY"

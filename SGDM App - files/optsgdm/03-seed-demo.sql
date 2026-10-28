@@ -1,12 +1,3 @@
--- Datos de demostración
--- Solo admin@ tiene un rol global; el resto son Usuarios públicos con roles
--- dentro de cada torneo (ver vista_rol_torneo en 01-schema.sql). Alcanza
--- para mostrar cada funcionalidad recién instalado: un torneo por formato y
--- por fase, equipos, solicitudes e invitaciones pendientes, resultados
--- (validados, walkover y sin validar) y un torneo finalizado con campeón.
---
--- Cuentas: admin@ admin123 · organizador@ org123 · arbitro@ arb123 ·
--- atleta@ user123 · publico@ guest123 · el resto de los jugadores demo1234.
 SET NAMES utf8mb4;
 USE sgdm;
 
@@ -27,7 +18,6 @@ INSERT INTO usuario (id_rol, nombre, apellido, email, password) VALUES
      'Usuario', 'Publico', 'publico@lidenskap.com',
      '$2y$10$DOQtrUmPcEk0GHCpryYB7.HXLeOXDJqffferhmCVULcz61fwRju.u');
 
--- Jugadores, una organizadora y un segundo árbitro (contraseña: demo1234)
 SET @rol_publico = (SELECT id_rol FROM rol WHERE nombre_rol = 'PUBLICO');
 SET @demo = '$2y$10$o/4N1fAoAswDKNMbKDBaOupnRBfT9LMH7zbdRhUNKkIFyb.S39NSe';
 INSERT INTO usuario (id_rol, nombre, apellido, email, password) VALUES
@@ -60,8 +50,6 @@ SET @u_agustina   = (SELECT id_usuario FROM usuario WHERE email = 'agustina@lide
 SET @u_martin     = (SELECT id_usuario FROM usuario WHERE email = 'martin@lidenskap.com');
 SET @u_florencia  = (SELECT id_usuario FROM usuario WHERE email = 'florencia@lidenskap.com');
 
--- Ficha de jugador (participante) de cada persona que compite: la misma en
--- todos los torneos y equipos
 INSERT INTO competidor (tipo_competidor) VALUES ('participante'); SET @c_diego = LAST_INSERT_ID();
 INSERT INTO participante (id_competidor, id_usuario, nombre_participante) VALUES (@c_diego, @u_diego, 'Diego Silva'); SET @p_diego = LAST_INSERT_ID();
 INSERT INTO competidor (tipo_competidor) VALUES ('participante'); SET @c_lucia = LAST_INSERT_ID();
@@ -87,19 +75,12 @@ SET @liga     = (SELECT id_tipo_torneo FROM tipo_torneo WHERE nombre_tipo = 'Lig
 SET @llaves   = (SELECT id_tipo_torneo FROM tipo_torneo WHERE nombre_tipo = 'Eliminación Directa');
 SET @suizo    = (SELECT id_tipo_torneo FROM tipo_torneo WHERE nombre_tipo = 'Sistema Suizo');
 
--- ---------------------------------------------------------------------------
--- 1. Copa Demo Lidenskap: liga de fútbol EN CURSO, 4 equipos.
---    organizador@ la organiza, arbitro@ y Martín arbitran, atleta@ juega
---    en Halcones del Sur. Fecha 1 cerrada (con un walkover), fecha 2 con un
---    resultado sin validar, fecha 3 programada.
--- ---------------------------------------------------------------------------
 INSERT INTO torneo (id_tipo_torneo, id_usuario_organizador, nombre_torneo, descripcion, sede, cupo_maximo, fecha_inicio, estado, max_integrantes_equipo) VALUES
     (@liga, @u_org, 'Copa Demo Lidenskap', 'Liga de fútbol 5 todos contra todos. Torneo de demostración de roles por torneo.', 'Complejo Deportivo Central, Montevideo', 8, '2026-10-10', 'en_curso', 5);
 SET @t1 = LAST_INSERT_ID();
 INSERT INTO torneo_modulo (id_torneo, id_modulo) VALUES (@t1, (SELECT id_modulo FROM modulo_competencia WHERE nombre_modulo = 'Fútbol'));
 INSERT INTO torneo_arbitro (id_torneo, id_usuario, estado_solicitud) VALUES (@t1, @u_arbitro, 'aprobada'), (@t1, @u_martin, 'aprobada');
 
--- Equipos: tres creados por un Usuario público (su capitán) y uno por el Organizador (sin capitán)
 INSERT INTO competidor (tipo_competidor) VALUES ('equipo'); SET @c_halcones = LAST_INSERT_ID();
 INSERT INTO equipo (id_competidor, id_usuario, nombre_equipo) VALUES (@c_halcones, @u_diego, 'Halcones del Sur'); SET @e_halcones = LAST_INSERT_ID();
 INSERT INTO competidor (tipo_competidor) VALUES ('equipo'); SET @c_parque = LAST_INSERT_ID();
@@ -119,7 +100,6 @@ INSERT INTO inscripcion (id_torneo, id_competidor, estado_inscripcion, numero_so
 INSERT INTO inscripcion (id_torneo, id_competidor, estado_inscripcion, numero_sorteo) VALUES (@t1, @c_norte, 'confirmada', 3);    SET @i_norte = LAST_INSERT_ID();
 INSERT INTO inscripcion (id_torneo, id_competidor, estado_inscripcion, numero_sorteo) VALUES (@t1, @c_racing, 'confirmada', 4);   SET @i_racing = LAST_INSERT_ID();
 
--- Fixture del método del círculo (el mismo que arma api/rondas.php)
 INSERT INTO ronda (id_torneo, numero_ronda, estado_ronda, fecha_programada) VALUES (@t1, 1, 'finalizada', '2026-10-10'); SET @r1 = LAST_INSERT_ID();
 INSERT INTO ronda (id_torneo, numero_ronda, estado_ronda, fecha_programada) VALUES (@t1, 2, 'en_curso', '2026-10-17');   SET @r2 = LAST_INSERT_ID();
 INSERT INTO ronda (id_torneo, numero_ronda, estado_ronda, fecha_programada) VALUES (@t1, 3, 'en_curso', '2026-10-24');   SET @r3 = LAST_INSERT_ID();
@@ -136,9 +116,6 @@ INSERT INTO enfrentamiento (id_ronda, id_inscripcion_local, id_inscripcion_visit
     (@r3, @i_halcones, @i_parque, @u_arbitro, '2026-10-24 18:00:00', 'programado'),
     (@r3, @i_norte, @i_racing, @u_martin, '2026-10-24 20:00:00', 'programado');
 
--- Halcones 2-1 Racing; Club del Parque no se presentó: walkover 0-3 para
--- Atlético Norte; Norte 1-1 Halcones; Parque 2-0 Racing cargado por el
--- árbitro y todavía sin validar (no cuenta en la tabla)
 INSERT INTO resultado (id_enfrentamiento, puntuacion_local, puntuacion_visitante, validado, fecha_carga) VALUES
     (@m1, 2, 1, TRUE, '2026-10-10 19:50:00'),
     (@m2, 0, 3, TRUE, '2026-10-10 20:15:00'),
@@ -151,18 +128,11 @@ INSERT INTO tabla_posiciones (id_inscripcion, victorias, empates, derrotas, gole
     (@i_norte,    1, 1, 0, 4, 1),
     (@i_racing,   0, 0, 1, 1, 2);
 
--- ---------------------------------------------------------------------------
--- 2. Solicitud de publico@ para crear un torneo: la resuelve el Admin
--- ---------------------------------------------------------------------------
 INSERT INTO torneo (id_tipo_torneo, id_usuario_organizador, nombre_torneo, descripcion, sede, cupo_maximo, fecha_inicio, estado) VALUES
     (@llaves, @u_publico, 'Torneo Relámpago de Ajedrez', 'Solicitud de un Usuario público, pendiente de aprobación.', 'Canelones', 8, '2026-11-21', 'solicitado');
 INSERT INTO torneo_modulo (id_torneo, id_modulo) VALUES
     (LAST_INSERT_ID(), (SELECT id_modulo FROM modulo_competencia WHERE nombre_modulo = 'Ajedrez'));
 
--- ---------------------------------------------------------------------------
--- 3. Open de Tenis Primavera: eliminación directa FINALIZADA, con cabezas de
---    serie. Campeona: Florencia Silva. Los roles de este torneo ya terminaron.
--- ---------------------------------------------------------------------------
 INSERT INTO torneo (id_tipo_torneo, id_usuario_organizador, nombre_torneo, descripcion, sede, cupo_maximo, fecha_inicio, estado) VALUES
     (@llaves, @u_valentina, 'Open de Tenis Primavera', 'Torneo individual al mejor de tres sets.', 'Carrasco Lawn Tennis', 4, '2026-09-05', 'finalizado');
 SET @t3 = LAST_INSERT_ID();
@@ -192,12 +162,6 @@ INSERT INTO tabla_posiciones (id_inscripcion, victorias, empates, derrotas, gole
     (@i_camila,    1, 0, 1, 9, 10),
     (@i_mateo,     0, 0, 1, 2, 6);
 
--- ---------------------------------------------------------------------------
--- 4. Suizo de Ajedrez Invierno: etapa suiza EN CURSO con 5 jugadores, series
---    al mejor de 3 (con 2 victorias se clasifica, con 2 derrotas queda
---    eliminado). Ronda 1 completa (Sofía quedó libre); el Organizador ya
---    puede generar la ronda 2 desde el panel.
--- ---------------------------------------------------------------------------
 INSERT INTO torneo (id_tipo_torneo, id_usuario_organizador, nombre_torneo, descripcion, sede, cupo_maximo, fecha_inicio, estado, marcador_wo_ganador, marcador_wo_perdedor) VALUES
     (@suizo, @u_org, 'Suizo de Ajedrez Invierno', 'Series al mejor de 3 partidas a 30 minutos. Cruces entre jugadores con el mismo récord, sin repetir rivales.', 'Club de Ajedrez Montevideo', 8, '2026-10-15', 'en_curso', 2, 0);
 SET @t4 = LAST_INSERT_ID();
@@ -226,11 +190,6 @@ INSERT INTO tabla_posiciones (id_inscripcion, victorias, empates, derrotas, gole
     (@a_nicolas,  0, 0, 1, 1, 2),
     (@a_sofia,    1, 0, 0, 0, 0);
 
--- ---------------------------------------------------------------------------
--- 5. Liga de Básquet Otoño: INSCRIPCIONES ABIERTAS. Pendientes para el
---    Organizador: un equipo por aprobar, un pedido para unirse a un equipo y
---    un árbitro que se postuló. publico@ tiene una invitación para arbitrar.
--- ---------------------------------------------------------------------------
 INSERT INTO torneo (id_tipo_torneo, id_usuario_organizador, nombre_torneo, descripcion, sede, cupo_maximo, fecha_inicio, estado, max_integrantes_equipo) VALUES
     (@liga, @u_org, 'Liga de Básquet Otoño', 'Liga de básquetbol 3x3 para equipos amateur.', 'Gimnasio Malvín', 6, '2026-11-14', 'inscripcion_abierta', 5);
 SET @t5 = LAST_INSERT_ID();
@@ -251,16 +210,11 @@ INSERT INTO torneo_arbitro (id_torneo, id_usuario, estado_solicitud) VALUES
     (@t5, @u_publico, 'invitada'),
     (@t5, @u_martin, 'pendiente');
 
--- ---------------------------------------------------------------------------
--- 6. Copa Lidenskap VALORANT: PLANIFICADA (todavía sin inscripciones). El
---    Organizador puede abrirlas desde el detalle del torneo.
--- ---------------------------------------------------------------------------
 INSERT INTO torneo (id_tipo_torneo, id_usuario_organizador, nombre_torneo, descripcion, sede, cupo_maximo, fecha_inicio, estado, max_integrantes_equipo) VALUES
     (@llaves, @u_org, 'Copa Lidenskap VALORANT', 'Torneo de esports 5 contra 5, series al mejor de tres.', 'Online', 8, '2026-12-05', 'planificado', 5);
 INSERT INTO torneo_modulo (id_torneo, id_modulo) VALUES
     (LAST_INSERT_ID(), (SELECT id_modulo FROM modulo_competencia WHERE nombre_modulo = 'Esports'));
 
--- Auditoría: algunas acciones anteriores, para que el panel no arranque vacío
 INSERT INTO auditoria_registro (id_usuario, accion_realizada, tabla_afectada, detalle, fecha_hora, ip_origen) VALUES
     (@u_admin, 'Alta de torneo: Open de Tenis Primavera', 'torneo', NULL, '2026-08-20 10:15:00', '127.0.0.1'),
     (@u_valentina, 'Finalizó el torneo: Open de Tenis Primavera', 'torneo', 'Campeón: Florencia Silva', '2026-09-12 13:00:00', '127.0.0.1'),

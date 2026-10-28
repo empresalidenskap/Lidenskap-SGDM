@@ -3,21 +3,8 @@ declare(strict_types=1);
 
 namespace App;
 
-/**
- * Rondas, cruces y tabla de posiciones de un torneo (F6). Los endpoints
- * validan permisos y fases; acá vive la lógica de cada formato:
- *   - Liga (RF-16): todas las fechas de una vez, método del círculo.
- *   - Eliminación directa (RF-17): llave por cabezas de serie y sorteo,
- *     con partidos libres para los primeros; el ganador avanza solo.
- *   - Sistema suizo (RF-10), como la etapa suiza de los esports: series al
- *     mejor de 3, cruce entre los del mismo récord sin repetir rivales; con
- *     N victorias se clasifica y con N derrotas queda eliminado. Con número
- *     impar el libre rota entre los de peor récord.
- * Un partido libre es un enfrentamiento sin visitante: lo gana el local.
- */
 final class Competencia
 {
-    /** Nombre del competidor (equipo o participante) de una inscripción, para SQL. */
     private const NOMBRE = 'COALESCE((SELECT eq.nombre_equipo FROM equipo eq WHERE eq.id_competidor = %1$s.id_competidor),
                                      (SELECT pa.nombre_participante FROM participante pa WHERE pa.id_competidor = %1$s.id_competidor))';
 
@@ -26,7 +13,6 @@ final class Competencia
         return sprintf(self::NOMBRE, $aliasInscripcion);
     }
 
-    /** Torneo con su formato ('liga', 'eliminacion', 'suizo'), o null. */
     public static function torneo(int $idTorneo): ?array
     {
         $stmt = Database::getConnection()->prepare(
@@ -42,7 +28,6 @@ final class Competencia
         return $torneo;
     }
 
-    /** Partido con su ronda, torneo y resultado, o null. */
     public static function partido(int $idEnfrentamiento): ?array
     {
         $stmt = Database::getConnection()->prepare(
@@ -58,10 +43,6 @@ final class Competencia
         return $partido === false ? null : $partido;
     }
 
-    /**
-     * Inscripciones confirmadas (ids). Para las llaves, primero las cabezas de
-     * serie en su orden; el resto (y los demás formatos) por número de sorteo.
-     */
     public static function confirmadas(int $idTorneo, bool $porSiembra = false): array
     {
         $orden = $porSiembra
@@ -75,10 +56,6 @@ final class Competencia
         return array_map('intval', $stmt->fetchAll(\PDO::FETCH_COLUMN));
     }
 
-    /**
-     * Liga: método del círculo. N-1 fechas (N si es impar: cada fecha uno
-     * queda libre y no juega). Devuelve [fecha => [[local, visitante], ...]].
-     */
     public static function rondaRobin(array $ids): array
     {
         if (count($ids) % 2 === 1) {
@@ -91,22 +68,15 @@ final class Competencia
             for ($i = 0; $i < $n / 2; $i++) {
                 [$a, $b] = [$ids[$i], $ids[$n - 1 - $i]];
                 if ($a !== null && $b !== null) {
-                    // Se alterna quién es local de una fecha a la otra
                     $partidos[] = $r % 2 === 0 ? [$a, $b] : [$b, $a];
                 }
             }
             $rondas[] = $partidos;
-            // Rota todos menos el primero
             array_splice($ids, 1, 0, [array_pop($ids)]);
         }
         return $rondas;
     }
 
-    /**
-     * Eliminación directa, primera ronda: llave del tamaño de la potencia de 2
-     * siguiente, sembrada como en los torneos (1 contra el último, etc.). Los
-     * lugares que sobran son partidos libres para los mejores sembrados.
-     */
     public static function primeraLlave(array $ids): array
     {
         $tamano = 2;
@@ -129,7 +99,6 @@ final class Competencia
         return $partidos;
     }
 
-    /** Partidos de una ronda en orden de llave, con su resultado. */
     public static function partidos(int $idRonda): array
     {
         $stmt = Database::getConnection()->prepare(
@@ -142,7 +111,6 @@ final class Competencia
         return $stmt->fetchAll();
     }
 
-    /** Ganador de un partido (id de inscripción) o null si fue empate / no tiene resultado. */
     public static function ganador(array $partido): ?int
     {
         if ($partido['id_inscripcion_visitante'] === null) {
@@ -158,7 +126,6 @@ final class Competencia
         return (int) ($local > $visitante ? $partido['id_inscripcion_local'] : $partido['id_inscripcion_visitante']);
     }
 
-    /** ¿Todos los partidos de la ronda tienen resultado validado (o son libres)? */
     public static function rondaCompleta(int $idRonda): bool
     {
         $stmt = Database::getConnection()->prepare(
@@ -171,7 +138,6 @@ final class Competencia
         return (int) $stmt->fetchColumn() === 0;
     }
 
-    /** Ganadores de una ronda de llaves, en orden: se cruzan de a dos. */
     public static function siguienteLlave(int $idRonda): array
     {
         $ganadores = array_map([self::class, 'ganador'], self::partidos($idRonda));
@@ -182,19 +148,10 @@ final class Competencia
         return $partidos;
     }
 
-    /**
-     * Sistema suizo. Primera ronda: por número de sorteo, la mitad de arriba
-     * contra la de abajo. Siguientes: solo los que siguen en juego, ordenados
-     * por récord (y sorteo), cada uno contra el más cercano con el que
-     * todavía no jugó. Si son impares, queda libre el de peor récord que
-     * todavía no tuvo libre.
-     */
     public static function emparejarSuizo(int $idTorneo, array $ids, bool $primera): array
     {
         $pdo = Database::getConnection();
         if (!$primera) {
-            // Solo los que siguen en juego, agrupados por récord (más victorias
-            // y menos derrotas primero); a igual récord, por sorteo
             $record = array_filter(self::recordSuizo($idTorneo), static fn (array $r): bool => $r['estado'] === 'en_juego');
             uasort($record, static fn (array $a, array $b): int =>
                 [$b['victorias'], $a['derrotas'], $a['sorteo']] <=> [$a['victorias'], $b['derrotas'], $b['sorteo']]);
@@ -219,7 +176,6 @@ final class Competencia
 
         $partidos = [];
         if (count($ids) % 2 === 1) {
-            // Libre para el de menor puntaje que no lo tuvo (RF-10)
             $libre = null;
             for ($i = count($ids) - 1; $i >= 0; $i--) {
                 if (!isset($tuvoLibre[$ids[$i]])) {
@@ -241,18 +197,10 @@ final class Competencia
             return array_merge($cruces, $partidos);
         }
 
-        // Cada uno contra el más cercano en la tabla con el que no jugó; si eso
-        // deja a otros sin rival posible, se prueba el siguiente (RF-10). Solo
-        // si no hay ninguna combinación sin repetir, se cruza en orden.
         $cruces = self::crucesSinRepetir($ids, $jugados) ?? array_chunk($ids, 2);
         return array_merge($cruces, $partidos);
     }
 
-    /**
-     * Etapa suiza estilo esports: se clasifica al llegar a N victorias y se
-     * queda eliminado con N derrotas. N depende de cuántos juegan (como en
-     * las Masters de Valorant con 8 equipos o los Majors de CS2 con 16).
-     */
     public static function umbralSuizo(int $inscriptos): int
     {
         return match (true) {
@@ -263,11 +211,6 @@ final class Competencia
         };
     }
 
-    /**
-     * Récord de cada inscripto en el suizo: victorias (series ganadas
-     * validadas + partidos libres), derrotas y estado (clasificado, eliminado
-     * o en_juego). [id_inscripcion => [...]]
-     */
     public static function recordSuizo(int $idTorneo): array
     {
         $pdo = Database::getConnection();
@@ -314,10 +257,6 @@ final class Competencia
         return $record;
     }
 
-    /**
-     * Tabla del suizo: la de RF-09 con el récord y el estado de cada uno,
-     * ordenada primero por récord (más victorias, menos derrotas).
-     */
     public static function tablaSuizo(int $idTorneo): array
     {
         $tabla = self::tabla($idTorneo);
@@ -335,7 +274,6 @@ final class Competencia
         return $tabla;
     }
 
-    /** Empareja la lista (ya ordenada por puntaje) sin repetir rivales, o null si no se puede. */
     private static function crucesSinRepetir(array $ids, array $jugados): ?array
     {
         if (!$ids) {
@@ -356,10 +294,6 @@ final class Competencia
         return null;
     }
 
-    /**
-     * Crea una ronda con sus partidos. Los partidos libres nacen finalizados
-     * (los gana el local). Devuelve el id de la ronda.
-     */
     public static function crearRonda(int $idTorneo, int $numero, ?string $fecha, array $partidos): int
     {
         $pdo = Database::getConnection();
@@ -373,10 +307,6 @@ final class Competencia
         return $idRonda;
     }
 
-    /**
-     * Llaves (RF-17): cuando la última ronda queda completa, se cierra y se
-     * arma la siguiente con los ganadores. Devuelve true si se creó una ronda.
-     */
     public static function avanzarLlave(array $torneo, int $idRonda): bool
     {
         $pdo = Database::getConnection();
@@ -391,7 +321,7 @@ final class Competencia
         }
         $partidos = self::siguienteLlave($idRonda);
         if (!$partidos) {
-            return false; // Quedó un solo ganador: es el campeón
+            return false;
         }
         $pdo->prepare("UPDATE ronda SET estado_ronda = 'finalizada' WHERE id_ronda = ?")->execute([$idRonda]);
         self::crearRonda((int) $torneo['id_torneo'], $ultima + 1, self::fechaRonda($torneo, $ultima + 1), $partidos);
@@ -399,7 +329,6 @@ final class Competencia
         return true;
     }
 
-    /** Nombre de una ronda: "Fecha N" en liga, "Final"/"Semifinales"/... en llaves. */
     public static function nombreRonda(string $formato, int $numero, int $partidos): string
     {
         if ($formato === 'eliminacion') {
@@ -411,18 +340,12 @@ final class Competencia
         return ($formato === 'liga' ? 'Fecha ' : 'Ronda ') . $numero;
     }
 
-    /** Fecha programada de la ronda N: una por semana desde el inicio del torneo. */
     public static function fechaRonda(array $torneo, int $numero): ?string
     {
         return $torneo['fecha_inicio'] === null ? null
             : date('Y-m-d', strtotime("{$torneo['fecha_inicio']} +" . (7 * ($numero - 1)) . ' days'));
     }
 
-    /**
-     * Recalcula la tabla del torneo desde cero (RF-09): resultados validados,
-     * walkovers y libres (cuentan como victoria). Los puntos salen del
-     * formato en vista_tabla_posiciones.
-     */
     public static function recalcularTabla(int $idTorneo): void
     {
         $pdo = Database::getConnection();
@@ -472,10 +395,6 @@ final class Competencia
         }
     }
 
-    /**
-     * Tabla ordenada con los criterios de RF-09, en orden estricto: puntos,
-     * diferencia de goles, enfrentamiento directo, goles a favor y sorteo.
-     */
     public static function tabla(int $idTorneo): array
     {
         $pdo = Database::getConnection();
@@ -488,7 +407,6 @@ final class Competencia
         $stmt->execute([$idTorneo]);
         $filas = $stmt->fetchAll();
 
-        // Partidos ganados en los cruces directos: $directo[a][b]
         $stmt = $pdo->prepare(
             'SELECT e.id_inscripcion_local AS l, e.id_inscripcion_visitante AS v, r.puntuacion_local AS pl, r.puntuacion_visitante AS pv
              FROM enfrentamiento e JOIN ronda ro ON ro.id_ronda = e.id_ronda

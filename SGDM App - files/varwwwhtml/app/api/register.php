@@ -7,6 +7,7 @@ use App\Auditoria;
 use App\Auth;
 use App\Models\Rol;
 use App\Models\Usuario;
+use App\Password;
 use App\RoleLabels;
 
 header('Content-Type: application/json; charset=utf-8');
@@ -39,9 +40,10 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-if (strlen($password) < 8) {
+$problema = Password::validar($password);
+if ($problema !== null) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'La contraseña debe tener al menos 8 caracteres.']);
+    echo json_encode(['success' => false, 'error' => $problema]);
     exit;
 }
 
@@ -51,9 +53,6 @@ if (Usuario::findBy('email', $email) !== null) {
     exit;
 }
 
-// El autorregistro siempre crea un Usuario público. Organizador, Árbitro o
-// Participante no son roles de la cuenta sino de un torneo: se piden desde
-// la app (api/solicitudes.php) y los aprueba el Admin o el Organizador.
 $rolPublico = Rol::findBy('nombre_rol', 'PUBLICO');
 if ($rolPublico === null) {
     http_response_code(500);

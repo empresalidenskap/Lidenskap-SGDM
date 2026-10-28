@@ -564,7 +564,7 @@ if (sportsScrollMenu) {
 }
 
 const SGDM_PERMISSIONS = {
-  ADMIN: ['view_public', 'view_profile', 'edit_profile', 'create_tournament', 'manage_tournaments', 'manage_users', 'manage_participants', 'manage_results', 'view_reports', 'view_audit', 'manage_settings'],
+  ADMIN: ['view_public', 'view_profile', 'edit_profile', 'create_tournament', 'manage_tournaments', 'manage_users', 'manage_participants', 'manage_results', 'view_reports', 'view_audit'],
   ORGANIZADOR: ['view_public', 'view_profile', 'manage_tournaments', 'manage_participants', 'manage_results', 'view_reports'],
   ARBITRO: ['view_public', 'view_profile', 'edit_profile', 'manage_results'],
   PARTICIPANTE: ['view_public', 'view_profile', 'edit_profile', 'join_tournament'],
@@ -640,6 +640,53 @@ function passwordToggleButtonHtml() {
     </button>`;
 }
 
+// Las mismas reglas que valida el servidor (src/Password.php); la lista se
+// va tildando mientras se escribe
+const PASSWORD_RULES = [
+  { id: 'length', text: 'Al menos 8 caracteres', test: value => value.length >= 8 },
+  { id: 'letter', text: 'Al menos una letra', test: value => /\p{L}/u.test(value) },
+  { id: 'number', text: 'Al menos un número', test: value => /\d/.test(value) }
+];
+
+function passwordRulesHtml(inputId) {
+  return `<ul class="password-rules" data-rules-for="${inputId}" aria-label="Requisitos de la contraseña">
+    ${PASSWORD_RULES.map(rule => `<li data-rule="${rule.id}">${rule.text}</li>`).join('')}</ul>`;
+}
+
+function resetPasswordRules(inputId) {
+  document.querySelectorAll(`[data-rules-for="${inputId}"] li`).forEach(item => item.classList.remove('is-ok'));
+}
+
+document.addEventListener('input', event => {
+  const list = event.target.id && document.querySelector(`[data-rules-for="${event.target.id}"]`);
+  if (!list) return;
+  PASSWORD_RULES.forEach(rule => {
+    list.querySelector(`[data-rule="${rule.id}"]`)?.classList.toggle('is-ok', rule.test(event.target.value));
+  });
+});
+
+function showFormError(id, message) {
+  const error = document.getElementById(id);
+  if (!error) return;
+  error.textContent = message;
+  error.hidden = !message;
+}
+
+// POST con JSON a la API. Mientras espera deshabilita el botón del formulario;
+// si no hay conexión devuelve un error con el mismo formato que la API.
+async function postJson(url, body, form) {
+  const button = form?.querySelector('button[type="submit"]');
+  if (button) button.disabled = true;
+  try {
+    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    return await response.json();
+  } catch {
+    return { success: false, error: 'No se pudo conectar con el servidor. Intentá de nuevo.' };
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
 function createAuthModal() {
   document.getElementById('loginModal')?.remove();
   document.body.insertAdjacentHTML('beforeend', `
@@ -653,9 +700,11 @@ function createAuthModal() {
         <section id="viewLogin">
           <p class="section-eyebrow">Acceso al sistema</p><h2 id="authTitle">INICIAR SESIÓN</h2>
           <p class="auth-help">Ingresá con tu cuenta.</p>
+          <p id="loginNotice" class="auth-notice" role="status" hidden></p>
           <form id="loginForm">
             <div class="field"><label for="loginEmail">Correo electrónico</label><input type="email" id="loginEmail" autocomplete="username" required></div>
             <div class="field"><label for="loginPassword">Contraseña</label><div class="password-field"><input type="password" id="loginPassword" autocomplete="current-password" required>${passwordToggleButtonHtml()}</div></div>
+            <button type="button" class="auth-link" id="forgotPasswordLink">¿Olvidaste tu contraseña?</button>
             <p id="loginError" class="auth-error" hidden>Correo o contraseña incorrectos.</p>
             <button class="btn-primary" type="submit">Ingresar</button>
           </form>
@@ -667,24 +716,54 @@ function createAuthModal() {
             <div class="field"><label for="registerNombre">Nombre</label><input id="registerNombre" autocomplete="given-name" required></div>
             <div class="field"><label for="registerApellido">Apellido</label><input id="registerApellido" autocomplete="family-name" required></div>
             <div class="field"><label for="registerEmail">Correo electrónico</label><input id="registerEmail" type="email" autocomplete="username" required></div>
-            <div class="field"><label for="registerPassword">Contraseña</label><div class="password-field"><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required>${passwordToggleButtonHtml()}</div></div>
+            <div class="field"><label for="registerPassword">Contraseña</label><div class="password-field"><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" required>${passwordToggleButtonHtml()}</div>${passwordRulesHtml('registerPassword')}</div>
             <p id="registerError" class="auth-error" hidden></p>
             <button class="btn-primary" type="submit">Crear cuenta</button>
             <p id="registerFeedback" class="form-feedback" aria-live="polite"></p>
+          </form>
+        </section>
+        <section id="viewForgot" hidden>
+          <button type="button" class="auth-link auth-back" id="forgotBackBtn">← Volver a iniciar sesión</button>
+          <p class="section-eyebrow">Recuperar acceso</p><h2>OLVIDÉ MI CONTRASEÑA</h2>
+          <ol class="auth-steps" aria-label="Pasos para recuperar la contraseña">
+            <li data-step-dot="1" class="active">Correo</li><li data-step-dot="2">Código</li><li data-step-dot="3">Nueva</li>
+          </ol>
+          <form id="forgotEmailForm" data-step="1">
+            <p class="auth-help">Ingresá el correo de tu cuenta. Te vamos a enviar un código de 6 números para crear una contraseña nueva.</p>
+            <div class="field"><label for="forgotEmail">Correo electrónico</label><input type="email" id="forgotEmail" autocomplete="username" required></div>
+            <p id="forgotEmailError" class="auth-error" hidden></p>
+            <button class="btn-primary" type="submit">Enviar código</button>
+          </form>
+          <form id="forgotCodeForm" data-step="2" hidden>
+            <p class="auth-help" id="forgotCodeHelp"></p>
+            <div class="field"><label for="forgotCode">Código de verificación</label><input id="forgotCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="\\d{6}" placeholder="000000" required></div>
+            <p id="forgotCodeError" class="auth-error" hidden></p>
+            <button class="btn-primary" type="submit">Verificar código</button>
+            <button type="button" class="auth-link" id="forgotResendBtn">¿No te llegó? Revisá spam o reenviá el código</button>
+          </form>
+          <form id="forgotPasswordForm" data-step="3" hidden>
+            <p class="auth-help">Elegí una contraseña nueva para tu cuenta.</p>
+            <div class="field"><label for="forgotNewPassword">Contraseña nueva</label><div class="password-field"><input type="password" id="forgotNewPassword" autocomplete="new-password" required>${passwordToggleButtonHtml()}</div>${passwordRulesHtml('forgotNewPassword')}</div>
+            <div class="field"><label for="forgotConfirmPassword">Repetir contraseña nueva</label><div class="password-field"><input type="password" id="forgotConfirmPassword" autocomplete="new-password" required>${passwordToggleButtonHtml()}</div></div>
+            <p id="forgotPasswordError" class="auth-error" hidden></p>
+            <button class="btn-primary" type="submit">Guardar contraseña</button>
           </form>
         </section>
       </div>
     </div>`);
 }
 
+// mode: 'login', 'register' o 'forgot' (olvidé mi contraseña, sin pestaña propia)
 function setAuthTab(mode) {
   const loginView = document.getElementById('viewLogin');
   const registerView = document.getElementById('viewRegister');
+  const forgotView = document.getElementById('viewForgot');
   const loginTab = document.getElementById('tabLogin');
   const registerTab = document.getElementById('tabRegister');
   const registerMode = mode === 'register';
-  if (loginView) loginView.hidden = registerMode;
+  if (loginView) loginView.hidden = mode !== 'login';
   if (registerView) registerView.hidden = !registerMode;
+  if (forgotView) forgotView.hidden = mode !== 'forgot';
   loginTab?.classList.toggle('active', !registerMode);
   registerTab?.classList.toggle('active', registerMode);
   loginTab?.setAttribute('aria-selected', String(!registerMode));
@@ -694,10 +773,12 @@ function setAuthTab(mode) {
 function openAuthModal(mode = 'login', returnTo = '') {
   authReturnTo = returnTo;
   setAuthTab(mode);
+  if (mode === 'forgot') showForgotStep(1);
   const modal = document.getElementById('loginModal');
   modal?.classList.add('active');
   modal?.setAttribute('aria-hidden', 'false');
-  setTimeout(() => document.getElementById(mode === 'register' ? 'registerNombre' : 'loginEmail')?.focus(), 0);
+  const focusId = { register: 'registerNombre', forgot: 'forgotEmail' }[mode] || 'loginEmail';
+  setTimeout(() => document.getElementById(focusId)?.focus(), 0);
 }
 
 function closeAuthModal() {
@@ -706,6 +787,100 @@ function closeAuthModal() {
   modal?.setAttribute('aria-hidden', 'true');
   const error = document.getElementById('loginError');
   if (error) error.hidden = true;
+  const notice = document.getElementById('loginNotice');
+  if (notice) notice.hidden = true;
+  showForgotStep(1);
+  document.getElementById('forgotPasswordForm')?.reset();
+}
+
+/* ---------- Olvidé mi contraseña (api/recuperar-password.php) ----------
+   1. correo -> el servidor manda un código de 6 números con la API de Gmail
+   2. código -> lo verifica  3. contraseña nueva -> la guarda.
+   El pedido queda en la sesión de PHP: acá solo se recuerda el correo. */
+let forgotEmail = '';
+
+function showForgotStep(step) {
+  document.querySelectorAll('#viewForgot form[data-step]').forEach(form => { form.hidden = form.dataset.step !== String(step); });
+  document.querySelectorAll('#viewForgot [data-step-dot]').forEach(dot => {
+    const number = Number(dot.dataset.stepDot);
+    dot.classList.toggle('active', number === step);
+    dot.classList.toggle('done', number < step);
+  });
+  document.querySelectorAll('#viewForgot .auth-error').forEach(error => { error.hidden = true; });
+}
+
+async function sendResetCode(email, errorId, form) {
+  const data = await postJson('api/recuperar-password.php', { accion: 'solicitar', email }, form);
+  if (!data.success) {
+    showFormError(errorId, data.error || 'No se pudo enviar el código.');
+    return false;
+  }
+  // Mismo mensaje exista o no la cuenta: así nadie averigua qué correos están registrados
+  forgotEmail = email;
+  document.getElementById('forgotCodeHelp').innerHTML = `Si <strong>${escapeHtml(email)}</strong> tiene una cuenta, le mandamos un código por correo. Vence en ${data.minutos} minutos. Revisá también la carpeta de spam.`;
+  document.getElementById('forgotCode').value = '';
+  return true;
+}
+
+function initializeForgotPassword() {
+  document.getElementById('forgotPasswordLink')?.addEventListener('click', () => {
+    setAuthTab('forgot');
+    showForgotStep(1);
+    const typedEmail = document.getElementById('loginEmail').value.trim();
+    if (typedEmail) document.getElementById('forgotEmail').value = typedEmail;
+    document.getElementById('forgotEmail').focus();
+  });
+  document.getElementById('forgotBackBtn')?.addEventListener('click', () => { showForgotStep(1); setAuthTab('login'); });
+
+  document.getElementById('forgotEmailForm')?.addEventListener('submit', async event => {
+    event.preventDefault();
+    showFormError('forgotEmailError', '');
+    const email = document.getElementById('forgotEmail').value.trim().toLowerCase();
+    if (!(await sendResetCode(email, 'forgotEmailError', event.target))) return;
+    showForgotStep(2);
+    document.getElementById('forgotCode').focus();
+  });
+
+  const resend = document.getElementById('forgotResendBtn');
+  resend?.addEventListener('click', async () => {
+    resend.disabled = true;
+    showFormError('forgotCodeError', '');
+    if (await sendResetCode(forgotEmail, 'forgotCodeError')) document.getElementById('forgotCode').focus();
+    // Que no se pueda apretar muchas veces seguidas (el servidor también limita)
+    setTimeout(() => { resend.disabled = false; }, 30000);
+  });
+
+  document.getElementById('forgotCode')?.addEventListener('input', event => {
+    event.target.value = event.target.value.replace(/\D/g, '').slice(0, 6);
+  });
+
+  document.getElementById('forgotCodeForm')?.addEventListener('submit', async event => {
+    event.preventDefault();
+    const codigo = document.getElementById('forgotCode').value.trim();
+    const data = await postJson('api/recuperar-password.php', { accion: 'verificar', codigo }, event.target);
+    if (!data.success) return showFormError('forgotCodeError', data.error || 'Código incorrecto.');
+    showForgotStep(3);
+    resetPasswordRules('forgotNewPassword');
+    document.getElementById('forgotNewPassword').focus();
+  });
+
+  document.getElementById('forgotPasswordForm')?.addEventListener('submit', async event => {
+    event.preventDefault();
+    const password = document.getElementById('forgotNewPassword').value;
+    if (password !== document.getElementById('forgotConfirmPassword').value) return showFormError('forgotPasswordError', 'Las contraseñas no coinciden.');
+    const data = await postJson('api/recuperar-password.php', { accion: 'restablecer', password }, event.target);
+    if (!data.success) return showFormError('forgotPasswordError', data.error || 'No se pudo guardar la contraseña.');
+
+    event.target.reset();
+    showForgotStep(1);
+    setAuthTab('login');
+    document.getElementById('loginEmail').value = forgotEmail;
+    document.getElementById('loginPassword').value = '';
+    const notice = document.getElementById('loginNotice');
+    notice.textContent = 'Contraseña actualizada. Ya podés iniciar sesión con la nueva.';
+    notice.hidden = false;
+    document.getElementById('loginPassword').focus();
+  });
 }
 
 function initializeAuthentication() {
@@ -715,12 +890,14 @@ function initializeAuthentication() {
   modal?.addEventListener('click', event => { if (event.target === modal) closeAuthModal(); });
   document.getElementById('tabLogin')?.addEventListener('click', () => setAuthTab('login'));
   document.getElementById('tabRegister')?.addEventListener('click', () => setAuthTab('register'));
+  initializeForgotPassword();
 
   document.getElementById('loginForm')?.addEventListener('submit', async event => {
     event.preventDefault();
     const submitBtn = event.target.querySelector('button[type="submit"]');
     const loginError = document.getElementById('loginError');
     loginError.hidden = true;
+    document.getElementById('loginNotice').hidden = true;
     const email = document.getElementById('loginEmail').value.trim().toLowerCase();
     const password = document.getElementById('loginPassword').value;
 
@@ -788,6 +965,16 @@ function initializeAuthentication() {
 
   renderAccountNav();
 
+  // Enlace del correo de bienvenida (index.html#recuperar=correo): abre
+  // "Olvidé mi contraseña" con el correo ya escrito
+  if (location.hash.startsWith('#recuperar=')) {
+    let email = '';
+    try { email = decodeURIComponent(location.hash.slice('#recuperar='.length)); } catch { email = ''; }
+    history.replaceState(null, '', location.pathname);
+    openAuthModal('forgot');
+    document.getElementById('forgotEmail').value = email;
+  }
+
   document.getElementById('btnCrearCuentaGratis')?.addEventListener('click', event => { event.preventDefault(); openAuthModal('register'); });
 }
 
@@ -815,6 +1002,7 @@ function renderAccountNav() {
         </div>
         <ul class="profile-menu-links">
           <li><a href="perfil.html">Mi Perfil</a></li>
+          <li><a href="perfil.html#cambiar-contrasena">Cambiar contraseña</a></li>
           <li><a href="crear-competencia.html">Crear Competencia</a></li>
         </ul>
         <div class="profile-menu-footer">
@@ -1336,6 +1524,31 @@ function initializeTournamentDetail() {
       set('maxTeamsCount', t.cupoMaximo !== null ? String(t.cupoMaximo) : '—');
       set('detailTeamSize', t.maxIntegrantesEquipo ? `Hasta ${t.maxIntegrantesEquipo}` : 'Sin límite');
 
+      // Reglamento: lo que el sistema aplica en este formato, con los valores del torneo
+      const { puntos: [pv, pe, pd], walkover: [woGanador, woPerdedor], umbralSuizo } = t.reglas;
+      const REGLAS = {
+        liga: [
+          'Todos contra todos: cada participante juega una vez contra cada rival.',
+          `Victoria ${pv} puntos, empate ${pe} y derrota ${pd}.`,
+          'Desempate, en este orden: puntos, diferencia de goles, enfrentamiento directo, goles a favor y sorteo.',
+        ],
+        eliminacion: [
+          'Eliminación directa a partido único: quien gana pasa de ronda y quien pierde queda afuera.',
+          'No hay empates: cada partido termina con un ganador.',
+          'La llave se arma con las cabezas de serie y el sorteo de las inscripciones; si los cupos no cierran, algunos pasan la primera ronda libres.',
+        ],
+        suizo: [
+          'Etapa suiza con series al mejor de 3: los resultados posibles son 2-0, 2-1, 1-2 y 0-2.',
+          'La primera ronda sale del sorteo; desde la segunda se cruzan quienes tienen el mismo récord, sin repetir rival.',
+          `Con ${umbralSuizo} victorias se clasifica y con ${umbralSuizo} derrotas queda eliminado (según la cantidad de inscriptos).`,
+        ],
+      };
+      document.getElementById('detailRules')?.replaceChildren(...[
+        ...(REGLAS[t.formato] || []),
+        `Si un rival no se presenta, el partido se da por ganado ${woGanador}-${woPerdedor} (walkover).`,
+        'Los resultados los carga el árbitro asignado y son oficiales cuando el Organizador los valida.',
+      ].map(texto => Object.assign(document.createElement('li'), { textContent: texto })));
+
       const miRol = sesionUsuario?.rolesTorneo?.find(item => item.idTorneo === t.id);
       const abiertas = t.estado === 'inscripcion_abierta';
       const cupoLleno = t.cupoMaximo !== null && confirmados.length >= t.cupoMaximo;
@@ -1496,13 +1709,32 @@ function initializeTournamentDetail() {
     .catch(showNotFound);
 }
 
-function initializeContactPrototype() {
-  const form = document.getElementById('contactPrototypeForm');
+// Contacto: el mensaje llega por correo a la casilla del sistema (api/contacto.php).
+function initializeContact() {
+  const form = document.getElementById('contactForm');
   if (!form) return;
-  form.addEventListener('submit', event => {
+  const feedback = document.getElementById('contactFeedback');
+  if (sesionUsuario) {
+    form.elements.name.value = [sesionUsuario.nombre, sesionUsuario.apellido].filter(Boolean).join(' ');
+    form.elements.email.value = sesionUsuario.email || '';
+  }
+  form.addEventListener('submit', async event => {
     event.preventDefault();
     if (!form.reportValidity()) return;
-    document.getElementById('contactPrototypeFeedback').textContent = 'Mensaje validado en el prototipo. El envío se implementará en una próxima entrega.';
+    feedback.textContent = 'Enviando…';
+    const data = await postJson('api/contacto.php', {
+      nombre: form.elements.name.value,
+      email: form.elements.email.value,
+      motivo: form.elements.subject.value,
+      mensaje: form.elements.message.value,
+    }, form);
+    if (!data.success) {
+      feedback.textContent = data.error;
+      return;
+    }
+    form.elements.subject.value = '';
+    form.elements.message.value = '';
+    feedback.textContent = 'Mensaje enviado. Te vamos a responder al correo que dejaste.';
   });
 }
 
@@ -1670,6 +1902,56 @@ function initializeProfileEditor() {
   document.getElementById('profileLogout')?.addEventListener('click', cerrarSesion);
 }
 
+/* ---------- Cambiar contraseña (perfil.html, api/cambiar-password.php) ---------- */
+function initializeChangePassword() {
+  if (document.body.dataset.page !== 'profile' || !sesionUsuario) return;
+  const editor = document.getElementById('passwordEditor');
+  const form = document.getElementById('passwordForm');
+  const feedback = document.getElementById('passwordFeedback');
+  if (!editor || !form) return;
+  form.querySelectorAll('.password-field').forEach(field => field.insertAdjacentHTML('beforeend', passwordToggleButtonHtml()));
+  document.getElementById('newPassword').closest('.password-field').insertAdjacentHTML('afterend', passwordRulesHtml('newPassword'));
+
+  const openEditor = () => {
+    editor.hidden = false;
+    feedback.textContent = '';
+    editor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => document.getElementById('currentPassword').focus({ preventScroll: true }), 350);
+  };
+  const closeEditor = () => {
+    editor.hidden = true;
+    form.reset();
+    resetPasswordRules('newPassword');
+    showFormError('passwordError', '');
+    if (location.hash === '#cambiar-contrasena') history.replaceState(null, '', location.pathname);
+  };
+
+  document.getElementById('changePasswordBtn')?.addEventListener('click', openEditor);
+  document.getElementById('cancelPasswordEdit')?.addEventListener('click', closeEditor);
+  if (location.hash === '#cambiar-contrasena') openEditor();
+  window.addEventListener('hashchange', () => { if (location.hash === '#cambiar-contrasena') openEditor(); });
+
+  document.getElementById('passwordForgotLink')?.addEventListener('click', () => {
+    openAuthModal('forgot');
+    document.getElementById('forgotEmail').value = sesionUsuario.email;
+  });
+
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    feedback.textContent = '';
+    showFormError('passwordError', '');
+    const actual = document.getElementById('currentPassword').value;
+    const nueva = document.getElementById('newPassword').value;
+    // Las reglas y la contraseña actual las revisa el servidor; acá solo que coincidan las dos nuevas
+    if (nueva !== document.getElementById('confirmPassword').value) return showFormError('passwordError', 'Las contraseñas no coinciden.');
+    const data = await postJson('api/cambiar-password.php', { actual, nueva }, form);
+    if (!data.success) return showFormError('passwordError', data.error || 'No se pudo cambiar la contraseña.');
+    form.reset();
+    resetPasswordRules('newPassword');
+    feedback.textContent = data.mensaje;
+  });
+}
+
 function initializeDashboardByRole() {
   if (document.body.dataset.page !== 'dashboard' || !sesionUsuario) return;
   if (!document.getElementById('dashboardTitle')) return;
@@ -1677,7 +1959,7 @@ function initializeDashboardByRole() {
   const isOrganizer = hasPermission('manage_tournaments');
   // Admin: todo. Organizador: lo de sus torneos. Solo Árbitro: resultados.
   const allowedModules = isAdmin
-    ? ['users', 'requests', 'tournaments', 'participants', 'results', 'rounds', 'reports', 'audit', 'settings']
+    ? ['users', 'requests', 'tournaments', 'participants', 'results', 'rounds', 'reports', 'audit']
     : isOrganizer ? ['requests', 'tournaments', 'participants', 'results', 'rounds', 'reports'] : ['results'];
   const rolesTexto = (sesionUsuario.rolesTorneo || []).map(item => `${ROL_LABEL[item.rol]} · ${item.torneo}`).join(' / ');
   document.getElementById('dashboardRole').textContent = isAdmin ? sesionUsuario.rolNombre : rolesTexto;
@@ -1828,10 +2110,10 @@ function initializeDashboardByRole() {
       }
     });
     document.querySelector('[data-panel-form="user"]')?.addEventListener('click', () => openPanelForm({
-      title: 'CREAR USUARIO', help: 'Organizador, Árbitro y Participante son roles de un torneo: elegí en cuál (un Participante también puede ir directo a un equipo; el torneo es el del equipo). La cuenta queda como Usuario público y el rol se le quita cuando el torneo termina. La contraseña inicial se la comunicás vos a la persona.',
+      title: 'CREAR USUARIO', help: 'Organizador, Árbitro y Participante son roles de un torneo: elegí en cuál (un Participante también puede ir directo a un equipo; el torneo es el del equipo). La cuenta queda como Usuario público y el rol se le quita cuando el torneo termina. Si dejás la contraseña vacía, a la persona le llega un correo para que elija la suya con un código.',
       fields: [
         { name: 'nombre', label: 'Nombre' }, { name: 'apellido', label: 'Apellido' },
-        { name: 'email', label: 'Correo', type: 'email' }, { name: 'password', label: 'Contraseña inicial', type: 'password' },
+        { name: 'email', label: 'Correo', type: 'email' }, { name: 'password', label: 'Contraseña inicial (opcional)', type: 'password', required: false },
         { name: 'rol', label: 'Rol', type: 'select', options: ['ORGANIZADOR', 'ARBITRO', 'PARTICIPANTE', 'ADMIN'].map(code => ({ value: code, label: ROL_LABEL[code] })) },
         { name: 'idTorneo', label: 'Torneo', type: 'select', required: false, options: [{ value: '', label: 'Ninguno (solo para Administrador)' }, ...torneosReales.filter(t => ['planificado', 'inscripcion_abierta', 'inscripcion_cerrada', 'en_curso'].includes(t.estado)).map(t => ({ value: t.id, label: escapeHtml(t.nombre) }))] },
         { name: 'idEquipo', label: 'Equipo (solo Participante)', type: 'select', required: false, options: [{ value: '', label: 'Ninguno' }, ...inscripciones.filter(i => i.tipo === 'equipo' && ['pendiente', 'confirmada'].includes(i.estado) && ['planificado', 'inscripcion_abierta'].includes(i.estadoTorneo)).map(i => ({ value: i.idEquipo, label: `${escapeHtml(i.nombre)} (${escapeHtml(i.torneo)})` }))] },
@@ -1842,7 +2124,7 @@ function initializeDashboardByRole() {
           body: JSON.stringify({ ...data, idTorneo: Number(data.idTorneo) || 0, idEquipo: Number(data.idEquipo) || 0 }),
         })
           .then(response => response.json())
-          .then(result => { showToast(result.success ? 'Usuario creado.' : result.error); if (result.success) cargarUsuarios(); });
+          .then(result => { showToast(result.success ? result.mensaje : result.error); if (result.success) cargarUsuarios(); });
       }
     }));
     cargarUsuarios();
@@ -2282,25 +2564,6 @@ function initializeDashboardByRole() {
     document.getElementById('exportAudit').addEventListener('click', () => {
       downloadCsv('auditoria-lidenskap.csv', ['Fecha y hora', 'Usuario', 'Acción', 'Tabla', 'IP de origen'], auditRows.map(row => [row.date, row.user, row.action, row.module, row.ip]));
     });
-
-    const settingsForm = document.getElementById('systemSettingsForm');
-    let savedSettings = {};
-    try { savedSettings = JSON.parse(localStorage.getItem('lidenskap-system-settings') || '{}'); } catch { savedSettings = {}; }
-    [...settingsForm.elements].forEach(field => {
-      if (!field.name || !(field.name in savedSettings)) return;
-      if (field.type === 'checkbox') field.checked = savedSettings[field.name];
-      else field.value = savedSettings[field.name];
-    });
-    settingsForm.addEventListener('submit', event => {
-      event.preventDefault();
-      const settings = {};
-      [...settingsForm.elements].forEach(field => {
-        if (!field.name) return;
-        settings[field.name] = field.type === 'checkbox' ? field.checked : field.value.trim();
-      });
-      localStorage.setItem('lidenskap-system-settings', JSON.stringify(settings));
-      document.getElementById('settingsFeedback').textContent = 'Configuración guardada correctamente en este dispositivo.';
-    });
   }
 
   const requestedModule = window.location.hash.replace('#panel-', '');
@@ -2311,8 +2574,9 @@ initializeTournamentSearch();
 initializeCalendar();
 initializeTournamentDetail();
 initializeCreateTournament();
-initializeContactPrototype();
+initializeContact();
 initializeProfileEditor();
+initializeChangePassword();
 initializeDashboardByRole();
 function initializeCreateTournament() {
   const form = document.getElementById('createTournamentForm');

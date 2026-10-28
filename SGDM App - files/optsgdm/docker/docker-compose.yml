@@ -1,29 +1,31 @@
-# SGDM en contenedores, junto a la instalación nativa del servidor.
-# Lo maneja docker_sgdm.sh desde /opt/sgdm/docker (ver DOCKER.md).
 name: sgdm
 
 services:
-  web:                              # Apache + PHP con el código del SGDM
+  web:
     build: .
     image: sgdm-web
     restart: unless-stopped
     ports:
-      - "8080:80"                   # 80 y 443 ya los usa el Apache nativo
-    environment:                    # solo lo que necesita la app, sin las claves de root ni admin
+      - "8080:80"
+    environment:
       DB_HOST: db
       DB_NAME: ${DB_NAME}
       DB_APP_USER: ${DB_APP_USER}
       DB_APP_PASSWORD: ${DB_APP_PASSWORD}
+      GMAIL_CLIENT_ID: ${GMAIL_CLIENT_ID:-}
+      GMAIL_CLIENT_SECRET: ${GMAIL_CLIENT_SECRET:-}
+      GMAIL_REFRESH_TOKEN: ${GMAIL_REFRESH_TOKEN:-}
+      GMAIL_REMITENTE: ${GMAIL_REMITENTE:-empresalidenskap@gmail.com}
     depends_on:
       db:
-        condition: service_healthy  # espera a que MariaDB esté lista
+        condition: service_healthy
     networks:
       - frontend
       - backend
     mem_limit: 256m
     cpus: 0.5
 
-  db:                               # MariaDB, sin puertos publicados
+  db:
     image: mariadb:11.4
     restart: unless-stopped
     environment:
@@ -36,8 +38,8 @@ services:
       DB_CONSULTA_USER: ${DB_CONSULTA_USER}
       DB_CONSULTA_PASSWORD: ${DB_CONSULTA_PASSWORD}
     volumes:
-      - db_data:/var/lib/mysql                          # los datos sobreviven al contenedor
-      - ./db:/docker-entrypoint-initdb.d:ro,Z           # esquema, usuarios y demo (solo la 1.ª vez)
+      - db_data:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d:ro,Z
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
@@ -50,8 +52,8 @@ services:
     cpus: 0.5
 
 networks:
-  frontend:                         # web <-> exterior (puerto 8080)
-  backend:                          # web <-> db, sin salida ni entrada desde afuera
+  frontend:
+  backend:
     internal: true
 
 volumes:

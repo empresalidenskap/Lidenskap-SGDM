@@ -3,12 +3,6 @@ declare(strict_types=1);
 
 namespace App;
 
-/**
- * Traduce los códigos cortos que ya usa el front-end (assets/js/main.js:
- * discipline="futbol", format="liga", etc., usados en los <select> y en
- * los filtros de torneos.html/calendario.html) a los nombres reales
- * guardados en modulo_competencia / tipo_torneo.
- */
 final class Catalogos
 {
     private const DISCIPLINAS = [

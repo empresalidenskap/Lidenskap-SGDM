@@ -10,16 +10,8 @@ use App\Models\Rol;
 use App\Models\TorneoArbitro;
 use App\Models\Usuario;
 
-/**
- * Roles por torneo (ORGANIZADOR, ARBITRO, PARTICIPANTE). No se guardan en
- * usuario: se leen de vista_rol_torneo, que los deduce del organizador del
- * torneo, de torneo_arbitro y de las inscripciones. Cuando el torneo
- * termina la vista los marca como inactivos y el usuario vuelve a ser solo
- * Usuario público, con la misma cuenta.
- */
 final class RolesTorneo
 {
-    /** Roles activos del usuario: [{idTorneo, torneo, rol}] */
     public static function activos(int $idUsuario): array
     {
         $stmt = Database::getConnection()->prepare(
@@ -50,11 +42,6 @@ final class RolesTorneo
         return $stmt->fetchColumn() !== false;
     }
 
-    /**
-     * ¿Ya tiene algo en ese torneo? Un rol, solicitud o invitación (en
-     * cualquier estado), o ser integrante, o haber pedido/recibido unirse a un
-     * equipo anotado ahí. Evita que alguien tenga dos papeles en el mismo torneo.
-     */
     public static function yaVinculado(int $idUsuario, int $idTorneo): bool
     {
         $stmt = Database::getConnection()->prepare(
@@ -72,7 +59,6 @@ final class RolesTorneo
         return $stmt->fetchColumn() !== false;
     }
 
-    /** ¿Ya están confirmados tantos inscriptos como el cupo del torneo? */
     public static function cupoLleno(array $torneo): bool
     {
         if ($torneo['cupo_maximo'] === null) {
@@ -85,10 +71,6 @@ final class RolesTorneo
         return (int) $stmt->fetchColumn() >= (int) $torneo['cupo_maximo'];
     }
 
-    /**
-     * Cuenta a la que el Organizador invita (o el Admin asigna) en un torneo:
-     * devuelve el usuario, o el mensaje de error si no se puede.
-     */
     public static function cuentaParaSumar(string $email, int $idTorneo): array|string
     {
         $usuario = Usuario::findBy('email', strtolower(trim($email)));
@@ -117,10 +99,6 @@ final class RolesTorneo
         ]);
     }
 
-    /**
-     * Participante del usuario (su ficha de jugador). Se reutiliza en todos
-     * los torneos y equipos; si todavía no tiene, se crea con su competidor.
-     */
     public static function participanteDe(array $usuario): array
     {
         $participante = Participante::findBy('id_usuario', $usuario['id_usuario']);
@@ -136,7 +114,6 @@ final class RolesTorneo
         return Participante::find($id);
     }
 
-    /** Inscribe al usuario como participante individual. */
     public static function inscribirParticipante(array $usuario, int $idTorneo, string $estado): int
     {
         return Inscripcion::create([

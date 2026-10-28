@@ -1,33 +1,10 @@
-/* ============================================================
-   LIDENSKAP — SGDM  |  bracket.js
-   Vista de llaves (bracket), aportada por el equipo y adaptada a los datos
-   reales de api/rondas.php.
-
-   - SGDMBracket.render(contenedor, { firstRound, results })
-     Eliminación directa (al mejor de 1): árbol con líneas, camino del
-     ganador y campeón.
-       firstRound: [['A', 'B'], ['C', null], ...]  cruces de la ronda 1 en
-                   orden de llave (null = libre).
-       results:    { '1-1': { score: [5, 3], date: '20/07 16:00', note } }
-                   clave "ronda-partido" (desde 1). Solo resultados validados.
-     También acepta participants: ['A', 'B', ...] ordenados por cabeza de
-     serie, y arma la llave sola.
-   - SGDMBracket.renderSuizo(contenedor, { rondas, umbral })
-     Etapa suiza estilo esports (series al mejor de 3): una columna por
-     ronda con los cruces agrupados por récord, y al final los clasificados
-     (umbral victorias) y los eliminados (umbral derrotas).
-   ============================================================ */
-
 (function () {
   'use strict';
 
-  /* ---------- UTILIDADES ---------- */
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]
   ));
 
-  /* Orden clásico de siembra: 1 vs 8, 4 vs 5, 2 vs 7, 3 vs 6...
-     Así el 1 y el 2 solo pueden cruzarse en la final. */
   function seedOrder(size) {
     let order = [1];
     while (order.length < size) {
@@ -51,10 +28,9 @@
     if (result.penalties && result.penalties[0] !== result.penalties[1]) {
       return result.penalties[0] > result.penalties[1] ? 0 : 1;
     }
-    return null; // empate sin definir
+    return null;
   }
 
-  /* ---------- LÓGICA: arma todas las rondas ---------- */
   function buildBracket(config = {}) {
     let firstRound;
 
@@ -108,7 +84,6 @@
     return { rounds, champion: final.winner !== null ? final.teams[final.winner] : null };
   }
 
-  /* ---------- VISTA: genera el HTML ---------- */
   function teamLabel(team) {
     return team.name || (team.bye ? 'Libre' : 'Por definir');
   }
@@ -143,7 +118,6 @@
     </article>`;
   }
 
-  /* Aviso "Deslizá" solo si la llave no entra en pantalla */
   function scrollHint(container) {
     const hint = container.querySelector('.bk-hint');
     const scroller = container.querySelector('.bk-scroll');
@@ -197,16 +171,13 @@
     return data;
   }
 
-  /* ---------- ETAPA SUIZA ---------- */
-  /* Récord "V-D" de un competidor antes de cada ronda. Solo cuentan los
-     resultados validados; un partido libre cuenta como victoria. */
   function renderSuizo(container, { rondas = [], umbral = 2 } = {}) {
     if (!container) return null;
     if (!rondas.length) {
       container.innerHTML = '<p class="bk-empty">Todavía no hay rondas generadas.</p>';
       return null;
     }
-    const record = new Map(); // id -> { nombre, v, d }
+    const record = new Map();
     const de = (id, nombre) => {
       if (!record.has(id)) record.set(id, { nombre, v: 0, d: 0 });
       return record.get(id);
@@ -214,7 +185,6 @@
     const etiqueta = r => `${r.v}-${r.d}`;
 
     const columnas = rondas.map(ronda => {
-      // Agrupa los cruces por el récord con el que llegó el local a esta ronda
       const grupos = new Map();
       ronda.partidos.forEach((p, i) => {
         const local = de(p.idLocal, p.local);
@@ -231,7 +201,6 @@
         if (!grupos.has(clave)) grupos.set(clave, { v: local.v, d: local.d, partidos: [] });
         grupos.get(clave).partidos.push(match);
       });
-      // Después de mostrar la ronda se suman sus resultados al récord
       ronda.partidos.forEach(p => {
         const local = record.get(p.idLocal);
         if (p.libre) { local.v += 1; return; }

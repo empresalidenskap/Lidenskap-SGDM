@@ -1,11 +1,4 @@
 #!/bin/bash
-#   Instala y configura Netdata
-#   El dashboard (puerto 19999) NUNCA se expone en firewalld ni se
-#   reverse-proxea por Apache: se ajusta netdata.conf para escuchar solo en
-#   127.0.0.1, y el acceso remoto es exclusivamente por túnel SSH: ssh -L 19999:localhost:19999 usuario@ip_servidor
-#   EPEL no empaqueta netdata para AlmaLinux 8, así que se instala con el
-#   instalador oficial (kickstart.sh) se descarga primero a un archivo
-#   local, se deja registrado su hash en el log para poder auditar qué se ejecutó, y recién ahí se corre.
 set -euo pipefail
 
 LOG="/var/log/sgdm_monitoreo.log"
@@ -99,8 +92,6 @@ configurar() {
         log "Backup de configuración original guardado en $CONF_BACKUP."
     fi
 
-    # Trae la config anotada real de esta versión instalada, en vez de asumir
-    # nombres de directivas que pueden variar entre versiones de netdata.
     if curl -s "http://127.0.0.1:19999/netdata.conf" -o "$CONF"; then
         log "Config anotada obtenida desde el propio netdata en ejecución."
     else
@@ -168,11 +159,6 @@ EOF
     log "Collector de MariaDB configurado: usuario '${MYSQL_MONITOR_USER}'@'${MYSQL_MONITOR_HOST}' (solo metadatos, sin acceso a datos)."
 }
 
-# mod_status ya viene compilado dentro de httpd (no es un paquete aparte),
-# así que solo hace falta habilitarlo con una conf propia: no se toca
-# httpd.conf directamente, y el endpoint queda cerrado a cualquier IP que
-# no sea localhost (mismo criterio que el dashboard de netdata: nada nuevo
-# expuesto hacia afuera, solo lo que la app ya sirve en el 80/443).
 collectors_apache() {
     require_root
     verificar_netdata_instalado
@@ -184,8 +170,6 @@ collectors_apache() {
     fi
 
     cat > "$APACHE_STATUS_CONF" <<EOF
-# Generado por monitoreo_sgdm.sh collectors-apache
-# server-status solo accesible desde localhost (lo consume netdata local)
 <Location "/server-status">
     SetHandler server-status
     Require local

@@ -8,13 +8,6 @@ use App\Auth;
 use App\Competencia;
 use App\Database;
 
-/*
- * PATCH {id, idArbitro, fechaHora}: el Organizador asigna el árbitro del
- * partido (tiene que estar aprobado en ese torneo; 0 = sin árbitro) y la
- * fecha y hora, mientras la ronda esté abierta. Solo el árbitro asignado
- * puede cargar el resultado (RF-11).
- */
-
 header('Content-Type: application/json; charset=utf-8');
 
 function fallar(int $status, string $error): never

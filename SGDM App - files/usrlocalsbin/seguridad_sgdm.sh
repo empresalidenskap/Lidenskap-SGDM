@@ -1,15 +1,9 @@
 #!/bin/bash
-# seguridad_sgdm.sh
-#   Seguridad del servidor del SGDM: firewall (firewalld/nftables), fail2ban,
-#   antivirus (ClamAV con escaneos programados), endurecimiento de SSH,
-#   actualizaciones de seguridad automáticas y ajustes de red del kernel.
-#   Uso: sudo /usr/local/sbin/seguridad_sgdm.sh <accion>
 set -Eeuo pipefail
 
 LOG="/var/log/sgdm_seguridad.log"
 LOG_ANTIVIRUS="/var/log/sgdm_antivirus.log"
 
-# Red desde la que se permite SSH (ej: "192.168.1.0/24"). Vacío = desde cualquier lado.
 SSH_RED_PERMITIDA=""
 GRUPO_ADMIN="sgdm_admins"
 PUERTO_DOCKER="8080/tcp"
@@ -25,7 +19,6 @@ log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG"
 }
 
-# Si algo falla, deja en el log qué comando fue
 trap 'log "ERROR en la línea $LINENO: $BASH_COMMAND"' ERR
 
 require_root() {
@@ -41,8 +34,6 @@ firewall() {
     for s in cockpit dhcpv6-client; do
         firewall-cmd --permanent --zone=public --remove-service="$s" >/dev/null 2>&1 || true
     done
-    # Cierra los puertos abiertos a mano (por ejemplo 3306 de MariaDB),
-    # salvo el del SGDM en Docker (docker_sgdm.sh)
     for p in $(firewall-cmd --permanent --zone=public --list-ports); do
         [[ "$p" == "$PUERTO_DOCKER" ]] && continue
         firewall-cmd --permanent --zone=public --remove-port="$p" >/dev/null
@@ -60,7 +51,6 @@ firewall() {
     fi
 
     firewall-cmd --reload >/dev/null
-    # Registra en el journal los paquetes rechazados (journalctl -k | grep REJECT)
     firewall-cmd --set-log-denied=unicast >/dev/null
     log "Firewall: zona public con ssh, http y https; el resto se rechaza y queda registrado."
     firewall-cmd --list-all
@@ -68,10 +58,8 @@ firewall() {
 
 fail2ban() {
     dnf install -y epel-release
-    # fail2ban-systemd: la jail sshd lee el journal de systemd
     dnf install -y fail2ban fail2ban-firewalld fail2ban-systemd
 
-    # Los intentos fallidos de login de la app devuelven 401 en el log de Apache
     cat > /etc/fail2ban/filter.d/sgdm-login.conf <<'EOF'
 [Definition]
 failregex = ^<HOST> \S+ \S+ \[[^\]]+\] "POST /api/login\.php[^"]*" 401\s
@@ -84,7 +72,6 @@ EOF
     done
 
     cat > /etc/fail2ban/jail.d/sgdm.local <<EOF
-# Generado por seguridad_sgdm.sh
 [DEFAULT]
 bantime  = 1h
 findtime = 10m
@@ -96,7 +83,6 @@ maxretry = 5
 EOF
 
     if [[ ${#logs[@]} -gt 0 ]]; then
-        # fail2ban necesita un log por línea
         {
             echo ""
             echo "[sgdm-login]"
@@ -117,7 +103,6 @@ EOF
     systemctl enable fail2ban
     systemctl restart fail2ban
 
-    # El servicio tarda unos segundos en aceptar comandos después de arrancar
     local i
     for i in $(seq 1 15); do
         fail2ban-client ping >/dev/null 2>&1 && break
@@ -136,7 +121,6 @@ antivirus() {
     dnf install -y clamav clamav-update
     sed -i '/^Example/d' /etc/freshclam.conf
 
-    # Permite que clamscan lea todo el sistema con SELinux en Enforcing
     command -v setsebool >/dev/null && setsebool -P antivirus_can_scan_system 1
 
     install -d -m 700 "$DIR_CUARENTENA"
@@ -150,7 +134,6 @@ antivirus() {
     local script_path
     script_path=$(readlink -f "$0")
     cat > "$CRON_FILE" <<EOF
-# Antivirus SGDM - generado por $script_path
 30 2 * * *  root  /usr/bin/freshclam --quiet >> $LOG_ANTIVIRUS 2>&1
 0 4 * * *   root  $script_path escanear >/dev/null 2>&1
 EOF
@@ -165,7 +148,6 @@ escanear() {
     done
 
     echo "==== Escaneo $(date '+%Y-%m-%d %H:%M:%S') ====" >> "$LOG_ANTIVIRUS"
-    # Prioridad baja de CPU y disco para no afectar a la aplicación
     resultado=0
     nice -n 19 ionice -c3 clamscan -r -i --move="$DIR_CUARENTENA" \
         --log="$LOG_ANTIVIRUS" "${dirs[@]}" || resultado=$?
@@ -179,7 +161,6 @@ escanear() {
     return "$resultado"
 }
 
-# Hay al menos un miembro de sgdm_admins que puede entrar (para no quedar afuera)
 hay_admin_habilitado() {
     local miembros u
     miembros=$(getent group "$GRUPO_ADMIN" | cut -d: -f4 | tr ',' ' ')
@@ -206,8 +187,6 @@ Acceso restringido al personal autorizado de Lidenskap (SGDM).
 Toda la actividad queda registrada.
 EOF
 
-    # sshd usa el primer valor que encuentra: el bloque va al principio del archivo
-    # (si ya existía un bloque de una ejecución anterior, se reemplaza)
     {
         echo "# >>> SGDM (generado por seguridad_sgdm.sh)"
         echo "PermitRootLogin no"
@@ -244,7 +223,6 @@ actualizaciones() {
 
 kernel() {
     cat > "$SYSCTL_FILE" <<'EOF'
-# Generado por seguridad_sgdm.sh
 net.ipv4.tcp_syncookies = 1
 net.ipv4.conf.all.rp_filter = 1
 net.ipv4.conf.default.rp_filter = 1

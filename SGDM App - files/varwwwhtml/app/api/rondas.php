@@ -9,18 +9,6 @@ use App\Competencia;
 use App\Database;
 use App\RolesTorneo;
 
-/*
- * Rondas y cruces de un torneo (F6).
- *   GET ?idTorneo=   -> rondas con sus partidos, tabla (liga/suizo) y campeón
- *                       (llaves). Es consulta pública (RF-18): un resultado
- *                       sin validar solo lo ven el Organizador, el Admin y el
- *                       árbitro de ese partido.
- *   POST generar     -> fixture (con las inscripciones cerradas: el torneo
- *                       pasa a en_curso) o la ronda siguiente del suizo.
- *   PATCH cerrar     -> el Organizador cierra una ronda completa (RF-13).
- *   PATCH reabrir    -> solo el Admin, con motivo (queda en la auditoría).
- */
-
 header('Content-Type: application/json; charset=utf-8');
 
 $metodo = $_SERVER['REQUEST_METHOD'];
@@ -112,7 +100,6 @@ function handleList(): void
         'partidos' => $partidosPorRonda[$r['id_ronda']] ?? [],
     ], $rondas);
 
-    // Campeón de las llaves: ganador de la última ronda si tiene un solo partido validado
     $campeon = null;
     if ($torneo['formato'] === 'eliminacion' && $rondas) {
         $ultima = Competencia::partidos((int) end($rondas)['id_ronda']);
@@ -124,7 +111,6 @@ function handleList(): void
         }
     }
 
-    // Árbitros aprobados del torneo, para que el Organizador los asigne
     $arbitros = [];
     if ($gestiona) {
         $stmt = $pdo->prepare(
@@ -136,7 +122,6 @@ function handleList(): void
         $arbitros = array_map(static fn (array $a): array => ['id' => (int) $a['id_usuario'], 'nombre' => $a['nombre']], $stmt->fetchAll());
     }
 
-    // Liga: tabla con desempate; suizo: además récord y estado de cada uno
     $tabla = [];
     $umbral = null;
     if ($rondas && $torneo['formato'] === 'liga') {
@@ -145,7 +130,6 @@ function handleList(): void
         $tabla = Competencia::tablaSuizo($idTorneo);
         $umbral = Competencia::umbralSuizo(count($tabla));
     }
-    // Liga y suizo: al finalizar, el campeón es el primero de la tabla
     if ($torneo['estado'] === 'finalizado' && $tabla) {
         $campeon = $tabla[0]['nombre'];
     }
@@ -169,11 +153,6 @@ function handleList(): void
     ]);
 }
 
-/**
- * Sin rondas: arma el fixture del formato y el torneo empieza (en_curso).
- * Con rondas: solo el suizo pide la ronda siguiente a mano (la liga sale
- * completa y las llaves avanzan solas al validar el último resultado).
- */
 function handleGenerate(array $input): void
 {
     $idTorneo = (int) ($input['idTorneo'] ?? 0);
@@ -255,7 +234,6 @@ function handleState(array $input): void
         $pdo->prepare("UPDATE ronda SET estado_ronda = 'finalizada' WHERE id_ronda = ?")->execute([$ronda['id_ronda']]);
         Auditoria::registrar("Cerró la ronda {$ronda['numero_ronda']}: {$torneo['nombre_torneo']}", 'ronda');
     } elseif ($accion === 'reabrir') {
-        // RF-13: solo el Administrador general reabre, y queda el motivo
         Auth::requireRole('ADMIN');
         $motivo = trim((string) ($input['motivo'] ?? ''));
         if ($motivo === '') {

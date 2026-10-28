@@ -3,8 +3,8 @@
 LOG="/var/log/sgdm_bd.log"
 DB_NAME="sgdm"
 DIR_BACKUP_DB="/var/backups/sgdm/bd"
-UMBRAL_DISCO=85        # % de uso del disco para dar alerta
-UMBRAL_RESPALDO=26     # horas máximas desde el último respaldo
+UMBRAL_DISCO=85
+UMBRAL_RESPALDO=26
 
 VERDE='\033[0;32m'
 ROJO='\033[0;31m'
@@ -33,13 +33,11 @@ pausa() {
     read -p "Presione Enter para continuar..." _ || salir
 }
 
-# Muestra un título y el resultado de la consulta en forma de tabla
 consulta() {
     echo -e "\n${AMARILLO}---- $1 ----${SIN_COLOR}"
     mariadb --table "$DB_NAME" -e "$2"
 }
 
-# Devuelve un único valor, sin encabezado
 valor() {
     mariadb -N -B "$DB_NAME" -e "$1"
 }
@@ -52,8 +50,6 @@ pedir_torneo() {
     fi
 }
 
-# ---------------- Consultas ----------------
-
 resumen() {
     consulta "Registros por tabla" "
         SELECT 'Usuarios' AS tabla, COUNT(*) AS total FROM usuario
@@ -63,9 +59,6 @@ resumen() {
         UNION ALL SELECT 'Rondas', COUNT(*) FROM ronda
         UNION ALL SELECT 'Enfrentamientos', COUNT(*) FROM enfrentamiento
         UNION ALL SELECT 'Resultados', COUNT(*) FROM resultado"
-    # Rol de la cuenta: solo ADMIN o PUBLICO. Organizador, Árbitro y
-    # Participante dependen de cada torneo (vista_rol_torneo) y se apagan
-    # solos cuando el torneo termina.
     consulta "Cuentas por rol global" "
         SELECT r.nombre_rol AS rol, COUNT(u.id_usuario) AS cuentas
         FROM usuario u JOIN rol r ON r.id_rol = u.id_rol
@@ -91,8 +84,6 @@ torneos() {
     log "Consulta: torneos."
 }
 
-# Orden de RF-09: puntos, diferencia de goles y goles a favor (el
-# enfrentamiento directo y el sorteo los aplica la aplicación)
 posiciones() {
     pedir_torneo || return
     consulta "Tabla de posiciones del torneo $id" "
@@ -108,7 +99,6 @@ posiciones() {
     log "Consulta: posiciones del torneo $id."
 }
 
-# Nombre del competidor de una inscripción (equipo o participante)
 nombre_de() {
     echo "(SELECT COALESCE(eq.nombre_equipo, pa.nombre_participante) FROM inscripcion i
              LEFT JOIN equipo eq ON eq.id_competidor = i.id_competidor
@@ -167,8 +157,6 @@ auditoria() {
     log "Consulta: auditoría."
 }
 
-# ---------------- Monitoreo ----------------
-
 estado_motor() {
     if systemctl is-active --quiet mariadb; then
         echo -e "MariaDB: ${VERDE}activo${SIN_COLOR}"
@@ -208,7 +196,6 @@ procesos() {
     log "Consulta: procesos."
 }
 
-# Chequeo rápido. Las alertas quedan en el log (pensado también para cron).
 chequeo() {
     local alertas=0 disco ultimo horas
 

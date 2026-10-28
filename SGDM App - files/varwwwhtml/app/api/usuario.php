@@ -56,8 +56,6 @@ if ($metodo === 'PUT' || $metodo === 'PATCH') {
         }
         $datos['email'] = $email;
     }
-    // El rol de la cuenta solo puede ser global (Admin o Usuario público);
-    // los roles por torneo se manejan desde el torneo, no desde acá.
     if (isset($input['rol'])) {
         $rol = in_array($input['rol'], ['ADMIN', 'PUBLICO'], true)
             ? Rol::findBy('nombre_rol', $input['rol'])
@@ -99,9 +97,6 @@ if ($metodo === 'DELETE') {
         echo json_encode(['success' => false, 'error' => 'Usuario no encontrado.']);
         exit;
     }
-    // Baja lógica, no DELETE físico: el usuario puede ser organizador de
-    // torneos o dueño de un participante/equipo (FK sin ON DELETE CASCADE
-    // a propósito, para no perder historial de competencia).
     Usuario::update($id, ['estado' => 'inactivo']);
     Auditoria::registrar("Desactivación de usuario {$usuario['email']}", 'usuario');
     echo json_encode(['success' => true]);
